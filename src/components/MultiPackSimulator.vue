@@ -1,8 +1,29 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { atLeastOneIn, packsForProbability, formatPct, formatPacks } from '../utils/odds'
+import type { CardRarity } from '../types/card'
 
-const props = defineProps<{ perPackRate: number }>()
+const PACK_POINTS_PER_PACK = 5
+
+const PACK_POINT_COST: Record<CardRarity, number> = {
+  C:   35,
+  U:   70,
+  R:   150,
+  RR:  400,
+  AR:  500,
+  SR:  1250,
+  SAR: 1500,
+  IM:  2500,
+  UR:  2500,
+  S:   1250,
+  SSR: 2500,
+}
+
+const props = defineProps<{ perPackRate: number; rarity: CardRarity }>()
+
+const packPointPacks = computed(() =>
+  Math.ceil(PACK_POINT_COST[props.rarity] / PACK_POINTS_PER_PACK)
+)
 
 const targetPct = ref(50) // slider: target probability in %
 const customPacks = ref<number | null>(null)
@@ -35,7 +56,18 @@ const fillWidth = computed(() => `${targetPct.value}%`)
     <div class="space-y-3">
       <div class="flex justify-between items-center">
         <label class="text-sm text-gray-600">Target probability</label>
-        <span class="text-lg font-bold text-gray-800 tabular-nums">{{ targetPct }}%</span>
+        <div class="flex items-center gap-2">
+          <button
+            v-for="pct in [50, 90]"
+            :key="pct"
+            @click="targetPct = pct"
+            :class="targetPct === pct
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+            class="px-2 py-0.5 rounded text-xs font-medium transition-colors"
+          >{{ pct }}%</button>
+          <span class="text-lg font-bold text-gray-800 tabular-nums w-12 text-right">{{ targetPct }}%</span>
+        </div>
       </div>
 
       <input
@@ -96,7 +128,17 @@ const fillWidth = computed(() => `${targetPct.value}%`)
       </div>
     </div>
 
-    <p v-if="disabled" class="text-xs text-gray-400 italic">
+    <!-- Pack points alternative -->
+    <div v-if="!disabled" class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 space-y-0.5">
+      <p class="font-medium">Pack Points alternative</p>
+      <p>
+        After <span class="font-bold">{{ packPointPacks.toLocaleString() }} packs</span> you'd have
+        {{ PACK_POINT_COST[rarity].toLocaleString() }} pack points — enough buy this card directly
+        ({{ PACK_POINTS_PER_PACK }} pts/pack).
+      </p>
+    </div>
+
+    <p v-else class="text-xs text-gray-400 italic">
       Select a card above to run the simulation.
     </p>
   </div>

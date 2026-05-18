@@ -53,7 +53,7 @@ const selectedCard = ref<Card | null>(null)
 
         <!-- Right column: Multi-pack simulator -->
         <div v-if="selectedCard" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-          <MultiPackSimulator :per-pack-rate="selectedCard.perPackRate" />
+          <MultiPackSimulator :per-pack-rate="selectedCard.perPackRate" :rarity="selectedCard.rarity" />
         </div>
 
       </div>

@@ -112,6 +112,17 @@ export function useCardDb(): CardDb {
       })
     }
 
+    // Deduplicate by card ID when no specific pack is selected
+    // (same card can appear once per pack in the data)
+    if (!packFilter.value) {
+      const seen = new Set<string>()
+      return filtered.filter(c => {
+        if (seen.has(c.id)) return false
+        seen.add(c.id)
+        return true
+      })
+    }
+
     return filtered
   })
 

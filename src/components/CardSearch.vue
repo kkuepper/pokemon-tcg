@@ -14,9 +14,15 @@ const emit = defineEmits<{
 
 const { loading, error, search, setFilter, packFilter, sets, setNames, packsForSet, filteredCards, cards } = useCardDb()
 
-const rarestCards = computed(() =>
-  [...cards.value].sort((a, b) => a.perPackRate - b.perPackRate).slice(0, 10)
-)
+const rarestCards = computed(() => {
+  const seen = new Set<string>()
+  const deduped = cards.value.filter(c => {
+    if (seen.has(c.id)) return false
+    seen.add(c.id)
+    return true
+  })
+  return deduped.sort((a, b) => a.perPackRate - b.perPackRate).slice(0, 10)
+})
 
 const currentPage = ref(1)
 
