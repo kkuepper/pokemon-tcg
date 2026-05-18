@@ -33,12 +33,20 @@ function isFoil(image) {
   return image?.includes('_01_') ?? false
 }
 
-// Pool key mapping. Foil C/U/R cards belong to CF/UF/RF pools in pull rate tables.
+// Pool key mapping. Foil C/U/R cards belong to CF/UF/RF pools in pull rate tables,
+// but only in sets whose pull rate data actually defines those foil keys.
 // SAR shares the SR pool.
-function poolKey(rarity, foil = false) {
+function poolKey(rarity, foil = false, setRates = null) {
   if (foil) {
     const foilMap = { C: 'CF', U: 'UF', R: 'RF' }
-    if (foilMap[rarity]) return foilMap[rarity]
+    const foilKey = foilMap[rarity]
+    if (foilKey) {
+      // Only use the foil pool key if this set's Regular Pack actually has foil slots
+      const hasFoilSlot = setRates
+        ? Object.values(setRates['Regular Pack']?.slots ?? {}).some(s => foilKey in s)
+        : false
+      if (hasFoilSlot) return foilKey
+    }
   }
   return rarity === 'SAR' ? 'SR' : rarity
 }
@@ -50,7 +58,7 @@ const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 const packPoolMap = {}
 for (const card of cards) {
   const cardPacks = card.packs ?? setPacksMap[card.set] ?? []
-  const pk = poolKey(card.rarity, isFoil(card.image))
+  const pk = poolKey(card.rarity, isFoil(card.image), pullRates[card.set])
   for (const pack of cardPacks) {
     const k = `${card.set}::${pack}::${pk}`
     packPoolMap[k] = (packPoolMap[k] || 0) + 1
@@ -60,7 +68,7 @@ for (const card of cards) {
 // Build whole-set pool for Rare Pack (not variant-specific)
 const setPoolMap = {}
 for (const card of cards) {
-  const pk = poolKey(card.rarity, isFoil(card.image))
+  const pk = poolKey(card.rarity, isFoil(card.image), pullRates[card.set])
   const k = `${card.set}::${pk}`
   setPoolMap[k] = (setPoolMap[k] || 0) + 1
 }
@@ -121,7 +129,7 @@ for (const card of cards) {
   const themedAppr = (themedRarePack?.appearance_rate ?? 0) / 100
 
   const foil = isFoil(image)
-  const pk = poolKey(rarity, foil)
+  const pk = poolKey(rarity, foil, rates)
 
   for (const pack of packs) {
     const packPoolSz = packPoolMap[`${set}::${pack}::${pk}`] ?? 1

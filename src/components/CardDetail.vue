@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { Card } from '../types/card'
 import { RARITY_LABELS, RARITY_COLORS } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
@@ -14,17 +14,22 @@ const imageUrl = computed(() => {
 })
 
 const showModal = ref(false)
+const loaded = ref(false)
+
+watch(() => props.card.id, () => { loaded.value = false })
 </script>
 
 <template>
   <div class="flex gap-4">
     <!-- Card image -->
-    <div class="shrink-0 w-28 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 cursor-zoom-in" @click="showModal = true">
+    <div class="relative shrink-0 w-28 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 cursor-zoom-in" @click="showModal = true">
+      <div v-if="!loaded" class="absolute inset-0 animate-pulse bg-gray-200" />
       <img
         :src="imageUrl"
         :alt="card.name"
-        class="w-full h-auto block"
-        loading="lazy"
+        class="w-full h-auto block transition-opacity duration-200"
+        :class="{ 'opacity-0': !loaded }"
+        @load="loaded = true"
         @error="(e) => ((e.target as HTMLImageElement).parentElement!.style.display = 'none')"
       />
     </div>
