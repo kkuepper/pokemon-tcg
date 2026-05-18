@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useCardDb } from '../composables/useCardDb'
-import type { Card } from '../types/card'
+import type { Card, CardRarity } from '../types/card'
+import { RARITY_LABELS } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
 
 const ITEMS_PER_PAGE = 10
+
+const ALL_RARITIES: CardRarity[] = ['C', 'U', 'R', 'RR', 'AR', 'SR', 'SAR', 'IM', 'UR', 'S', 'SSR']
 
 const props = defineProps<{ selectedId?: string }>()
 
@@ -12,7 +15,24 @@ const emit = defineEmits<{
   select: [card: Card]
 }>()
 
-const { loading, error, search, setFilter, packFilter, sets, setNames, packsForSet, filteredCards, cards } = useCardDb()
+const { loading, error, search, setFilter, packFilter, rarityFilter, sets, setNames, packsForSet, filteredCards, cards } = useCardDb()
+
+const rarityOpen = ref(false)
+const rarityDropdownEl = ref<HTMLElement | null>(null)
+
+function onDocumentClick(e: MouseEvent) {
+  if (rarityDropdownEl.value && !rarityDropdownEl.value.contains(e.target as Node)) {
+    rarityOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener('mousedown', onDocumentClick))
+onUnmounted(() => document.removeEventListener('mousedown', onDocumentClick))
+
+function toggleRarity(r: CardRarity) {
+  const idx = rarityFilter.value.indexOf(r)
+  if (idx === -1) rarityFilter.value = [...rarityFilter.value, r]
+  else rarityFilter.value = rarityFilter.value.filter(x => x !== r)
+}
 
 const rarestCards = computed(() => {
   const seen = new Set<string>()
@@ -21,7 +41,10 @@ const rarestCards = computed(() => {
     seen.add(c.id)
     return true
   })
-  return deduped.sort((a, b) => a.perPackRate - b.perPackRate).slice(0, 10)
+  const filtered = rarityFilter.value.length
+    ? deduped.filter(c => rarityFilter.value.includes(c.rarity))
+    : deduped
+  return filtered.sort((a, b) => a.perPackRate - b.perPackRate).slice(0, 10)
 })
 
 const currentPage = ref(1)
@@ -52,12 +75,10 @@ function onInput(e: Event) {
 function onSetChange(e: Event) {
   setFilter.value = (e.target as HTMLSelectElement).value
   packFilter.value = ''
-  search.value = ''
 }
 
 function onPackChange(e: Event) {
   packFilter.value = (e.target as HTMLSelectElement).value
-  search.value = ''
 }
 </script>
 
@@ -85,6 +106,50 @@ function onPackChange(e: Event) {
         <option value="">All packs</option>
         <option v-for="p in packsForSet" :key="p" :value="p">{{ p }}</option>
       </select>
+    </div>
+
+    <!-- Rarity filter multi-select -->
+    <div class="relative" ref="rarityDropdownEl">
+      <div class="flex gap-1">
+        <button
+          type="button"
+          @click="rarityOpen = !rarityOpen"
+          class="flex-1 flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <span v-if="rarityFilter.length === 0" class="text-gray-400">All rarities</span>
+          <span v-else class="inline-flex flex-wrap gap-1.5 items-center">
+            <RarityBadge v-for="r in rarityFilter" :key="r" :rarity="r" />
+          </span>
+          <span class="ml-2 text-gray-400 shrink-0">{{ rarityOpen ? '▴' : '▾' }}</span>
+        </button>
+        <button
+          v-if="rarityFilter.length > 0"
+          type="button"
+          @click="rarityFilter = []"
+          class="px-2 rounded-lg border border-gray-300 text-gray-400 hover:text-gray-600 hover:bg-gray-50 text-sm"
+          title="Clear rarity filter"
+        >✕</button>
+      </div>
+
+      <div
+        v-if="rarityOpen"
+        class="absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-64 overflow-y-auto"
+      >
+        <label
+          v-for="r in ALL_RARITIES"
+          :key="r"
+          class="flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-gray-50"
+        >
+          <input
+            type="checkbox"
+            :checked="rarityFilter.includes(r)"
+            @change="toggleRarity(r)"
+            class="rounded"
+          />
+          <RarityBadge :rarity="r" />
+          <span class="text-sm text-gray-700">{{ RARITY_LABELS[r] }}</span>
+        </label>
+      </div>
     </div>
 
     <!-- Name search -->

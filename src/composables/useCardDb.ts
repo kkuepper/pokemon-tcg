@@ -1,6 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import Fuse from 'fuse.js'
-import type { Card } from '../types/card'
+import type { Card, CardRarity } from '../types/card'
 import { normalizeForSearch } from '../utils/search'
 
 interface CardDb {
@@ -10,6 +10,7 @@ interface CardDb {
   search: Ref<string>
   setFilter: Ref<string>
   packFilter: Ref<string>
+  rarityFilter: Ref<CardRarity[]>
   sets: Ref<string[]>
   setNames: Ref<Record<string, string>>
   packsForSet: Ref<string[]>
@@ -27,6 +28,7 @@ export function useCardDb(): CardDb {
   const search = ref('')
   const setFilter = ref('')
   const packFilter = ref('')
+  const rarityFilter = ref<CardRarity[]>([])
 
   let fuse: Fuse<Card> | null = null
 
@@ -96,10 +98,11 @@ export function useCardDb(): CardDb {
       base = cards.value
     }
 
-    // Apply set / pack filters (preserves relevance order from Fuse)
+    // Apply set / pack / rarity filters (preserves relevance order from Fuse)
     const filtered = base.filter(c => {
       if (setFilter.value && c.set !== setFilter.value) return false
       if (packFilter.value && c.pack !== packFilter.value) return false
+      if (rarityFilter.value.length && !rarityFilter.value.includes(c.rarity)) return false
       return true
     })
 
@@ -126,6 +129,6 @@ export function useCardDb(): CardDb {
     return filtered
   })
 
-  instance = { cards, loading, error, search, setFilter, packFilter, sets, setNames, packsForSet, filteredCards }
+  instance = { cards, loading, error, search, setFilter, packFilter, rarityFilter, sets, setNames, packsForSet, filteredCards }
   return instance
 }

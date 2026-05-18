@@ -28,8 +28,18 @@ for (const series of Object.values(setsData)) {
   }
 }
 
-// SAR (Special Art Rare, 2★) shares the SR pool in pull rate tables
-function poolKey(rarity) {
+// Detect foil variant: image filename contains _01_ (vs _00_ for non-foil)
+function isFoil(image) {
+  return image?.includes('_01_') ?? false
+}
+
+// Pool key mapping. Foil C/U/R cards belong to CF/UF/RF pools in pull rate tables.
+// SAR shares the SR pool.
+function poolKey(rarity, foil = false) {
+  if (foil) {
+    const foilMap = { C: 'CF', U: 'UF', R: 'RF' }
+    if (foilMap[rarity]) return foilMap[rarity]
+  }
   return rarity === 'SAR' ? 'SR' : rarity
 }
 
@@ -40,8 +50,9 @@ const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 const packPoolMap = {}
 for (const card of cards) {
   const cardPacks = card.packs ?? setPacksMap[card.set] ?? []
+  const pk = poolKey(card.rarity, isFoil(card.image))
   for (const pack of cardPacks) {
-    const k = `${card.set}::${pack}::${poolKey(card.rarity)}`
+    const k = `${card.set}::${pack}::${pk}`
     packPoolMap[k] = (packPoolMap[k] || 0) + 1
   }
 }
@@ -49,7 +60,8 @@ for (const card of cards) {
 // Build whole-set pool for Rare Pack (not variant-specific)
 const setPoolMap = {}
 for (const card of cards) {
-  const k = `${card.set}::${poolKey(card.rarity)}`
+  const pk = poolKey(card.rarity, isFoil(card.image))
+  const k = `${card.set}::${pk}`
   setPoolMap[k] = (setPoolMap[k] || 0) + 1
 }
 
@@ -108,7 +120,8 @@ for (const card of cards) {
   const plus1Appr = (regularPackPlus?.appearance_rate ?? 0) / 100
   const themedAppr = (themedRarePack?.appearance_rate ?? 0) / 100
 
-  const pk = poolKey(rarity)
+  const foil = isFoil(image)
+  const pk = poolKey(rarity, foil)
 
   for (const pack of packs) {
     const packPoolSz = packPoolMap[`${set}::${pack}::${pk}`] ?? 1
@@ -118,25 +131,16 @@ for (const card of cards) {
     let rarePackRate = 0
     let themedRarePackRate = 0
 
-    if (rarity === 'C') {
-      // C cards appear only in slots 1-3 of every pack type
-      const pPerSlot = 1 / packPoolSz
-      regularPackRate = 1 - Math.pow(1 - pPerSlot, 3)
-      plus1PackRate = regularPackRate // +1 pack has same slots 1-3
-    } else {
-      // For all other rarities: look up which slots they appear in
-      // Regular Pack: slots 4 and 5
-      if (regularPack) {
-        const probs = findRarityInSlots(regularPack.slots, pk, packPoolSz)
-        regularPackRate = atLeastOnce(probs)
-      }
+    // For all rarities (including C and foil variants): look up which slots they appear in
+    if (regularPack) {
+      const probs = findRarityInSlots(regularPack.slots, pk, packPoolSz)
+      regularPackRate = atLeastOnce(probs)
+    }
 
-      // Regular Pack +1: usually same as Regular for slots 4-5,
-      // but may also add slot 6 (bonus shiny slot in some sets)
-      if (regularPackPlus) {
-        const probs = findRarityInSlots(regularPackPlus.slots, pk, packPoolSz)
-        plus1PackRate = atLeastOnce(probs)
-      }
+    // Regular Pack +1: may add slot 6 (bonus shiny slot in some sets)
+    if (regularPackPlus) {
+      const probs = findRarityInSlots(regularPackPlus.slots, pk, packPoolSz)
+      plus1PackRate = atLeastOnce(probs)
     }
 
     // Rare Pack: pool is across all cards of that rarity in the whole set
