@@ -19,7 +19,7 @@ function onSelect(card: Card) {
     <header class="bg-white border-b border-gray-200 shadow-sm">
       <div class="max-w-4xl mx-auto px-4 py-4">
         <h1 class="text-xl font-bold text-gray-900">
-          Pokemon TCG Pocket — Pack Odds Calculator
+          Pokémon TCG Pocket — Pack Odds Calculator
         </h1>
         <p class="text-sm text-gray-500 mt-0.5">
           Find out how likely you are to pull a specific card from a booster pack.
