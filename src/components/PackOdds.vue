@@ -54,7 +54,7 @@ const isShinySlot6 = computed(() => props.card.slot4Rate === 0 && props.card.slo
 
       <template v-if="hasRarePack">
         <div class="border-t border-gray-100 pt-2 flex justify-between text-sm">
-          <span class="text-gray-600">Rare Pack contribution <span class="text-xs text-gray-400">(0.05%)</span></span>
+          <span class="text-gray-600">Rare (god) Pack contribution <span class="text-xs text-gray-400">(0.05%)</span></span>
           <span class="font-mono font-medium text-amber-600">+{{ rarePct }}</span>
         </div>
       </template>
