@@ -4,6 +4,7 @@ import { useCardDb } from '../composables/useCardDb'
 import type { Card, CardRarity } from '../types/card'
 import { RARITY_LABELS } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
+import posthog from 'posthog-js'
 
 const ITEMS_PER_PAGE = 10
 
@@ -32,6 +33,11 @@ function toggleRarity(r: CardRarity) {
   const idx = rarityFilter.value.indexOf(r)
   if (idx === -1) rarityFilter.value = [...rarityFilter.value, r]
   else rarityFilter.value = rarityFilter.value.filter(x => x !== r)
+  posthog.capture('rarity_filter_applied', {
+    rarity: r,
+    action: idx === -1 ? 'added' : 'removed',
+    active_rarities: rarityFilter.value,
+  })
 }
 
 const rarestCards = computed(() => {
@@ -69,16 +75,39 @@ let debounceTimer: ReturnType<typeof setTimeout>
 function onInput(e: Event) {
   clearTimeout(debounceTimer)
   const val = (e.target as HTMLInputElement).value
-  debounceTimer = setTimeout(() => { search.value = val }, 150)
+  debounceTimer = setTimeout(() => {
+    search.value = val
+    if (val.trim().length >= 2) {
+      posthog.capture('card_searched', { query: val.trim() })
+    }
+  }, 150)
 }
 
 function onSetChange(e: Event) {
   setFilter.value = (e.target as HTMLSelectElement).value
   packFilter.value = ''
+  if (setFilter.value) {
+    posthog.capture('set_filter_applied', { set: setFilter.value })
+  }
 }
 
 function onPackChange(e: Event) {
   packFilter.value = (e.target as HTMLSelectElement).value
+  if (packFilter.value) {
+    posthog.capture('pack_filter_applied', { set: setFilter.value, pack: packFilter.value })
+  }
+}
+
+function onCardSelect(card: Card) {
+  emit('select', card)
+  posthog.capture('card_selected', {
+    card_id: card.id,
+    card_name: card.name,
+    rarity: card.rarity,
+    set: card.set,
+    pack: card.pack,
+    per_pack_rate: card.perPackRate,
+  })
 }
 </script>
 
@@ -181,7 +210,7 @@ function onPackChange(e: Event) {
           <li
             v-for="card in pagedCards"
             :key="card.id"
-            @click="emit('select', card)"
+            @click="onCardSelect(card)"
             class="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer transition-colors"
             :class="card.id === props.selectedId
               ? 'bg-blue-50 border-l-4 border-blue-400'
@@ -230,7 +259,7 @@ function onPackChange(e: Event) {
           <li
             v-for="card in rarestCards"
             :key="card.id"
-            @click="emit('select', card)"
+            @click="onCardSelect(card)"
             class="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer transition-colors"
             :class="card.id === props.selectedId
               ? 'bg-blue-50 border-l-4 border-blue-400'

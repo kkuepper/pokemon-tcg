@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { atLeastOneIn, packsForProbability, formatPct, formatPacks } from '../utils/odds'
 import type { CardRarity } from '../types/card'
+import posthog from 'posthog-js'
 
 const PACK_POINTS_PER_PACK = 5
 
@@ -46,6 +47,40 @@ const customPacksProb = computed(() => {
 })
 
 const fillWidth = computed(() => `${targetPct.value}%`)
+
+function onTargetPctChange(pct: number) {
+  targetPct.value = pct
+  posthog.capture('probability_target_changed', {
+    target_pct: pct,
+    source: 'preset_button',
+    rarity: props.rarity,
+    per_pack_rate: props.perPackRate,
+  })
+}
+
+function onSliderChange() {
+  posthog.capture('probability_target_changed', {
+    target_pct: targetPct.value,
+    source: 'slider',
+    rarity: props.rarity,
+    per_pack_rate: props.perPackRate,
+  })
+}
+
+let customPacksTimer: ReturnType<typeof setTimeout>
+function onCustomPacksChange() {
+  clearTimeout(customPacksTimer)
+  customPacksTimer = setTimeout(() => {
+    if (customPacks.value && customPacks.value > 0) {
+      posthog.capture('custom_pack_count_entered', {
+        pack_count: customPacks.value,
+        rarity: props.rarity,
+        per_pack_rate: props.perPackRate,
+        probability: customPacksProb.value,
+      })
+    }
+  }, 500)
+}
 </script>
 
 <template>
@@ -60,7 +95,7 @@ const fillWidth = computed(() => `${targetPct.value}%`)
           <button
             v-for="pct in [50, 90]"
             :key="pct"
-            @click="targetPct = pct"
+            @click="onTargetPctChange(pct)"
             :class="targetPct === pct
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
@@ -77,6 +112,7 @@ const fillWidth = computed(() => `${targetPct.value}%`)
         step="1"
         v-model.number="targetPct"
         :disabled="disabled"
+        @change="onSliderChange"
         class="w-full accent-blue-600 disabled:opacity-40"
       />
 
@@ -115,6 +151,7 @@ const fillWidth = computed(() => `${targetPct.value}%`)
           v-model.number="customPacks"
           :disabled="disabled"
           placeholder="e.g. 100"
+          @input="onCustomPacksChange"
           class="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-40"
         />
         <span class="text-sm text-gray-500">packs →</span>
