@@ -97,11 +97,22 @@ export function useCardDb(): CardDb {
     }
 
     // Apply set / pack filters (preserves relevance order from Fuse)
-    return base.filter(c => {
+    const filtered = base.filter(c => {
       if (setFilter.value && c.set !== setFilter.value) return false
       if (packFilter.value && c.pack !== packFilter.value) return false
       return true
     })
+
+    // When browsing (no search query), sort by card number
+    if (q.length < 2) {
+      filtered.sort((a, b) => {
+        const numA = parseInt(a.id.split('-').pop()!, 10)
+        const numB = parseInt(b.id.split('-').pop()!, 10)
+        return numA - numB
+      })
+    }
+
+    return filtered
   })
 
   instance = { cards, loading, error, search, setFilter, packFilter, sets, setNames, packsForSet, filteredCards }

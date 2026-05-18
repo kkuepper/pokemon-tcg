@@ -20,17 +20,17 @@ export interface Card {
 }
 
 export const RARITY_LABELS: Record<CardRarity, string> = {
-  C:   '◇ Common',
-  U:   '◇◇ Uncommon',
-  R:   '◇◇◇ Rare',
-  RR:  '◇◇◇◇ Double Rare',
-  AR:  '☆ Art Rare',
-  SR:  '☆☆ Super Rare',
-  SAR: '☆☆ Special Art Rare',
-  IM:  '☆☆☆ Immersive',
-  UR:  '♛ Crown Rare',
-  S:   '✦ Shiny',
-  SSR: '✦✦ Shiny Super Rare',
+  C:   'Common',
+  U:   'Uncommon',
+  R:   'Rare',
+  RR:  'Double Rare',
+  AR:  'Art Rare',
+  SR:  'Super Rare',
+  SAR: 'Special Art Rare',
+  IM:  'Immersive',
+  UR:  'Crown Rare',
+  S:   'Shiny',
+  SSR: 'Shiny Super Rare',
 }
 
 export const RARITY_COLORS: Record<CardRarity, string> = {

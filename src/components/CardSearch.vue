@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useCardDb } from '../composables/useCardDb'
 import type { Card } from '../types/card'
-import { RARITY_COLORS } from '../types/card'
+import RarityBadge from './RarityBadge.vue'
 
 const ITEMS_PER_PAGE = 10
 
@@ -12,13 +12,17 @@ const emit = defineEmits<{
   select: [card: Card]
 }>()
 
-const { loading, error, search, setFilter, packFilter, sets, setNames, packsForSet, filteredCards } = useCardDb()
+const { loading, error, search, setFilter, packFilter, sets, setNames, packsForSet, filteredCards, cards } = useCardDb()
+
+const rarestCards = computed(() =>
+  [...cards.value].sort((a, b) => a.perPackRate - b.perPackRate).slice(0, 10)
+)
 
 const currentPage = ref(1)
 
-// Show results when there's a meaningful query or a pack is selected
+// Show results when there's a meaningful query, or a set/pack is selected
 const showResults = computed(() =>
-  search.value.trim().length >= 2 || packFilter.value !== ''
+  search.value.trim().length >= 2 || setFilter.value !== '' || packFilter.value !== ''
 )
 
 const totalPages = computed(() => Math.ceil(filteredCards.value.length / ITEMS_PER_PAGE))
@@ -54,11 +58,11 @@ function onPackChange(e: Event) {
 <template>
   <div class="space-y-4">
     <!-- Filters row -->
-    <div class="flex gap-2">
+    <div class="grid grid-cols-3 gap-2">
       <select
         :value="setFilter"
         @change="onSetChange"
-        class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+        class="col-span-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
       >
         <option value="">All sets</option>
         <option v-for="s in sets" :key="s" :value="s">
@@ -70,7 +74,7 @@ function onPackChange(e: Event) {
         :value="packFilter"
         @change="onPackChange"
         :disabled="!setFilter"
-        class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-40"
+        class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-40"
       >
         <option value="">All packs</option>
         <option v-for="p in packsForSet" :key="p" :value="p">{{ p }}</option>
@@ -112,12 +116,7 @@ function onPackChange(e: Event) {
               ? 'bg-blue-50 border-l-4 border-blue-400'
               : 'bg-white hover:bg-gray-50 border-l-4 border-transparent'"
           >
-            <span
-              class="shrink-0 rounded px-1.5 py-0.5 text-xs font-medium"
-              :class="RARITY_COLORS[card.rarity]"
-            >
-              {{ card.rarity }}
-            </span>
+            <RarityBadge :rarity="card.rarity" class="shrink-0" />
             <span class="font-medium truncate">{{ card.name }}</span>
             <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ card.pack }}</span>
           </li>
@@ -150,8 +149,28 @@ function onPackChange(e: Event) {
       </template>
     </template>
 
-    <p v-else class="text-xs text-gray-400">
-      Type at least 2 characters, or select a pack to browse cards.
-    </p>
+    <template v-else>
+      <p class="text-xs text-gray-400">
+        Type at least 2 characters, or select a set to browse cards.
+      </p>
+      <template v-if="rarestCards.length > 0">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Hardest to pull</p>
+        <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+          <li
+            v-for="card in rarestCards"
+            :key="card.id"
+            @click="emit('select', card)"
+            class="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer transition-colors"
+            :class="card.id === props.selectedId
+              ? 'bg-blue-50 border-l-4 border-blue-400'
+              : 'bg-white hover:bg-gray-50 border-l-4 border-transparent'"
+          >
+            <RarityBadge :rarity="card.rarity" class="shrink-0" />
+            <span class="font-medium truncate">{{ card.name }}</span>
+            <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ card.pack }}</span>
+          </li>
+        </ul>
+      </template>
+    </template>
   </div>
 </template>
