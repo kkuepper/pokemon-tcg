@@ -1,4 +1,5 @@
 import { ref, computed, type Ref } from 'vue'
+import Fuse from 'fuse.js'
 import type { Card } from '../types/card'
 import { normalizeForSearch } from '../utils/search'
 
@@ -27,6 +28,8 @@ export function useCardDb(): CardDb {
   const setFilter = ref('')
   const packFilter = ref('')
 
+  let fuse: Fuse<Card> | null = null
+
   const base = import.meta.env.BASE_URL
 
   fetch(`${base}cards.json`)
@@ -36,6 +39,12 @@ export function useCardDb(): CardDb {
     })
     .then(data => {
       cards.value = data
+      fuse = new Fuse(data, {
+        keys: [{ name: 'name', getFn: (c: Card) => normalizeForSearch(c.name) }],
+        threshold: 0.4,
+        ignoreLocation: true,
+        minMatchCharLength: 2,
+      })
       loading.value = false
     })
     .catch(err => {
@@ -78,10 +87,19 @@ export function useCardDb(): CardDb {
 
   const filteredCards = computed<Card[]>(() => {
     const q = normalizeForSearch(search.value.trim())
-    return cards.value.filter(c => {
+
+    // Fuse.js search when query is long enough — results are ranked by relevance
+    let base: Card[]
+    if (q.length >= 2 && fuse) {
+      base = fuse.search(q).map(r => r.item)
+    } else {
+      base = cards.value
+    }
+
+    // Apply set / pack filters (preserves relevance order from Fuse)
+    return base.filter(c => {
       if (setFilter.value && c.set !== setFilter.value) return false
       if (packFilter.value && c.pack !== packFilter.value) return false
-      if (q && !normalizeForSearch(c.name).includes(q)) return false
       return true
     })
   })
