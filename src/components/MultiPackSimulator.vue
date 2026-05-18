@@ -170,7 +170,7 @@ function onCustomPacksChange() {
       <p class="font-medium">Pack Points alternative</p>
       <p>
         After <span class="font-bold">{{ packPointPacks.toLocaleString() }} packs</span> you'd have
-        {{ PACK_POINT_COST[rarity].toLocaleString() }} pack points — enough buy this card directly
+        {{ PACK_POINT_COST[rarity].toLocaleString() }} pack points — enough to buy this card directly
         ({{ PACK_POINTS_PER_PACK }} pts/pack).
       </p>
     </div>
