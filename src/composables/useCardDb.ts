@@ -1,5 +1,6 @@
 import { ref, computed, type Ref } from 'vue'
 import type { Card } from '../types/card'
+import { normalizeForSearch } from '../utils/search'
 
 interface CardDb {
   cards: Ref<Card[]>
@@ -76,11 +77,11 @@ export function useCardDb(): CardDb {
   })
 
   const filteredCards = computed<Card[]>(() => {
-    const q = search.value.trim().toLowerCase()
+    const q = normalizeForSearch(search.value.trim())
     return cards.value.filter(c => {
       if (setFilter.value && c.set !== setFilter.value) return false
       if (packFilter.value && c.pack !== packFilter.value) return false
-      if (q && !c.name.toLowerCase().includes(q)) return false
+      if (q && !normalizeForSearch(c.name).includes(q)) return false
       return true
     })
   })
