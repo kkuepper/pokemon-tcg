@@ -22,7 +22,7 @@ function cardToSlug(card: Card): string {
 
 function slugToId(slug: string): string {
   const parts = slug.split('-')
-  return parts.slice(-2).join('-').toUpperCase()
+  return parts.slice(-2).join('-')
 }
 
 // Resolve card from URL once DB is loaded (handles direct URL load)
@@ -31,7 +31,7 @@ watch(
   (isLoading) => {
     if (!isLoading && route.params.slug) {
       const id = slugToId(route.params.slug as string)
-      selectedCard.value = cards.value.find(c => c.id === id) ?? null
+      selectedCard.value = cards.value.find(c => c.id.toLowerCase() === id) ?? null
     }
   },
   { immediate: true }
@@ -50,7 +50,7 @@ watch(
       return
     }
     const id = slugToId(newSlug as string)
-    selectedCard.value = cards.value.find(c => c.id === id) ?? null
+    selectedCard.value = cards.value.find(c => c.id.toLowerCase() === id) ?? null
   }
 )
 
