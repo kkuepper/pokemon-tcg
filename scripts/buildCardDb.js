@@ -207,3 +207,28 @@ for (const card of cards) {
 mkdirSync(resolve(root, 'public'), { recursive: true })
 writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
 console.log(`✓ Built ${output.length} card entries → public/cards.json`)
+
+// Sitemap — deduplicate by card ID (same card can appear in multiple packs)
+function cardToSlug(card) {
+  const name = card.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return `${name}-${card.id.toLowerCase()}`
+}
+
+const BASE_URL = 'https://kkuepper.github.io/pokemon-tcg'
+const seen = new Set()
+const uniqueCards = output.filter(card => {
+  if (seen.has(card.id)) return false
+  seen.add(card.id)
+  return true
+})
+
+const urlEntries = [
+  `  <url>\n    <loc>${BASE_URL}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>`,
+  ...uniqueCards.map(card =>
+    `  <url>\n    <loc>${BASE_URL}/${cardToSlug(card)}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
+  ),
+].join('\n')
+
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/0.9">\n${urlEntries}\n</urlset>\n`
+writeFileSync(resolve(root, 'public/sitemap.xml'), sitemap)
+console.log(`✓ Built ${uniqueCards.length} card URLs → public/sitemap.xml`)

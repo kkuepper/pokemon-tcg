@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
+import { router } from './router'
 import posthog from 'posthog-js'
 
 posthog.init('phc_zYbiSnzsMpq4qYZmCtnVFtgi4PhUeu2JhaFB4UCJRvpL', {
@@ -9,6 +10,7 @@ posthog.init('phc_zYbiSnzsMpq4qYZmCtnVFtgi4PhUeu2JhaFB4UCJRvpL', {
 })
 
 const app = createApp(App)
+app.use(router)
 
 app.config.errorHandler = (err) => {
   posthog.captureException(err)

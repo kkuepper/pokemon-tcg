@@ -15,7 +15,8 @@
     "fuse.js": "^7.3.0",
     "pokemon-tcg-pocket-database": "^2.6.1",
     "posthog-js": "^1.373.5",
-    "vue": "^3.5.13"
+    "vue": "^3.5.13",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.6",

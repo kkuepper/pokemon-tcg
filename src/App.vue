@@ -1,12 +1,87 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, watchEffect } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import type { Card } from './types/card'
+import { useCardDb } from './composables/useCardDb'
 import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
 import MultiPackSimulator from './components/MultiPackSimulator.vue'
 
+const route = useRoute()
+const router = useRouter()
 const selectedCard = ref<Card | null>(null)
+const { cards, loading } = useCardDb()
+
+function cardToSlug(card: Card): string {
+  const name = card.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return `${name}-${card.id.toLowerCase()}`
+}
+
+function slugToId(slug: string): string {
+  const parts = slug.split('-')
+  return parts.slice(-2).join('-').toUpperCase()
+}
+
+// Resolve card from URL once DB is loaded (handles direct URL load)
+watch(
+  () => loading.value,
+  (isLoading) => {
+    if (!isLoading && route.params.slug) {
+      const id = slugToId(route.params.slug as string)
+      selectedCard.value = cards.value.find(c => c.id === id) ?? null
+    }
+  },
+  { immediate: true }
+)
+
+// Sync selectedCard when user navigates back/forward
+watch(
+  () => route.params.slug,
+  (newSlug) => {
+    if (!newSlug) { selectedCard.value = null; return }
+    const id = slugToId(newSlug as string)
+    selectedCard.value = cards.value.find(c => c.id === id) ?? null
+  }
+)
+
+function onCardSelect(card: Card) {
+  if (card.id === selectedCard.value?.id) {
+    selectedCard.value = null
+    router.push('/')
+    return
+  }
+  selectedCard.value = card
+  router.push({ params: { slug: cardToSlug(card) } })
+}
+
+function setMeta(attr: string, value: string, content: string) {
+  document.querySelector(`meta[${attr}="${value}"]`)?.setAttribute('content', content)
+}
+
+function formatPct(rate: number): string {
+  const pct = rate * 100
+  const str = pct >= 1 ? pct.toFixed(2) : pct.toFixed(4)
+  return str.replace(/\.?0+$/, '') + '%'
+}
+
+watchEffect(() => {
+  if (selectedCard.value) {
+    const card = selectedCard.value
+    const pct = formatPct(card.perPackRate)
+    const title = `${card.name} (${card.id}) — Pack Odds | Pokémon TCG Pocket`
+    const desc = `Pull rate for ${card.name} from ${card.setName}: ${pct} per pack. Find pack odds for every card in Pokémon TCG Pocket.`
+    document.title = title
+    setMeta('name', 'description', desc)
+    setMeta('property', 'og:title', title)
+    setMeta('property', 'og:description', desc)
+  } else {
+    document.title = 'Pokémon TCG Pocket — Pack Odds Calculator'
+    setMeta('name', 'description', 'Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket. See probabilities for all sets and rarities.')
+    setMeta('property', 'og:title', 'Pokémon TCG Pocket — Pack Odds Calculator')
+    setMeta('property', 'og:description', 'Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket.')
+  }
+})
 </script>
 
 <template>
@@ -31,7 +106,7 @@ const selectedCard = ref<Card | null>(null)
           <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Find a Card</h2>
           <CardSearch
             :selected-id="selectedCard?.id"
-            @select="selectedCard = $event"
+            @select="onCardSelect"
           />
         </div>
 
