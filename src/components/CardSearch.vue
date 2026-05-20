@@ -41,28 +41,36 @@ function toggleRarity(r: CardRarity) {
   })
 }
 
+const DIAMOND_RARITIES = new Set(['C', 'U', 'R', 'RR'])
+
 interface SetCompletion {
   set: string
   setName: string
   packs: string[]
   packsNeeded: number
+  diamondPacksNeeded: number
 }
 
 const hardestToComplete = computed<SetCompletion[]>(() => {
   // Group by set; for each card ID keep the best (highest) perPackRate across packs
-  const setGroups = new Map<string, { setName: string; packs: Set<string>; bestRates: Map<string, number> }>()
+  const setGroups = new Map<string, { setName: string; packs: Set<string>; bestRates: Map<string, number>; bestDiamondRates: Map<string, number> }>()
   for (const card of cards.value) {
-    if (!setGroups.has(card.set)) setGroups.set(card.set, { setName: card.setName, packs: new Set(), bestRates: new Map() })
+    if (!setGroups.has(card.set)) setGroups.set(card.set, { setName: card.setName, packs: new Set(), bestRates: new Map(), bestDiamondRates: new Map() })
     const group = setGroups.get(card.set)!
     group.packs.add(card.pack)
     const prev = group.bestRates.get(card.id) ?? 0
     if (card.perPackRate > prev) group.bestRates.set(card.id, card.perPackRate)
+    if (DIAMOND_RARITIES.has(card.rarity)) {
+      const prevD = group.bestDiamondRates.get(card.id) ?? 0
+      if (card.perPackRate > prevD) group.bestDiamondRates.set(card.id, card.perPackRate)
+    }
   }
 
   const results: SetCompletion[] = []
-  for (const [set, { setName, packs, bestRates }] of setGroups) {
+  for (const [set, { setName, packs, bestRates, bestDiamondRates }] of setGroups) {
     const packsNeeded = packsToComplete(Array.from(bestRates.values()), 0.5)
-    results.push({ set, setName, packs: Array.from(packs), packsNeeded })
+    const diamondPacksNeeded = packsToComplete(Array.from(bestDiamondRates.values()), 0.5)
+    results.push({ set, setName, packs: Array.from(packs), packsNeeded, diamondPacksNeeded })
   }
 
   return results
@@ -304,7 +312,7 @@ function onCardSelect(card: Card) {
       </template>
 
       <template v-if="hardestToComplete.length > 0">
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Hardest to complete</p>
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Hardest to complete set</p>
         <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200 overflow-hidden">
           <li
             v-for="item in hardestToComplete"
@@ -316,9 +324,13 @@ function onCardSelect(card: Card) {
               <p class="font-medium truncate">{{ item.setName }}</p>
               <p class="text-xs text-gray-400 truncate">{{ item.set }} · {{ item.packs.join(', ') }}</p>
             </div>
-            <span class="shrink-0 text-sm font-bold text-blue-700 tabular-nums">
-              {{ formatPacks(item.packsNeeded) }}
-            </span>
+            <div class="shrink-0 text-right">
+              <p class="text-sm font-bold text-blue-700 tabular-nums">{{ formatPacks(item.packsNeeded) }}</p>
+              <p class="text-xs text-gray-400 tabular-nums inline-flex items-center gap-1">
+                <svg width="8" height="8" viewBox="0 0 10 10" fill="#94a3b8" aria-hidden="true"><polygon points="5,0 10,5 5,10 0,5"/></svg>
+                {{ formatPacks(item.diamondPacksNeeded) }}
+              </p>
+            </div>
           </li>
         </ul>
         <p class="text-xs text-gray-400">Packs to complete at 50% probability</p>

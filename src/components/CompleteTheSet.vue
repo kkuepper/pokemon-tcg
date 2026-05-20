@@ -47,7 +47,10 @@ const packsForAll = computed(() =>
     <div class="space-y-2">
       <div class="rounded-xl border border-gray-200 px-4 py-3 flex items-center justify-between">
         <div>
-          <p class="text-sm font-medium text-gray-700">◇ Diamond cards</p>
+          <p class="text-sm font-medium text-gray-700 inline-flex items-center gap-1">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="#94a3b8" aria-hidden="true"><polygon points="5,0 10,5 5,10 0,5"/></svg>
+            Diamond cards
+          </p>
           <p class="text-xs text-gray-400">{{ diamondCards.length }} cards (C · U · R · RR)</p>
         </div>
         <span class="text-2xl font-bold text-blue-700 tabular-nums">
