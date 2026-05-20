@@ -4,6 +4,7 @@ import { useCardDb } from '../composables/useCardDb'
 import type { Card, CardRarity } from '../types/card'
 import { RARITY_LABELS } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
+import { packsToComplete, formatPacks } from '../utils/odds'
 import posthog from 'posthog-js'
 
 const ITEMS_PER_PAGE = 10
@@ -39,6 +40,35 @@ function toggleRarity(r: CardRarity) {
     active_rarities: rarityFilter.value,
   })
 }
+
+interface PackCompletion {
+  set: string
+  setName: string
+  pack: string
+  packsNeeded: number
+}
+
+const hardestToComplete = computed<PackCompletion[]>(() => {
+  // Group cards by (set, pack)
+  const groups = new Map<string, Card[]>()
+  for (const card of cards.value) {
+    const key = `${card.set}::${card.pack}`
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(card)
+  }
+
+  const results: PackCompletion[] = []
+  for (const [, group] of groups) {
+    const { set, setName, pack } = group[0]
+    const packsNeeded = packsToComplete(group.map(c => c.perPackRate), 0.5)
+    results.push({ set, setName, pack, packsNeeded })
+  }
+
+  return results
+    .sort((a, b) => (b.packsNeeded === Infinity ? 1 : 0) - (a.packsNeeded === Infinity ? 1 : 0)
+      || b.packsNeeded - a.packsNeeded)
+    .slice(0, 10)
+})
 
 const rarestCards = computed(() => {
   const seen = new Set<string>()
@@ -270,6 +300,27 @@ function onCardSelect(card: Card) {
             <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ card.pack }}</span>
           </li>
         </ul>
+      </template>
+
+      <template v-if="hardestToComplete.length > 0">
+        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Hardest to complete</p>
+        <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+          <li
+            v-for="item in hardestToComplete"
+            :key="`${item.set}::${item.pack}`"
+            @click="setFilter = item.set; packFilter = item.pack"
+            class="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer bg-white hover:bg-gray-50 transition-colors"
+          >
+            <div class="flex-1 min-w-0">
+              <p class="font-medium truncate">{{ item.setName }}</p>
+              <p class="text-xs text-gray-400 truncate">{{ item.pack }}</p>
+            </div>
+            <span class="shrink-0 text-sm font-bold text-blue-700 tabular-nums">
+              {{ formatPacks(item.packsNeeded) }}
+            </span>
+          </li>
+        </ul>
+        <p class="text-xs text-gray-400">Packs to complete at 50% probability</p>
       </template>
     </template>
   </div>

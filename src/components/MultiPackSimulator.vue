@@ -20,13 +20,17 @@ const PACK_POINT_COST: Record<CardRarity, number> = {
   SSR: 2500,
 }
 
-const props = defineProps<{ perPackRate: number; rarity: CardRarity }>()
+const props = defineProps<{ perPackRate: number; rarity: CardRarity; targetPct: number }>()
+const emit = defineEmits<{ 'update:targetPct': [value: number] }>()
 
 const packPointPacks = computed(() =>
   Math.ceil(PACK_POINT_COST[props.rarity] / PACK_POINTS_PER_PACK)
 )
 
-const targetPct = ref(50) // slider: target probability in %
+const targetPct = computed({
+  get: () => props.targetPct,
+  set: (val: number) => emit('update:targetPct', val),
+})
 const customPacks = ref<number | null>(null)
 
 const disabled = computed(() => props.perPackRate <= 0)

@@ -17,7 +17,8 @@
       "Bash(npm test:*)",
       "Bash(python3:*)",
       "Bash(git add:*)",
-      "Bash(cat /Users/kkuepper/Source/pokemon-tcg/.github/workflows/*.yml)"
+      "Bash(cat /Users/kkuepper/Source/pokemon-tcg/.github/workflows/*.yml)",
+      "Bash(find:*)"
     ]
   }
 }

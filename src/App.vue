@@ -7,10 +7,12 @@ import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
 import MultiPackSimulator from './components/MultiPackSimulator.vue'
+import CompleteThePack from './components/CompleteThePack.vue'
 
 const route = useRoute()
 const router = useRouter()
 const selectedCard = ref<Card | null>(null)
+const targetPct = ref(50)
 const { cards, loading } = useCardDb()
 
 function cardToSlug(card: Card): string {
@@ -126,9 +128,18 @@ watchEffect(() => {
           </div>
         </div>
 
-        <!-- Right column: Multi-pack simulator -->
-        <div v-if="selectedCard" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-          <MultiPackSimulator :per-pack-rate="selectedCard.perPackRate" :rarity="selectedCard.rarity" />
+        <!-- Right column: Multi-pack simulator + Complete the Pack -->
+        <div v-if="selectedCard" class="space-y-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <MultiPackSimulator
+              :per-pack-rate="selectedCard.perPackRate"
+              :rarity="selectedCard.rarity"
+              v-model:target-pct="targetPct"
+            />
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <CompleteThePack :card="selectedCard" :target-pct="targetPct" />
+          </div>
         </div>
 
       </div>

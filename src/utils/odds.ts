@@ -42,3 +42,35 @@ export function formatPacks(n: number): string {
   if (!isFinite(n)) return '∞'
   return n.toLocaleString()
 }
+
+/**
+ * Minimum packs needed to collect every card at least once with >= targetProb probability.
+ * Uses binary search over ∏(1 - (1 - pᵢ)^n) >= targetProb.
+ * @param perPackRates - per-pack pull rates [0, 1] for each card
+ * @param targetProb - desired probability [0, 1]
+ */
+export function packsToComplete(perPackRates: number[], targetProb: number): number {
+  if (perPackRates.length === 0) return 0
+
+  function probAllIn(n: number): number {
+    let p = 1
+    for (const rate of perPackRates) {
+      if (rate <= 0) return 0
+      p *= 1 - Math.pow(1 - rate, n)
+      if (p === 0) return 0
+    }
+    return p
+  }
+
+  const hi = 10_000_000
+  if (probAllIn(hi) < targetProb) return Infinity
+
+  let lo = 1
+  let mid = hi
+  while (lo < mid) {
+    const m = Math.floor((lo + mid) / 2)
+    if (probAllIn(m) >= targetProb) mid = m
+    else lo = m + 1
+  }
+  return lo
+}
