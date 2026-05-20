@@ -41,27 +41,28 @@ function toggleRarity(r: CardRarity) {
   })
 }
 
-interface PackCompletion {
+interface SetCompletion {
   set: string
   setName: string
-  pack: string
+  packs: string[]
   packsNeeded: number
 }
 
-const hardestToComplete = computed<PackCompletion[]>(() => {
-  // Group cards by (set, pack)
-  const groups = new Map<string, Card[]>()
+const hardestToComplete = computed<SetCompletion[]>(() => {
+  // Group by set; for each card ID keep the best (highest) perPackRate across packs
+  const setGroups = new Map<string, { setName: string; packs: Set<string>; bestRates: Map<string, number> }>()
   for (const card of cards.value) {
-    const key = `${card.set}::${card.pack}`
-    if (!groups.has(key)) groups.set(key, [])
-    groups.get(key)!.push(card)
+    if (!setGroups.has(card.set)) setGroups.set(card.set, { setName: card.setName, packs: new Set(), bestRates: new Map() })
+    const group = setGroups.get(card.set)!
+    group.packs.add(card.pack)
+    const prev = group.bestRates.get(card.id) ?? 0
+    if (card.perPackRate > prev) group.bestRates.set(card.id, card.perPackRate)
   }
 
-  const results: PackCompletion[] = []
-  for (const [, group] of groups) {
-    const { set, setName, pack } = group[0]
-    const packsNeeded = packsToComplete(group.map(c => c.perPackRate), 0.5)
-    results.push({ set, setName, pack, packsNeeded })
+  const results: SetCompletion[] = []
+  for (const [set, { setName, packs, bestRates }] of setGroups) {
+    const packsNeeded = packsToComplete(Array.from(bestRates.values()), 0.5)
+    results.push({ set, setName, packs: Array.from(packs), packsNeeded })
   }
 
   return results
@@ -307,13 +308,13 @@ function onCardSelect(card: Card) {
         <ul class="divide-y divide-gray-100 rounded-lg border border-gray-200 overflow-hidden">
           <li
             v-for="item in hardestToComplete"
-            :key="`${item.set}::${item.pack}`"
-            @click="setFilter = item.set; packFilter = item.pack"
+            :key="item.set"
+            @click="setFilter = item.set; packFilter = ''"
             class="flex items-center gap-3 px-3 py-2.5 text-sm cursor-pointer bg-white hover:bg-gray-50 transition-colors"
           >
             <div class="flex-1 min-w-0">
               <p class="font-medium truncate">{{ item.setName }}</p>
-              <p class="text-xs text-gray-400 truncate">{{ item.pack }}</p>
+              <p class="text-xs text-gray-400 truncate">{{ item.set }} · {{ item.packs.join(', ') }}</p>
             </div>
             <span class="shrink-0 text-sm font-bold text-blue-700 tabular-nums">
               {{ formatPacks(item.packsNeeded) }}

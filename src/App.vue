@@ -7,13 +7,13 @@ import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
 import MultiPackSimulator from './components/MultiPackSimulator.vue'
-import CompleteThePack from './components/CompleteThePack.vue'
+import CompleteTheSet from './components/CompleteTheSet.vue'
 
 const route = useRoute()
 const router = useRouter()
 const selectedCard = ref<Card | null>(null)
 const targetPct = ref(50)
-const { cards, loading } = useCardDb()
+const { cards, loading, search, setFilter, packFilter, rarityFilter, setNames } = useCardDb()
 
 function cardToSlug(card: Card): string {
   const name = card.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -41,7 +41,14 @@ watch(
 watch(
   () => route.params.slug,
   (newSlug) => {
-    if (!newSlug) { selectedCard.value = null; return }
+    if (!newSlug) {
+      selectedCard.value = null
+      search.value = ''
+      setFilter.value = ''
+      packFilter.value = ''
+      rarityFilter.value = []
+      return
+    }
     const id = slugToId(newSlug as string)
     selectedCard.value = cards.value.find(c => c.id === id) ?? null
   }
@@ -92,7 +99,9 @@ watchEffect(() => {
     <header class="bg-white border-b border-gray-200 shadow-sm">
       <div class="max-w-6xl mx-auto px-4 py-4">
         <h1 class="text-xl font-bold text-gray-900">
-          Pokémon TCG Pocket — Pack Odds Calculator
+          <RouterLink to="/" class="hover:text-blue-600 transition-colors">
+            Pokémon TCG Pocket — Pack Odds Calculator
+          </RouterLink>
         </h1>
         <p class="text-sm text-gray-500 mt-0.5">
           Find out how likely you are to pull a specific card from a booster pack.
@@ -128,9 +137,9 @@ watchEffect(() => {
           </div>
         </div>
 
-        <!-- Right column: Multi-pack simulator + Complete the Pack -->
-        <div v-if="selectedCard" class="space-y-4">
-          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+        <!-- Right column: Multi-pack simulator + Complete the Set -->
+        <div v-if="selectedCard || setFilter" class="space-y-4">
+          <div v-if="selectedCard" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
             <MultiPackSimulator
               :per-pack-rate="selectedCard.perPackRate"
               :rarity="selectedCard.rarity"
@@ -138,7 +147,11 @@ watchEffect(() => {
             />
           </div>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-            <CompleteThePack :card="selectedCard" :target-pct="targetPct" />
+            <CompleteTheSet
+              :set="selectedCard?.set ?? setFilter"
+              :set-name="selectedCard?.setName ?? setNames[setFilter]"
+              :target-pct="targetPct"
+            />
           </div>
         </div>
 
