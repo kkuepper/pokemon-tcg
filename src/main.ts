@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import './style.css'
-import App from './App.vue'
+import Root from './Root.vue'
 import { router } from './router'
 import posthog from 'posthog-js'
 
@@ -9,7 +9,7 @@ posthog.init('phc_zYbiSnzsMpq4qYZmCtnVFtgi4PhUeu2JhaFB4UCJRvpL', {
   defaults: '2026-01-30',
 })
 
-const app = createApp(App)
+const app = createApp(Root)
 app.use(router)
 
 app.config.errorHandler = (err) => {

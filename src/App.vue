@@ -3,6 +3,7 @@ import { ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Card } from './types/card'
 import { useCardDb } from './composables/useCardDb'
+import { cardToSlug } from './utils/slug'
 import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
@@ -14,11 +15,6 @@ const router = useRouter()
 const selectedCard = ref<Card | null>(null)
 const targetPct = ref(50)
 const { cards, loading, search, setFilter, packFilter, rarityFilter, setNames } = useCardDb()
-
-function cardToSlug(card: Card): string {
-  const name = card.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  return `${name}-${card.id.toLowerCase()}`
-}
 
 function slugToId(slug: string): string {
   const parts = slug.split('-')
@@ -97,15 +93,27 @@ watchEffect(() => {
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 shadow-sm">
-      <div class="max-w-6xl mx-auto px-4 py-4">
-        <h1 class="text-xl font-bold text-gray-900">
-          <RouterLink to="/" class="hover:text-blue-600 transition-colors">
-            Pokémon TCG Pocket — Pack Odds Calculator
-          </RouterLink>
-        </h1>
-        <p class="text-sm text-gray-500 mt-0.5">
-          Find out how likely you are to pull a specific card from a booster pack.
-        </p>
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">
+            <RouterLink to="/" class="hover:text-blue-600 transition-colors">
+              Pokémon TCG Pocket — Pack Odds Calculator
+            </RouterLink>
+          </h1>
+          <p class="text-sm text-gray-500 mt-0.5">
+            Find out how likely you are to pull a specific card from a booster pack.
+          </p>
+        </div>
+        <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
+          <RouterLink
+            to="/"
+            class="px-3 py-1.5 rounded-lg bg-blue-600 text-white"
+          >Pack Odds</RouterLink>
+          <RouterLink
+            to="/tracker"
+            class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >Tracker</RouterLink>
+        </nav>
       </div>
     </header>
 
