@@ -392,7 +392,7 @@ onUnmounted(() => {
     <header class="bg-white border-b border-gray-200 shadow-sm">
       <div class="max-w-6xl mx-auto px-4 py-4 flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-xl font-bold text-gray-900">Pokémon TCG Pocket — Pack Odds Calculator</h1>
+          <h1 class="text-xl font-bold text-gray-900">Pokémon TCG Pocket — Tracker & Odds Calculator</h1>
           <p class="text-sm text-gray-500 mt-0.5">Track which cards you've already pulled.</p>
         </div>
         <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
@@ -560,9 +560,10 @@ onUnmounted(() => {
                 :title="`${card.name} — tap to view, hold to mark`"
                 class="relative aspect-[2/3] rounded overflow-hidden"
                 :class="gestureState === 'idle' ? 'cursor-pointer' : 'cursor-grabbing'"
+                style="touch-action: manipulation"
                 @mousedown.prevent="onCardMouseDown(card, cardsForSet(set.code))"
                 @mouseenter="onCardMouseEnter(card)"
-                @touchstart.prevent="onCardTouchStart($event, card, cardsForSet(set.code))"
+                @touchstart="onCardTouchStart($event, card, cardsForSet(set.code))"
               >
                 <img
                   v-if="isOwned(card.id)"

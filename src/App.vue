@@ -81,9 +81,9 @@ watchEffect(() => {
     setMeta('property', 'og:title', title)
     setMeta('property', 'og:description', desc)
   } else {
-    document.title = 'Pokémon TCG Pocket — Pack Odds Calculator'
+    document.title = 'Pokémon TCG Pocket — Tracker & Odds Calculator'
     setMeta('name', 'description', 'Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket. See probabilities for all sets and rarities.')
-    setMeta('property', 'og:title', 'Pokémon TCG Pocket — Pack Odds Calculator')
+    setMeta('property', 'og:title', 'Pokémon TCG Pocket — Tracker & Odds Calculator')
     setMeta('property', 'og:description', 'Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket.')
   }
 })
@@ -97,7 +97,7 @@ watchEffect(() => {
         <div>
           <h1 class="text-xl font-bold text-gray-900">
             <RouterLink to="/" class="hover:text-blue-600 transition-colors">
-              Pokémon TCG Pocket — Pack Odds Calculator
+              Pokémon TCG Pocket — Tracker & Odds Calculator
             </RouterLink>
           </h1>
           <p class="text-sm text-gray-500 mt-0.5">
