@@ -106,13 +106,13 @@ watchEffect(() => {
         </div>
         <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
           <RouterLink
+            to="/tracker"
+            class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >Tracker</RouterLink>
+          <RouterLink
             to="/"
             class="px-3 py-1.5 rounded-lg bg-blue-600 text-white"
           >Pack Odds</RouterLink>
-          <RouterLink
-            to="/tracker"
-            class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-          >PokéDex</RouterLink>
         </nav>
       </div>
     </header>

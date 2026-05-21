@@ -139,6 +139,9 @@ function statsForSet(setCode: string): SetStats {
 // ── Easiest set to complete ───────────────────────────────────────────────────
 
 const targetPct = ref(50)
+const hardCardsOnly = ref(true)
+
+const HARD_RARITIES = new Set<CardRarity>(['IM', 'UR'])
 
 const easiestSets = computed(() => {
   const results: { label: string; cardsLeft: number; packsNeeded: number; pointCost: number }[] = []
@@ -152,6 +155,7 @@ const easiestSets = computed(() => {
     for (const card of cards.value) {
       if (card.set !== set.code) continue
       if (isOwned(card.id)) continue
+      if (hardCardsOnly.value && !HARD_RARITIES.has(card.rarity)) continue
       const existing = bestRate.get(card.id)
       if (!existing || card.perPackRate > existing.rate) {
         bestRate.set(card.id, { rate: card.perPackRate, rarity: card.rarity })
@@ -388,8 +392,8 @@ onUnmounted(() => {
           <p class="text-sm text-gray-500 mt-0.5">Track which cards you've already pulled.</p>
         </div>
         <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
+          <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
           <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Pack Odds</RouterLink>
-          <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">PokéDex</RouterLink>
         </nav>
       </div>
     </header>
@@ -467,6 +471,11 @@ onUnmounted(() => {
           <div v-if="hasTrackedSets" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
             <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">Easiest Set to Complete</h2>
             <p class="text-xs text-gray-400 mb-3">Fewest packs to collect all remaining cards</p>
+
+            <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none mb-3">
+              <input type="checkbox" v-model="hardCardsOnly" class="rounded accent-blue-600" />
+              Only consider ✦✦✦ and ♛ — I'll trade for the others
+            </label>
 
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
               <span class="shrink-0">At</span>
