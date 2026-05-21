@@ -8,6 +8,7 @@ import PackOdds from '../components/PackOdds.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
+import { formatPct } from '../utils/odds'
 import type { Card, CardRarity } from '../types/card'
 
 // ── Image / number helpers ────────────────────────────────────────────────────
@@ -66,6 +67,49 @@ function cardsForSet(setCode: string): Card[] {
 
 interface GroupCount { owned: number; total: number }
 interface SetStats { diamonds: GroupCount; stars: GroupCount; shinies: GroupCount }
+
+// ── Best pack recommendation ──────────────────────────────────────────────────
+
+const EXCLUDED_SET_NAMES = new Set(['Deluxe Pack: ex'])
+
+const bestPacks = computed(() => {
+  // Which sets have more than one pack? (to decide whether to show pack name)
+  const packsPerSet = new Map<string, Set<string>>()
+  for (const card of cards.value) {
+    if (!packsPerSet.has(card.set)) packsPerSet.set(card.set, new Set())
+    packsPerSet.get(card.set)!.add(card.pack)
+  }
+
+  // Group by (setCode, pack), accumulating log-probability of drawing no new card
+  interface Group { setCode: string; setName: string; pack: string; logNoNew: number; hasUnowned: boolean }
+  const groups = new Map<string, Group>()
+
+  for (const card of cards.value) {
+    if (EXCLUDED_SET_NAMES.has(card.setName)) continue
+    if (noneCollected(card.set)) continue
+    if (card.perPackRate <= 0) continue
+
+    const key = `${card.set}||${card.pack}`
+    if (!groups.has(key)) {
+      groups.set(key, { setCode: card.set, setName: card.setName, pack: card.pack, logNoNew: 0, hasUnowned: false })
+    }
+    if (!isOwned(card.id)) {
+      const g = groups.get(key)!
+      g.logNoNew += Math.log(1 - card.perPackRate)
+      g.hasUnowned = true
+    }
+  }
+
+  return [...groups.values()]
+    .filter(g => g.hasUnowned)
+    .map(g => {
+      const isMultiPack = (packsPerSet.get(g.setCode)?.size ?? 0) > 1
+      const label = isMultiPack ? `${g.setName} — ${g.pack}` : g.setName
+      return { label, prob: 1 - Math.exp(g.logNoNew) }
+    })
+    .sort((a, b) => b.prob - a.prob)
+    .slice(0, 5)
+})
 
 function noneCollected(setCode: string): boolean {
   const s = statsForSet(setCode)
@@ -448,6 +492,26 @@ onUnmounted(() => {
 
         <!-- ── Col 3: Selected card detail + odds (sticky, identical to Pack Odds middle col) ── -->
         <div class="space-y-4 lg:sticky lg:top-6">
+
+          <!-- Best pack recommendation -->
+          <div v-if="bestPacks.length" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Best Pack to Open</h2>
+            <p class="text-xs text-gray-400 mb-3">Highest chance of drawing a card you don't have yet</p>
+            <ol class="space-y-2">
+              <li
+                v-for="(entry, i) in bestPacks"
+                :key="entry.label"
+                class="flex items-center gap-2 text-sm"
+              >
+                <span class="text-xs text-gray-400 w-4 shrink-0 text-right">{{ i + 1 }}.</span>
+                <span class="flex-1 truncate text-gray-700">{{ entry.label }}</span>
+                <span class="shrink-0 font-medium" :class="i === 0 ? 'text-blue-600' : 'text-gray-500'">
+                  {{ formatPct(entry.prob) }}
+                </span>
+              </li>
+            </ol>
+          </div>
+
           <template v-if="selectedCard">
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
