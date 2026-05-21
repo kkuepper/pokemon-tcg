@@ -32,7 +32,7 @@ const SHINY_RARITIES   = new Set<CardRarity>(['S', 'SSR'])
 // ── Core data ─────────────────────────────────────────────────────────────────
 
 const { cards, loading } = useCardDb()
-const { ownedIds, setOwned, isOwned } = useTracker()
+const { ownedIds, toggle, setOwned, isOwned } = useTracker()
 
 const showMissingOnly = ref(false)
 const selectedCard = ref<Card | null>(null)
@@ -321,10 +321,14 @@ function onCardMouseEnter(card: Card) {
   applyRange(pendingSetCards, dragStartIdx, dragCurrentIdx)
 }
 
+function selectCard(card: Card) {
+  selectedCard.value = selectedCard.value?.id === card.id ? null : card
+}
+
 function onWindowMouseUp() {
   if (gestureState.value === 'pending') {
     cancelLongPress()
-    if (pendingCard) selectedCard.value = pendingCard
+    if (pendingCard) toggle(pendingCard.id)
   }
   endGesture()
 }
@@ -363,7 +367,7 @@ function onGridTouchMove(event: TouchEvent) {
 function onWindowTouchEnd() {
   if (gestureState.value === 'pending') {
     cancelLongPress()
-    if (pendingCard) selectedCard.value = pendingCard
+    if (pendingCard) toggle(pendingCard.id)
   }
   endGesture()
 }
@@ -584,6 +588,21 @@ onUnmounted(() => {
                   v-else-if="selectedCard?.id === card.id"
                   class="absolute inset-0 rounded ring-2 ring-amber-400 ring-inset pointer-events-none z-10"
                 />
+
+                <!-- Select corner: triangle with magnifying glass -->
+                <div
+                  v-if="gestureState === 'idle'"
+                  class="absolute inset-0 z-20 cursor-pointer"
+                  style="clip-path: polygon(50% 0%, 100% 0%, 100% 33.33%); background: rgba(59,130,246,0.55);"
+                  @mousedown.stop.prevent="selectCard(card)"
+                  @touchstart.stop.prevent="selectCard(card)"
+                  title="View card odds"
+                >
+                  <svg class="absolute top-1 right-1 w-4 h-4 text-white drop-shadow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <circle cx="6.5" cy="6.5" r="4"/>
+                    <line x1="10" y1="10" x2="14" y2="14"/>
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
