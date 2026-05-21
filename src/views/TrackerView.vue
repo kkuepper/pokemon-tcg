@@ -243,7 +243,7 @@ const gestureState = ref<GestureState>('idle')
 let pendingCard: Card | null = null
 let pendingSetCards: Card[] = []
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
-const LONG_PRESS_MS = 350
+const LONG_PRESS_MS = 150
 let touchStartX = 0
 let touchStartY = 0
 const TOUCH_MOVE_THRESHOLD = 8
@@ -309,8 +309,14 @@ function endGesture() {
 
 function onCardMouseDown(card: Card, setCards: Card[]) {
   if (gestureState.value !== 'idle') return
-  gestureState.value = 'pending'
-  startLongPress(card, setCards)
+  pendingSetCards = setCards
+  gestureState.value = 'dragging'
+  dragTargetState = !isOwned(card.id)
+  dragStartIdx = cardIndexInSet(setCards, card.id)
+  dragCurrentIdx = dragStartIdx
+  preDragSnapshot = new Map(setCards.map(c => [c.id, isOwned(c.id)]))
+  dragRangeIds.value = new Set([card.id])
+  setOwned(card.id, dragTargetState)
 }
 
 function onCardMouseEnter(card: Card) {
@@ -326,10 +332,6 @@ function selectCard(card: Card) {
 }
 
 function onWindowMouseUp() {
-  if (gestureState.value === 'pending') {
-    cancelLongPress()
-    if (pendingCard) toggle(pendingCard.id)
-  }
   endGesture()
 }
 
