@@ -8,7 +8,8 @@ import PackOdds from '../components/PackOdds.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
-import { formatPct } from '../utils/odds'
+import { formatPct, formatPacks, packsToComplete, packsForProbability } from '../utils/odds'
+import { PACK_POINTS_PER_PACK, PACK_POINT_COST } from '../utils/packPoints'
 import type { Card, CardRarity } from '../types/card'
 
 // ── Image / number helpers ────────────────────────────────────────────────────
@@ -134,6 +135,63 @@ function statsForSet(setCode: string): SetStats {
   }
   return stats
 }
+
+// ── Easiest set to complete ───────────────────────────────────────────────────
+
+const targetPct = ref(50)
+
+const easiestSets = computed(() => {
+  const results: { label: string; cardsLeft: number; packsNeeded: number; pointCost: number }[] = []
+
+  for (const set of sets.value) {
+    if (EXCLUDED_SET_NAMES.has(set.name)) continue
+    if (noneCollected(set.code)) continue
+
+    // Best rate per unique card (highest across packs)
+    const bestRate = new Map<string, { rate: number; rarity: CardRarity }>()
+    for (const card of cards.value) {
+      if (card.set !== set.code) continue
+      if (isOwned(card.id)) continue
+      const existing = bestRate.get(card.id)
+      if (!existing || card.perPackRate > existing.rate) {
+        bestRate.set(card.id, { rate: card.perPackRate, rarity: card.rarity })
+      }
+    }
+
+    if (bestRate.size === 0) continue // all cards owned
+
+    const target = targetPct.value / 100
+    const pullRates: number[] = []
+    let totalPointCost = 0
+
+    for (const [, { rate, rarity }] of bestRate) {
+      const pointPacks = Math.ceil(PACK_POINT_COST[rarity] / PACK_POINTS_PER_PACK)
+      const pullPacks = packsForProbability(rate, target)
+      if (isFinite(pullPacks) && pointPacks < pullPacks) {
+        totalPointCost += PACK_POINT_COST[rarity]
+      } else {
+        pullRates.push(rate)
+      }
+    }
+
+    const pullN = packsToComplete(pullRates, target)
+    const pointN = Math.ceil(totalPointCost / PACK_POINTS_PER_PACK)
+    const packsNeeded = Math.max(pullN, pointN)
+
+    results.push({ label: set.name, cardsLeft: bestRate.size, packsNeeded, pointCost: totalPointCost })
+  }
+
+  return results.sort((a, b) => {
+    if (!isFinite(a.packsNeeded) && !isFinite(b.packsNeeded)) return 0
+    if (!isFinite(a.packsNeeded)) return 1
+    if (!isFinite(b.packsNeeded)) return -1
+    return a.packsNeeded - b.packsNeeded
+  }).slice(0, 5)
+})
+
+const hasTrackedSets = computed(() =>
+  sets.value.filter(s => !EXCLUDED_SET_NAMES.has(s.name) && !noneCollected(s.code)).length >= 3
+)
 
 // ── Scroll-spy (which set is in view) ────────────────────────────────────────
 
@@ -404,6 +462,38 @@ onUnmounted(() => {
 
         <!-- ── Col 2: Card grids ── -->
         <div class="space-y-4">
+
+          <!-- Easiest set to complete -->
+          <div v-if="hasTrackedSets" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">Easiest Set to Complete</h2>
+            <p class="text-xs text-gray-400 mb-3">Fewest packs to collect all remaining cards</p>
+
+            <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+              <span class="shrink-0">At</span>
+              <input type="range" min="10" max="99" v-model.number="targetPct" class="flex-1 accent-blue-600" />
+              <span class="w-8 text-right font-medium text-gray-700 shrink-0 tabular-nums">{{ targetPct }}%</span>
+            </div>
+
+            <p v-if="easiestSets.length === 0" class="text-xs text-green-600 italic">All sets complete!</p>
+            <ol v-else class="space-y-2.5">
+              <li
+                v-for="(entry, i) in easiestSets"
+                :key="entry.label"
+                class="flex items-start gap-2 text-sm"
+              >
+                <span class="text-xs text-gray-400 w-4 shrink-0 text-right mt-0.5">{{ i + 1 }}.</span>
+                <span class="flex-1 min-w-0">
+                  <span class="truncate block text-gray-700">{{ entry.label }}</span>
+                  <span class="text-xs text-gray-400">{{ entry.cardsLeft }} card{{ entry.cardsLeft !== 1 ? 's' : '' }} left</span>
+                </span>
+                <span class="shrink-0 text-right" :class="i === 0 ? 'text-blue-600' : 'text-gray-500'">
+                  <span class="font-medium tabular-nums">{{ formatPacks(entry.packsNeeded) }} packs</span>
+                  <span v-if="entry.pointCost > 0" class="block text-xs text-amber-600 tabular-nums">+ {{ entry.pointCost.toLocaleString() }} pts</span>
+                </span>
+              </li>
+            </ol>
+          </div>
+
           <div
             v-for="set in sets"
             :key="set.code"
