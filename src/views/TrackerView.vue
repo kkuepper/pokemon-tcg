@@ -5,6 +5,9 @@ import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
 import PackOdds from '../components/PackOdds.vue'
+import DiamondIcon from '../components/icons/DiamondIcon.vue'
+import StarIcon from '../components/icons/StarIcon.vue'
+import ShinyIcon from '../components/icons/ShinyIcon.vue'
 import type { Card, CardRarity } from '../types/card'
 
 // ── Image / number helpers ────────────────────────────────────────────────────
@@ -63,6 +66,11 @@ function cardsForSet(setCode: string): Card[] {
 
 interface GroupCount { owned: number; total: number }
 interface SetStats { diamonds: GroupCount; stars: GroupCount; shinies: GroupCount }
+
+function noneCollected(setCode: string): boolean {
+  const s = statsForSet(setCode)
+  return s.diamonds.owned + s.stars.owned + s.shinies.owned === 0
+}
 
 function statsForSet(setCode: string): SetStats {
   const stats: SetStats = {
@@ -279,7 +287,7 @@ onUnmounted(() => {
         </div>
         <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
           <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Pack Odds</RouterLink>
-          <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
+          <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">PokéDex</RouterLink>
         </nav>
       </div>
     </header>
@@ -308,37 +316,39 @@ onUnmounted(() => {
                 @click="scrollToSet(set.code)"
                 class="cursor-pointer transition-colors"
                 :class="activeSetCode === set.code
-                  ? 'bg-blue-600 text-white font-semibold'
+                  ? 'bg-blue-600 text-white'
                   : 'text-gray-600 hover:bg-gray-100'"
               >
                 <!-- Set name: truncates when narrow -->
-                <td class="py-1.5 ml-1 pl-3 pr-1 rounded-l-lg max-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                <td class="py-1.5 ml-1 pl-3 pr-1 rounded-l-lg max-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap" :class="activeSetCode === set.code ? 'font-semibold' : ''"  >
                   {{ set.name }}
                 </td>
-                <!-- Diamond count -->
-                <td class="py-1.5 px-1 whitespace-nowrap text-xs">
-                  <span class="flex items-center gap-0.5">
-                    <svg width="9" height="9" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><polygon points="5,0 10,5 5,10 0,5"/></svg>
-                    {{ statsForSet(set.code).diamonds.owned }}/{{ statsForSet(set.code).diamonds.total }}
-                  </span>
-                </td>
-                <!-- Star count -->
-                <td class="py-1.5 px-1 whitespace-nowrap text-xs">
-                  <span v-if="statsForSet(set.code).stars.total > 0" class="flex items-center gap-0.5">
-                    <svg width="11" height="11" viewBox="0.5 0.5 9 8.5" fill="currentColor" aria-hidden="true"><polygon points="5,0.5 6.06,3.54 9.28,3.61 6.71,5.56 7.65,8.64 5,6.8 2.35,8.64 3.29,5.56 0.72,3.61 3.94,3.54"/></svg>
-                    {{ statsForSet(set.code).stars.owned }}/{{ statsForSet(set.code).stars.total }}
-                  </span>
-                </td>
-                <!-- Shiny count -->
-                <td class="py-1.5 pl-1 pr-3 rounded-r-lg whitespace-nowrap text-xs">
-                  <span v-if="statsForSet(set.code).shinies.total > 0" class="flex items-center gap-0.5">
-                    <svg width="11" height="11" viewBox="0 0 10 10" aria-hidden="true">
-                      <defs><radialGradient :id="`shiny-nav-${set.code}`" cx="40%" cy="35%" r="60%"><stop offset="0%" stop-color="#fda4af"/><stop offset="100%" stop-color="#7c3aed"/></radialGradient></defs>
-                      <polygon points="5,0 6.15,2.23 8.54,1.46 7.77,3.85 10,5 7.77,6.15 8.54,8.54 6.15,7.77 5,10 3.85,7.77 1.46,8.54 2.23,6.15 0,5 2.23,3.85 1.46,1.46 3.85,2.23" :fill="`url(#shiny-nav-${set.code})`" stroke="#4a1272" stroke-width="0.6" stroke-linejoin="round"/>
-                    </svg>
-                    {{ statsForSet(set.code).shinies.owned }}/{{ statsForSet(set.code).shinies.total }}
-                  </span>
-                </td>
+                <template v-if="noneCollected(set.code)">
+                  <td colspan="3" class="py-1.5 pl-1 pr-3 rounded-r-lg text-xs text-center opacity-40">—</td>
+                </template>
+                <template v-else>
+                  <!-- Diamond count -->
+                  <td class="py-1.5 px-1 whitespace-nowrap text-xs">
+                    <span class="flex items-center gap-0.5">
+                      <DiamondIcon :size="9" />
+                      {{ statsForSet(set.code).diamonds.owned }}/{{ statsForSet(set.code).diamonds.total }}
+                    </span>
+                  </td>
+                  <!-- Star count -->
+                  <td class="py-1.5 px-1 whitespace-nowrap text-xs">
+                    <span v-if="statsForSet(set.code).stars.total > 0" class="flex items-center gap-0.5">
+                      <StarIcon :size="11" />
+                      {{ statsForSet(set.code).stars.owned }}/{{ statsForSet(set.code).stars.total }}
+                    </span>
+                  </td>
+                  <!-- Shiny count -->
+                  <td class="py-1.5 pl-1 pr-3 rounded-r-lg whitespace-nowrap text-xs">
+                    <span v-if="statsForSet(set.code).shinies.total > 0" class="flex items-center gap-0.5">
+                      <ShinyIcon :size="11" />
+                      {{ statsForSet(set.code).shinies.owned }}/{{ statsForSet(set.code).shinies.total }}
+                    </span>
+                  </td>
+                </template>
               </tr>
             </table>
           </div>
@@ -361,27 +371,27 @@ onUnmounted(() => {
             <div class="px-3 pt-3 pb-2 border-b border-gray-100">
               <h2 class="text-sm font-bold text-gray-800 mb-1.5 text-center">{{ set.name }}</h2>
               <div class="flex items-center justify-center gap-4 text-xs">
-                <span class="flex items-center gap-1">
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="#94a3b8" aria-hidden="true"><polygon points="5,0 10,5 5,10 0,5"/></svg>
-                  <span :class="statsForSet(set.code).diamonds.owned === statsForSet(set.code).diamonds.total ? 'text-blue-600' : 'text-gray-600'">
-                    {{ statsForSet(set.code).diamonds.owned }}/{{ statsForSet(set.code).diamonds.total }}
+                <span v-if="noneCollected(set.code)" class="text-gray-400">—</span>
+                <template v-else>
+                  <span class="flex items-center gap-1">
+                    <DiamondIcon :size="10" color="#94a3b8" />
+                    <span :class="statsForSet(set.code).diamonds.owned === statsForSet(set.code).diamonds.total ? 'text-blue-600' : 'text-gray-600'">
+                      {{ statsForSet(set.code).diamonds.owned }}/{{ statsForSet(set.code).diamonds.total }}
+                    </span>
                   </span>
-                </span>
-                <span v-if="statsForSet(set.code).stars.total > 0" class="flex items-center gap-1">
-                  <svg width="12" height="12" viewBox="0.5 0.5 9 8.5" fill="#fbbf24" aria-hidden="true"><polygon points="5,0.5 6.06,3.54 9.28,3.61 6.71,5.56 7.65,8.64 5,6.8 2.35,8.64 3.29,5.56 0.72,3.61 3.94,3.54"/></svg>
-                  <span :class="statsForSet(set.code).stars.owned === statsForSet(set.code).stars.total ? 'text-blue-600' : 'text-gray-600'">
-                    {{ statsForSet(set.code).stars.owned }}/{{ statsForSet(set.code).stars.total }}
+                  <span v-if="statsForSet(set.code).stars.total > 0" class="flex items-center gap-1">
+                    <StarIcon :size="12" color="#fbbf24" />
+                    <span :class="statsForSet(set.code).stars.owned === statsForSet(set.code).stars.total ? 'text-blue-600' : 'text-gray-600'">
+                      {{ statsForSet(set.code).stars.owned }}/{{ statsForSet(set.code).stars.total }}
+                    </span>
                   </span>
-                </span>
-                <span v-if="statsForSet(set.code).shinies.total > 0" class="flex items-center gap-1">
-                  <svg width="12" height="12" viewBox="0 0 10 10" aria-hidden="true">
-                    <defs><radialGradient id="shiny-stat" cx="40%" cy="35%" r="60%"><stop offset="0%" stop-color="#fda4af"/><stop offset="100%" stop-color="#7c3aed"/></radialGradient></defs>
-                    <polygon points="5,0 6.15,2.23 8.54,1.46 7.77,3.85 10,5 7.77,6.15 8.54,8.54 6.15,7.77 5,10 3.85,7.77 1.46,8.54 2.23,6.15 0,5 2.23,3.85 1.46,1.46 3.85,2.23" fill="url(#shiny-stat)" stroke="#4a1272" stroke-width="0.6" stroke-linejoin="round"/>
-                  </svg>
-                  <span :class="statsForSet(set.code).shinies.owned === statsForSet(set.code).shinies.total ? 'text-blue-600' : 'text-gray-600'">
-                    {{ statsForSet(set.code).shinies.owned }}/{{ statsForSet(set.code).shinies.total }}
+                  <span v-if="statsForSet(set.code).shinies.total > 0" class="flex items-center gap-1">
+                    <ShinyIcon :size="12" />
+                    <span :class="statsForSet(set.code).shinies.owned === statsForSet(set.code).shinies.total ? 'text-blue-600' : 'text-gray-600'">
+                      {{ statsForSet(set.code).shinies.owned }}/{{ statsForSet(set.code).shinies.total }}
+                    </span>
                   </span>
-                </span>
+                </template>
               </div>
             </div>
 

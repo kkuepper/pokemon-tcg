@@ -112,7 +112,7 @@ watchEffect(() => {
           <RouterLink
             to="/tracker"
             class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
-          >Tracker</RouterLink>
+          >PokéDex</RouterLink>
         </nav>
       </div>
     </header>
