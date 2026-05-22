@@ -10,6 +10,7 @@ import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
 import { formatPacks, packsToComplete, packsForProbability } from '../utils/odds'
+import posthog from 'posthog-js'
 import { PACK_POINTS_PER_PACK, PACK_POINT_COST } from '../utils/packPoints'
 import type { Card, CardRarity } from '../types/card'
 
@@ -337,7 +338,19 @@ function selectCard(card: Card) {
   selectedCard.value = selectedCard.value?.id === card.id ? null : card
 }
 
+function toggleFromPanel(card: Card) {
+  const newOwned = !isOwned(card.id)
+  toggle(card.id)
+  posthog.capture('card_collected_toggled', { card_id: card.id, owned: newOwned, source: 'panel' })
+}
+
 function onWindowMouseUp() {
+  const count = dragRangeIds.value.size
+  if (count === 1) {
+    posthog.capture('card_collected_toggled', { card_id: [...dragRangeIds.value][0], owned: dragTargetState })
+  } else if (count > 1) {
+    posthog.capture('cards_bulk_collected_toggled', { count, owned: dragTargetState })
+  }
   endGesture()
 }
 
@@ -375,7 +388,18 @@ function onGridTouchMove(event: TouchEvent) {
 function onWindowTouchEnd() {
   if (gestureState.value === 'pending') {
     cancelLongPress()
-    if (pendingCard) toggle(pendingCard.id)
+    if (pendingCard) {
+      const newOwned = !isOwned(pendingCard.id)
+      toggle(pendingCard.id)
+      posthog.capture('card_collected_toggled', { card_id: pendingCard.id, owned: newOwned })
+    }
+  } else if (gestureState.value === 'dragging') {
+    const count = dragRangeIds.value.size
+    if (count === 1) {
+      posthog.capture('card_collected_toggled', { card_id: [...dragRangeIds.value][0], owned: dragTargetState })
+    } else if (count > 1) {
+      posthog.capture('cards_bulk_collected_toggled', { count, owned: dragTargetState })
+    }
   }
   endGesture()
 }
@@ -669,7 +693,7 @@ onUnmounted(() => {
               </div>
               <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
-                <CardDetail :card="selectedCard" :collected="isOwned(selectedCard.id)" @toggle-collected="toggle(selectedCard.id)" />
+                <CardDetail :card="selectedCard" :collected="isOwned(selectedCard.id)" @toggle-collected="toggleFromPanel(selectedCard)" />
               </div>
               <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <PackOdds :card="selectedCard" />

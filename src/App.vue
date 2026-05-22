@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, watchEffect } from 'vue'
+import posthog from 'posthog-js'
 import { useRoute, useRouter } from 'vue-router'
 import type { Card } from './types/card'
 import { useCardDb } from './composables/useCardDb'
@@ -51,6 +52,12 @@ watch(
     selectedCard.value = cards.value.find(c => c.id.toLowerCase() === id) ?? null
   }
 )
+
+function toggleFromPanel(card: Card) {
+  const newOwned = !isOwned(card.id)
+  toggle(card.id)
+  posthog.capture('card_collected_toggled', { card_id: card.id, owned: newOwned, source: 'panel' })
+}
 
 function onCardSelect(card: Card) {
   if (card.id === selectedCard.value?.id) {
@@ -136,7 +143,7 @@ watchEffect(() => {
           <template v-if="selectedCard">
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
-              <CardDetail :card="selectedCard" :collected="isOwned(selectedCard.id)" @toggle-collected="toggle(selectedCard.id)" />
+              <CardDetail :card="selectedCard" :collected="isOwned(selectedCard.id)" @toggle-collected="toggleFromPanel(selectedCard)" />
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <PackOdds :card="selectedCard" />
