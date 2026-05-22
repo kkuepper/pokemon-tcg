@@ -5,10 +5,11 @@ import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
 import PackOdds from '../components/PackOdds.vue'
+import BestPackPanel from '../components/BestPackPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
-import { formatPct, formatPacks, packsToComplete, packsForProbability } from '../utils/odds'
+import { formatPacks, packsToComplete, packsForProbability } from '../utils/odds'
 import { PACK_POINTS_PER_PACK, PACK_POINT_COST } from '../utils/packPoints'
 import type { Card, CardRarity } from '../types/card'
 
@@ -484,7 +485,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- ── Col 2: Card grids ── -->
+        <!-- ── Col 2: Easiest set + card grids ── -->
         <div class="space-y-4">
 
           <!-- Easiest set to complete -->
@@ -523,6 +524,10 @@ onUnmounted(() => {
             </ol>
           </div>
 
+          <!-- Best pack: mobile only (shown here between easiest set and card grids) -->
+          <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="lg:hidden" />
+
+          <div
           <div
             v-for="set in sets"
             :key="set.code"
@@ -637,27 +642,11 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- ── Col 3: Selected card detail + odds (sticky, identical to Pack Odds middle col) ── -->
+        <!-- ── Col 3: Best pack + selected card (sticky) ── -->
         <div class="space-y-4 lg:sticky lg:top-6">
 
-          <!-- Best pack recommendation -->
-          <div v-if="bestPacks.length" class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-            <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Best Pack to Open</h2>
-            <p class="text-xs text-gray-400 mb-3">Highest chance of drawing a card you don't have yet</p>
-            <ol class="space-y-2">
-              <li
-                v-for="(entry, i) in bestPacks"
-                :key="entry.label"
-                class="flex items-center gap-2 text-sm"
-              >
-                <span class="text-xs text-gray-400 w-4 shrink-0 text-right">{{ i + 1 }}.</span>
-                <span class="flex-1 truncate text-gray-700">{{ entry.label }}</span>
-                <span class="shrink-0 font-medium" :class="i === 0 ? 'text-blue-600' : 'text-gray-500'">
-                  {{ formatPct(entry.prob) }}
-                </span>
-              </li>
-            </ol>
-          </div>
+          <!-- Best pack: desktop only -->
+          <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="hidden lg:block" />
 
           <!-- fixed overlay on mobile, normal flow on desktop -->
           <div
@@ -690,6 +679,7 @@ onUnmounted(() => {
           <div v-else class="hidden lg:flex items-center justify-center h-40 rounded-xl border border-dashed border-gray-200 text-gray-400 text-sm">
             ← Tap a card to see its odds
           </div>
+
         </div>
 
       </div>
