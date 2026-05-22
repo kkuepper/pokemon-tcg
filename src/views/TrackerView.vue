@@ -552,7 +552,6 @@ onUnmounted(() => {
           <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="lg:hidden" />
 
           <div
-          <div
             v-for="set in sets"
             :key="set.code"
             :id="`set-${set.code}`"
