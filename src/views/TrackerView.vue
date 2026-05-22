@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
@@ -39,6 +39,7 @@ const { ownedIds, toggle, setOwned, isOwned } = useTracker()
 const showMissingOnly = ref(false)
 const navExpanded = ref(false)
 const selectedCard = ref<Card | null>(null)
+const loadedCards = reactive(new Set<string>())
 
 const sets = computed(() => {
   const seen = new Set<string>()
@@ -621,13 +622,23 @@ onUnmounted(() => {
                 @mouseenter="onCardMouseEnter(card)"
                 @touchstart="onCardTouchStart($event, card, cardsForSet(set.code))"
               >
-                <img
-                  v-if="isOwned(card.id)"
-                  :src="cardImageUrl(card)"
-                  :alt="card.name"
-                  loading="lazy"
-                  class="w-full h-full object-cover block pointer-events-none"
-                />
+                <template v-if="isOwned(card.id)">
+                  <div
+                    v-if="!loadedCards.has(card.id)"
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    style="background: linear-gradient(135deg, #f0fdf4, #faf5ff)"
+                  >
+                    <div class="w-4 h-4 rounded-full border-2 border-purple-200 border-t-green-300 animate-spin" />
+                  </div>
+                  <img
+                    :src="cardImageUrl(card)"
+                    :alt="card.name"
+                    loading="lazy"
+                    class="w-full h-full object-cover block pointer-events-none transition-opacity duration-200"
+                    :class="loadedCards.has(card.id) ? 'opacity-100' : 'opacity-0'"
+                    @load="loadedCards.add(card.id)"
+                  />
+                </template>
                 <div
                   v-else
                   class="w-full h-full bg-gray-100 border border-gray-200 flex items-center justify-center rounded pointer-events-none"
