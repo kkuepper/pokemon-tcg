@@ -35,6 +35,7 @@ const { cards, loading } = useCardDb()
 const { ownedIds, toggle, setOwned, isOwned } = useTracker()
 
 const showMissingOnly = ref(false)
+const navExpanded = ref(false)
 const selectedCard = ref<Card | null>(null)
 
 const sets = computed(() => {
@@ -233,6 +234,10 @@ function scrollToSet(code: string) {
   document.getElementById(`set-${code}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 onUnmounted(() => intersectionObserver?.disconnect())
 
 // ── Gesture state ─────────────────────────────────────────────────────────────
@@ -392,15 +397,17 @@ onUnmounted(() => {
 
     <!-- Header (identical to Pack Odds) -->
     <header class="bg-white border-b border-gray-200 shadow-sm">
-      <div class="max-w-6xl mx-auto px-4 py-4 flex items-start justify-between gap-4">
-        <div>
-          <h1 class="text-xl font-bold text-gray-900">Pokémon TCG Pocket — Tracker & Odds Calculator</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Track which cards you've already pulled.</p>
+      <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="flex items-start justify-between gap-4">
+          <h1 class="text-xl font-bold text-gray-900">
+            Pokémon TCG Pocket<span class="hidden sm:inline"> — Tracker &amp; Odds Calculator</span>
+          </h1>
+          <nav class="flex gap-1 text-sm font-medium shrink-0">
+            <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
+            <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Pack Odds</RouterLink>
+          </nav>
         </div>
-        <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
-          <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
-          <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Pack Odds</RouterLink>
-        </nav>
+        <p class="text-sm text-gray-500 mt-0.5">Track which cards you've already pulled.</p>
       </div>
     </header>
 
@@ -415,7 +422,7 @@ onUnmounted(() => {
         <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
           <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Sets</h2>
 
-          <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none mb-3">
+          <label class="hidden lg:hidden items-center gap-2 text-sm text-gray-600 cursor-pointer select-none mb-3">
             <input type="checkbox" v-model="showMissingOnly" class="rounded accent-blue-600" />
             Missing only
           </label>
@@ -423,13 +430,14 @@ onUnmounted(() => {
           <div class="w-full px-1">
             <table class="text-sm border-separate border-spacing-y-0.5 -mx-4" style="width: calc(100% + 2rem)">
               <tr
-                v-for="set in sets"
+                v-for="(set, i) in sets"
                 :key="set.code"
                 @click="scrollToSet(set.code)"
                 class="cursor-pointer transition-colors"
-                :class="activeSetCode === set.code
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'"
+                :class="[
+                  i >= 5 && !navExpanded ? 'hidden lg:table-row' : '',
+                  activeSetCode === set.code ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+                ]"
               >
                 <!-- Set name: truncates when narrow -->
                 <td class="py-1.5 ml-1 pl-3 pr-1 rounded-l-lg max-w-0 w-full overflow-hidden text-ellipsis whitespace-nowrap" :class="activeSetCode === set.code ? 'font-semibold' : ''"  >
@@ -465,7 +473,13 @@ onUnmounted(() => {
             </table>
           </div>
 
-          <div class="mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
+          <button
+            v-if="!navExpanded && sets.length > 5"
+            @click="navExpanded = true"
+            class="lg:hidden mt-1 w-full text-xs text-blue-600 hover:text-blue-700 py-1.5 text-center"
+          >Show {{ sets.length - 5 }} more sets…</button>
+
+          <div class="hidden lg:block mt-4 pt-3 border-t border-gray-100 text-xs text-gray-400">
             {{ ownedIds.size }} cards collected
           </div>
         </div>
@@ -518,7 +532,19 @@ onUnmounted(() => {
           >
             <!-- Set header -->
             <div class="px-3 pt-3 pb-2 border-b border-gray-100">
-              <h2 class="text-sm font-bold text-gray-800 mb-1.5 text-center">{{ set.name }}</h2>
+              <div class="flex items-start justify-between mb-1.5">
+                <div class="w-5" />
+                <h2 class="text-sm font-bold text-gray-800 text-center">{{ set.name }}</h2>
+                <button
+                  @click="scrollToTop"
+                  class="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Back to top"
+                >
+                  <svg class="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 10 8 5 13 10"/>
+                  </svg>
+                </button>
+              </div>
               <div class="flex items-center justify-center gap-4 text-xs">
                 <span v-if="noneCollected(set.code)" class="text-gray-400">—</span>
                 <template v-else>
@@ -633,15 +659,34 @@ onUnmounted(() => {
             </ol>
           </div>
 
-          <template v-if="selectedCard">
-            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
-              <CardDetail :card="selectedCard" />
+          <!-- fixed overlay on mobile, normal flow on desktop -->
+          <div
+            v-if="selectedCard"
+            class="fixed inset-0 z-50 bg-white/80 backdrop-blur-xs overflow-y-auto lg:static lg:inset-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none lg:overflow-visible"
+            @click.self="selectedCard = null"
+          >
+            <div class="max-w-lg mx-auto p-4 space-y-4 lg:max-w-none lg:p-0">
+              <!-- Close button: mobile only -->
+              <div class="flex justify-end lg:hidden">
+                <button
+                  @click="selectedCard = null"
+                  class="p-2 rounded-full bg-white border border-gray-200 shadow-sm text-gray-500 hover:text-gray-800 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"/>
+                  </svg>
+                </button>
+              </div>
+              <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
+                <CardDetail :card="selectedCard" />
+              </div>
+              <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                <PackOdds :card="selectedCard" />
+              </div>
             </div>
-            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-              <PackOdds :card="selectedCard" />
-            </div>
-          </template>
+          </div>
           <div v-else class="hidden lg:flex items-center justify-center h-40 rounded-xl border border-dashed border-gray-200 text-gray-400 text-sm">
             ← Tap a card to see its odds
           </div>
