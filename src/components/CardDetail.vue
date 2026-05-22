@@ -4,7 +4,8 @@ import type { Card } from '../types/card'
 import { RARITY_LABELS, RARITY_COLORS } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
 
-const props = defineProps<{ card: Card }>()
+const props = defineProps<{ card: Card; collected?: boolean }>()
+const emit = defineEmits<{ 'toggle-collected': [] }>()
 
 // Derive image URL from card id (format: "A1-036" → set=A1, number=36)
 const imageUrl = computed(() => {
@@ -24,6 +25,18 @@ watch(() => props.card.id, () => { loaded.value = false })
     <!-- Card image -->
     <div class="relative shrink-0 w-28 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 cursor-zoom-in" @click="showModal = true">
       <div v-if="!loaded" class="absolute inset-0 animate-pulse bg-gray-200" />
+      <!-- Collection badge: green if collected, gray if not; only shown when prop is provided -->
+      <div
+        v-if="collected !== undefined"
+        class="absolute bottom-1.5 right-1.5 z-10 w-6 h-6 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-colors"
+        :class="collected ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400 hover:bg-gray-500 opacity-70 hover:opacity-100'"
+        @click.stop="emit('toggle-collected')"
+        :title="collected ? 'Mark as not collected' : 'Mark as collected'"
+      >
+        <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 8 6.5 11.5 13 4.5"/>
+        </svg>
+      </div>
       <img
         :src="imageUrl"
         :alt="card.name"

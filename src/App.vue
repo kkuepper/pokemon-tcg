@@ -3,6 +3,7 @@ import { ref, watch, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { Card } from './types/card'
 import { useCardDb } from './composables/useCardDb'
+import { useTracker } from './composables/useTracker'
 import { cardToSlug } from './utils/slug'
 import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
@@ -15,6 +16,7 @@ const router = useRouter()
 const selectedCard = ref<Card | null>(null)
 const targetPct = ref(50)
 const { cards, loading, search, setFilter, packFilter, rarityFilter, setNames } = useCardDb()
+const { isOwned, toggle } = useTracker()
 
 function slugToId(slug: string): string {
   const parts = slug.split('-')
@@ -134,7 +136,7 @@ watchEffect(() => {
           <template v-if="selectedCard">
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
-              <CardDetail :card="selectedCard" />
+              <CardDetail :card="selectedCard" :collected="isOwned(selectedCard.id)" @toggle-collected="toggle(selectedCard.id)" />
             </div>
             <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
               <PackOdds :card="selectedCard" />

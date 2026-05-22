@@ -669,7 +669,7 @@ onUnmounted(() => {
               </div>
               <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Selected Card</h2>
-                <CardDetail :card="selectedCard" />
+                <CardDetail :card="selectedCard" :collected="isOwned(selectedCard.id)" @toggle-collected="toggle(selectedCard.id)" />
               </div>
               <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
                 <PackOdds :card="selectedCard" />
