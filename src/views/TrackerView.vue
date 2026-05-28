@@ -10,10 +10,10 @@ import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
 import CrownIcon from '../components/icons/CrownIcon.vue'
-import { formatPacks, packsToComplete, packsForProbability } from '../utils/odds'
+import { formatPacks } from '../utils/odds'
 import posthog from 'posthog-js'
-import { PACK_POINTS_PER_PACK, PACK_POINT_COST } from '../utils/packPoints'
-import type { Card, CardRarity } from '../types/card'
+import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
+import type { Card } from '../types/card'
 
 // ── Image / number helpers ────────────────────────────────────────────────────
 
@@ -28,9 +28,7 @@ function cardNumber(card: Card): string {
 
 // ── Rarity groups ─────────────────────────────────────────────────────────────
 
-const DIAMOND_RARITIES = new Set<CardRarity>(['C', 'U', 'R', 'RR'])
-const STAR_RARITIES    = new Set<CardRarity>(['AR', 'SR', 'SAR', 'IM', 'UR'])
-const SHINY_RARITIES   = new Set<CardRarity>(['S', 'SSR'])
+// DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES imported from easiestSet.ts
 
 // ── Core data ─────────────────────────────────────────────────────────────────
 
@@ -146,54 +144,22 @@ function statsForSet(setCode: string): SetStats {
 const targetPct = ref(50)
 const rarityGroups = reactive({ diamond: true, star12: true, shiny: true, hard: true, packPoints: true })
 
-const STAR12_RARITIES = new Set<CardRarity>(['AR', 'SR'])
-const HARD_RARITIES   = new Set<CardRarity>(['SAR', 'IM', 'UR'])
-
 const easiestSets = computed(() => {
   const results: { label: string; cardsLeft: number; packsNeeded: number; pointCost: number }[] = []
+  const target = targetPct.value / 100
 
   for (const set of sets.value) {
     if (EXCLUDED_SET_NAMES.has(set.name)) continue
     if (noneCollected(set.code)) continue
 
-    // Best rate per unique card (highest across packs)
-    const bestRate = new Map<string, { rate: number; rarity: CardRarity }>()
-    for (const card of cards.value) {
-      if (card.set !== set.code) continue
-      if (isOwned(card.id)) continue
-      const included =
-        (rarityGroups.diamond && DIAMOND_RARITIES.has(card.rarity)) ||
-        (rarityGroups.star12  && STAR12_RARITIES.has(card.rarity))  ||
-        (rarityGroups.shiny   && SHINY_RARITIES.has(card.rarity))   ||
-        (rarityGroups.hard    && HARD_RARITIES.has(card.rarity))
-      if (!included) continue
-      const existing = bestRate.get(card.id)
-      if (!existing || card.perPackRate > existing.rate) {
-        bestRate.set(card.id, { rate: card.perPackRate, rarity: card.rarity })
-      }
-    }
+    const unowned = cards.value
+      .filter(c => c.set === set.code && !isOwned(c.id))
+      .map(c => ({ id: c.id, rate: c.perPackRate, rarity: c.rarity }))
 
-    if (bestRate.size === 0) continue // all cards owned
+    const result = computeSetCompletion(unowned, target, rarityGroups)
+    if (!result) continue
 
-    const target = targetPct.value / 100
-    const pullRates: number[] = []
-    let totalPointCost = 0
-
-    for (const [, { rate, rarity }] of bestRate) {
-      const pointPacks = Math.ceil(PACK_POINT_COST[rarity] / PACK_POINTS_PER_PACK)
-      const pullPacks = packsForProbability(rate, target)
-      if (rarityGroups.packPoints && isFinite(pullPacks) && pointPacks < pullPacks) {
-        totalPointCost += PACK_POINT_COST[rarity]
-      } else {
-        pullRates.push(rate)
-      }
-    }
-
-    const pullN = packsToComplete(pullRates, target)
-    const pointN = Math.ceil(totalPointCost / PACK_POINTS_PER_PACK)
-    const packsNeeded = Math.max(pullN, pointN)
-
-    results.push({ label: set.name, cardsLeft: bestRate.size, packsNeeded, pointCost: pointN > pullN ? totalPointCost : 0 })
+    results.push({ label: set.name, ...result })
   }
 
   return results.sort((a, b) => {
@@ -561,7 +527,7 @@ onUnmounted(() => {
                 <ShinyIcon :size="10" />
                 <ShinyIcon :size="10" />
               </button>
-              <!-- 3★ + Crown: SAR IM UR -->
+              <!-- Immersive + Crown: IM UR -->
               <button
                 @click="rarityGroups.hard = !rarityGroups.hard"
                 class="flex items-center gap-0.5 px-2 py-1 rounded-lg border text-xs font-medium transition-colors"
