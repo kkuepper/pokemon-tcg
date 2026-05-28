@@ -34,7 +34,7 @@ export function useCardDb(): CardDb {
 
   const base = import.meta.env.BASE_URL
 
-  fetch(`${base}cards.json`)
+  fetch(`${base}cards.json?v=${__BUILD_TIME__}`)
     .then(r => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       return r.json() as Promise<Card[]>
