@@ -19,7 +19,8 @@
       "Bash(git add:*)",
       "Bash(cat /Users/kkuepper/Source/pokemon-tcg/.github/workflows/*.yml)",
       "Bash(find:*)",
-      "Bash(npm info *)"
+      "Bash(npm info *)",
+      "Bash(npx vue-tsc *)"
     ]
   }
 }

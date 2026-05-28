@@ -9,6 +9,7 @@ import BestPackPanel from '../components/BestPackPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
+import CrownIcon from '../components/icons/CrownIcon.vue'
 import { formatPacks, packsToComplete, packsForProbability } from '../utils/odds'
 import posthog from 'posthog-js'
 import { PACK_POINTS_PER_PACK, PACK_POINT_COST } from '../utils/packPoints'
@@ -143,9 +144,10 @@ function statsForSet(setCode: string): SetStats {
 // ── Easiest set to complete ───────────────────────────────────────────────────
 
 const targetPct = ref(50)
-const hardCardsOnly = ref(true)
+const rarityGroups = reactive({ diamond: true, star12: true, shiny: true, hard: true, packPoints: true })
 
-const HARD_RARITIES = new Set<CardRarity>(['IM', 'UR'])
+const STAR12_RARITIES = new Set<CardRarity>(['AR', 'SR'])
+const HARD_RARITIES   = new Set<CardRarity>(['SAR', 'IM', 'UR'])
 
 const easiestSets = computed(() => {
   const results: { label: string; cardsLeft: number; packsNeeded: number; pointCost: number }[] = []
@@ -159,7 +161,12 @@ const easiestSets = computed(() => {
     for (const card of cards.value) {
       if (card.set !== set.code) continue
       if (isOwned(card.id)) continue
-      if (hardCardsOnly.value && !HARD_RARITIES.has(card.rarity)) continue
+      const included =
+        (rarityGroups.diamond && DIAMOND_RARITIES.has(card.rarity)) ||
+        (rarityGroups.star12  && STAR12_RARITIES.has(card.rarity))  ||
+        (rarityGroups.shiny   && SHINY_RARITIES.has(card.rarity))   ||
+        (rarityGroups.hard    && HARD_RARITIES.has(card.rarity))
+      if (!included) continue
       const existing = bestRate.get(card.id)
       if (!existing || card.perPackRate > existing.rate) {
         bestRate.set(card.id, { rate: card.perPackRate, rarity: card.rarity })
@@ -175,7 +182,7 @@ const easiestSets = computed(() => {
     for (const [, { rate, rarity }] of bestRate) {
       const pointPacks = Math.ceil(PACK_POINT_COST[rarity] / PACK_POINTS_PER_PACK)
       const pullPacks = packsForProbability(rate, target)
-      if (isFinite(pullPacks) && pointPacks < pullPacks) {
+      if (rarityGroups.packPoints && isFinite(pullPacks) && pointPacks < pullPacks) {
         totalPointCost += PACK_POINT_COST[rarity]
       } else {
         pullRates.push(rate)
@@ -186,7 +193,7 @@ const easiestSets = computed(() => {
     const pointN = Math.ceil(totalPointCost / PACK_POINTS_PER_PACK)
     const packsNeeded = Math.max(pullN, pointN)
 
-    results.push({ label: set.name, cardsLeft: bestRate.size, packsNeeded, pointCost: totalPointCost })
+    results.push({ label: set.name, cardsLeft: bestRate.size, packsNeeded, pointCost: pointN > pullN ? totalPointCost : 0 })
   }
 
   return results.sort((a, b) => {
@@ -518,10 +525,63 @@ onUnmounted(() => {
             <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">Easiest Set to Complete</h2>
             <p class="text-xs text-gray-400 mb-3">Fewest packs to collect all remaining cards</p>
 
-            <label class="flex items-center gap-2 text-xs text-gray-600 cursor-pointer select-none mb-3">
-              <input type="checkbox" v-model="hardCardsOnly" class="rounded accent-blue-600" />
-              Only consider ✦✦✦ and ♛ — I'll trade for the others
-            </label>
+            <div class="flex gap-1.5 flex-wrap mb-3">
+              <!-- Diamond: C U R RR -->
+              <button
+                @click="rarityGroups.diamond = !rarityGroups.diamond"
+                class="flex items-center gap-0.5 px-2 py-1 rounded-lg border text-xs font-medium transition-colors"
+                :class="rarityGroups.diamond ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400'"
+              >
+                <DiamondIcon :size="8" :color="rarityGroups.diamond ? 'white' : '#94a3b8'" />
+                <span class="mx-0.5">–</span>
+                <DiamondIcon :size="8" :color="rarityGroups.diamond ? 'white' : '#94a3b8'" />
+                <DiamondIcon :size="8" :color="rarityGroups.diamond ? 'white' : '#94a3b8'" />
+                <DiamondIcon :size="8" :color="rarityGroups.diamond ? 'white' : '#94a3b8'" />
+                <DiamondIcon :size="8" :color="rarityGroups.diamond ? 'white' : '#94a3b8'" />
+              </button>
+              <!-- 1★ 2★: AR SR -->
+              <button
+                @click="rarityGroups.star12 = !rarityGroups.star12"
+                class="flex items-center gap-0.5 px-2 py-1 rounded-lg border text-xs font-medium transition-colors"
+                :class="rarityGroups.star12 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400'"
+              >
+                <StarIcon :size="10" :color="rarityGroups.star12 ? 'white' : '#94a3b8'" />
+                <span class="mx-0.5">–</span>
+                <StarIcon :size="10" :color="rarityGroups.star12 ? 'white' : '#94a3b8'" />
+                <StarIcon :size="10" :color="rarityGroups.star12 ? 'white' : '#94a3b8'" />
+              </button>
+              <!-- Shiny: S SSR -->
+              <button
+                @click="rarityGroups.shiny = !rarityGroups.shiny"
+                class="flex items-center gap-0.5 px-2 py-1 rounded-lg border text-xs font-medium transition-colors"
+                :class="rarityGroups.shiny ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400'"
+              >
+                <ShinyIcon :size="10" />
+                <span class="mx-0.5">–</span>
+                <ShinyIcon :size="10" />
+                <ShinyIcon :size="10" />
+              </button>
+              <!-- 3★ + Crown: SAR IM UR -->
+              <button
+                @click="rarityGroups.hard = !rarityGroups.hard"
+                class="flex items-center gap-0.5 px-2 py-1 rounded-lg border text-xs font-medium transition-colors"
+                :class="rarityGroups.hard ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400'"
+              >
+                <StarIcon :size="10" :color="rarityGroups.hard ? 'white' : '#94a3b8'" />
+                <StarIcon :size="10" :color="rarityGroups.hard ? 'white' : '#94a3b8'" />
+                <StarIcon :size="10" :color="rarityGroups.hard ? 'white' : '#94a3b8'" />
+                <span class="mx-0.5">+</span>
+                <CrownIcon :color="rarityGroups.hard ? 'white' : '#94a3b8'" />
+              </button>
+              <!-- Pack points -->
+              <button
+                @click="rarityGroups.packPoints = !rarityGroups.packPoints"
+                class="flex items-center gap-1 px-2 py-1 rounded-lg border text-xs font-medium transition-colors"
+                :class="rarityGroups.packPoints ? 'bg-amber-500 border-amber-500 text-white' : 'bg-white border-gray-300 text-gray-400'"
+              >
+                pts
+              </button>
+            </div>
 
             <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
               <span class="shrink-0">At</span>
