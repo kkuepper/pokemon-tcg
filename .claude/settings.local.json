@@ -21,7 +21,13 @@
       "Bash(find:*)",
       "Bash(npm info *)",
       "Bash(npx vue-tsc *)",
-      "Bash(npx vitest *)"
+      "Bash(npx vitest *)",
+      "WebFetch(domain:www.reddit.com)",
+      "Bash(curl -s -L \"https://www.reddit.com/r/PokemonTCGPocket/new/.rss?limit=50\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(curl -sI \"https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/A1/1.webp\")",
+      "Bash(curl -s \"https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/A1/1.webp\")",
+      "Bash(curl -s \"https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/A1/1.webp\" -o /tmp/sample-card.webp)",
+      "Read(//tmp/**)"
     ]
   }
 }

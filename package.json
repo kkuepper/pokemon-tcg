@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "node scripts/buildCardDb.js",
-    "dev": "node scripts/buildCardDb.js && vite",
+    "prebuild": "node scripts/buildCardDb.js && node scripts/downloadCardImages.js",
+    "dev": "node scripts/buildCardDb.js && node scripts/downloadCardImages.js && vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.6",
     "@vitejs/plugin-vue": "^5.2.1",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.6",
     "typescript": "~5.7.2",
     "vite": "^6.3.5",

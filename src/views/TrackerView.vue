@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
+import CardPlaceholder from '../components/CardPlaceholder.vue'
 import PackOdds from '../components/PackOdds.vue'
 import BestPackPanel from '../components/BestPackPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
@@ -19,7 +20,7 @@ import type { Card } from '../types/card'
 
 function cardImageUrl(card: Card): string {
   const [set, paddedNum] = card.id.split('-')
-  return `https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/${set}/${parseInt(paddedNum, 10)}.webp`
+  return `${import.meta.env.BASE_URL}images/cards/${set}/${parseInt(paddedNum, 10)}.webp`
 }
 
 function cardNumber(card: Card): string {
@@ -649,13 +650,10 @@ onUnmounted(() => {
                 @touchstart="onCardTouchStart($event, card, cardsForSet(set.code))"
               >
                 <template v-if="isOwned(card.id)">
-                  <div
+                  <CardPlaceholder
                     v-if="!loadedCards.has(card.id)"
-                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    style="background: linear-gradient(135deg, #f0fdf4, #faf5ff)"
-                  >
-                    <div class="w-4 h-4 rounded-full border-2 border-purple-200 border-t-green-300 animate-spin" />
-                  </div>
+                    class="absolute inset-0 pointer-events-none"
+                  />
                   <img
                     :src="cardImageUrl(card)"
                     :alt="card.name"

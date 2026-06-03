@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import type { Card } from '../types/card'
 import { RARITY_LABELS, RARITY_COLORS } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
+import CardPlaceholder from './CardPlaceholder.vue'
 
 const props = defineProps<{ card: Card; collected?: boolean }>()
 const emit = defineEmits<{ 'toggle-collected': [] }>()
@@ -23,8 +24,8 @@ watch(() => props.card.id, () => { loaded.value = false })
 <template>
   <div class="flex gap-4">
     <!-- Card image -->
-    <div class="relative shrink-0 w-28 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 cursor-zoom-in" @click="showModal = true">
-      <div v-if="!loaded" class="absolute inset-0 animate-pulse bg-gray-200" />
+    <div class="relative shrink-0 w-28 aspect-367/512 rounded-lg overflow-hidden border border-gray-200 bg-gray-100 cursor-zoom-in" @click="showModal = true">
+      <CardPlaceholder v-if="!loaded" class="absolute inset-0" />
       <!-- Collection badge: green if collected, gray if not; only shown when prop is provided -->
       <div
         v-if="collected !== undefined"
@@ -40,7 +41,7 @@ watch(() => props.card.id, () => { loaded.value = false })
       <img
         :src="imageUrl"
         :alt="card.name"
-        class="w-full h-auto block transition-opacity duration-200"
+        class="absolute inset-0 w-full h-full object-cover block transition-opacity duration-200"
         :class="{ 'opacity-0': !loaded }"
         @load="loaded = true"
         @error="(e) => ((e.target as HTMLImageElement).parentElement!.style.display = 'none')"
