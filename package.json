@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "firebase": "^12.14.0",
     "fuse.js": "^7.3.0",
     "pokemon-tcg-pocket-database": "^2.7.0",
     "posthog-js": "^1.375.0",

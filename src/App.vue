@@ -11,6 +11,7 @@ import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
 import MultiPackSimulator from './components/MultiPackSimulator.vue'
 import CompleteTheSet from './components/CompleteTheSet.vue'
+import AuthButton from './components/AuthButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -113,7 +114,7 @@ watchEffect(() => {
             Find out how likely you are to pull a specific card from a booster pack.
           </p>
         </div>
-        <nav class="flex gap-1 text-sm font-medium shrink-0 mt-1">
+        <nav class="flex items-center gap-1 text-sm font-medium shrink-0 mt-1">
           <RouterLink
             to="/tracker"
             class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
@@ -122,6 +123,7 @@ watchEffect(() => {
             to="/"
             class="px-3 py-1.5 rounded-lg bg-blue-600 text-white"
           >Pack Odds</RouterLink>
+          <AuthButton />
         </nav>
       </div>
     </header>

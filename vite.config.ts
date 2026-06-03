@@ -11,6 +11,9 @@ export default defineConfig({
     vue(),
     tailwindcss(),
   ],
+  server: {
+    port: 5174,
+  },
   test: {
     environment: 'node',
   },

@@ -5,6 +5,7 @@ import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
 import CardPlaceholder from '../components/CardPlaceholder.vue'
+import AuthButton from '../components/AuthButton.vue'
 import PackOdds from '../components/PackOdds.vue'
 import BestPackPanel from '../components/BestPackPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
@@ -402,9 +403,10 @@ onUnmounted(() => {
           <h1 class="text-xl font-bold text-gray-900">
             Pokémon TCG Pocket<span class="hidden sm:inline"> — Tracker &amp; Odds Calculator</span>
           </h1>
-          <nav class="flex gap-1 text-sm font-medium shrink-0">
+          <nav class="flex items-center gap-1 text-sm font-medium shrink-0">
             <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
             <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Pack Odds</RouterLink>
+            <AuthButton />
           </nav>
         </div>
         <p class="text-sm text-gray-500 mt-0.5">Track which cards you've already pulled.</p>
