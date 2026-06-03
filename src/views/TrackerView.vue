@@ -4,7 +4,6 @@ import { RouterLink } from 'vue-router'
 import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
-import CardPlaceholder from '../components/CardPlaceholder.vue'
 import AuthButton from '../components/AuthButton.vue'
 import PackOdds from '../components/PackOdds.vue'
 import BestPackPanel from '../components/BestPackPanel.vue'
@@ -652,10 +651,14 @@ onUnmounted(() => {
                 @touchstart="onCardTouchStart($event, card, cardsForSet(set.code))"
               >
                 <template v-if="isOwned(card.id)">
-                  <CardPlaceholder
+                  <div
                     v-if="!loadedCards.has(card.id)"
-                    class="absolute inset-0 pointer-events-none"
-                  />
+                    class="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    style="background: linear-gradient(135deg, #5f7067, #625b6e)"
+                  >
+                    <div class="w-4 h-4 rounded-full border-2 border-purple-200 border-t-green-300 animate-spin" />
+                  </div>
+
                   <img
                     :src="cardImageUrl(card)"
                     :alt="card.name"
