@@ -204,6 +204,27 @@ for (const card of cards) {
   }
 }
 
+// Manual overrides for cards where the upstream pull rate data uses a shared
+// rarity pool but individual cards occupy distinct slot sub-pools.
+//
+// B2b (Mega Shine) Mew IM cards:
+//   B2b-085 appears only in regular slots (4th/5th card) across all pack types; pool = 1.
+//   B2b-086 appears ONLY as the 6th card (slot 5) of Regular Pack +1; pool = 1, no Rare Pack.
+//
+// Rates below are recomputed from raw pull rate data with pool = 1:
+//   B2b-085 Regular Pack:    P(slots 3+4) = 1-(1-0.00222)(1-0.00889) = 0.011090
+//   B2b-085 Regular Pack +1: same slots 3+4 only, P = 0.011090
+//   B2b-085 Rare Pack:       1-(1-0.05555)^5 = 0.248570
+//   B2b-086 Regular Pack +1: slot 5 only, P = 0.064
+const CARD_OVERRIDES = {
+  'B2b-085': { perPackRate: 0.01120800, slot4Rate: 0.00889, slot5Rate: 0, rarePackContrib: 0.00012429, poolSize: 1 },
+  'B2b-086': { perPackRate: 0.00335230, slot4Rate: 0, slot5Rate: 0, rarePackContrib: 0, poolSize: 1 },
+}
+for (const card of output) {
+  const override = CARD_OVERRIDES[card.id]
+  if (override) Object.assign(card, override)
+}
+
 mkdirSync(resolve(root, 'public'), { recursive: true })
 writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
 console.log(`✓ Built ${output.length} card entries → public/cards.json`)
