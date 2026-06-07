@@ -1,27 +1,33 @@
-import { ref, watch } from 'vue'
+import { ref, shallowRef, triggerRef, watch } from 'vue'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from './useAuth'
 
 const STORAGE_KEY = 'ptcgp-tracker-owned'
 
-const ownedIds = ref<Set<string>>(
+const ownedIds = shallowRef<Set<string>>(
   new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as string[])
 )
 const syncLoading = ref(false)
 let _uid: string | null = null
 let _writeTimer: ReturnType<typeof setTimeout> | null = null
+let _lsTimer: ReturnType<typeof setTimeout> | null = null
 
-watch(ownedIds, (set) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]))
+// Defer off the render critical path so it doesn't block visual updates
+watch(ownedIds, () => {
+  if (_lsTimer) clearTimeout(_lsTimer)
+  _lsTimer = setTimeout(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ownedIds.value]))
+    _lsTimer = null
+  }, 300)
 })
 
-watch(ownedIds, (set) => {
+watch(ownedIds, () => {
   if (!_uid) return
   if (_writeTimer) clearTimeout(_writeTimer)
   _writeTimer = setTimeout(async () => {
     await setDoc(doc(db, 'users', _uid!, 'tracker', 'data'), {
-      cardIds: [...set],
+      cardIds: [...ownedIds.value],
       lastUpdated: serverTimestamp(),
     })
   }, 500)
@@ -55,21 +61,19 @@ watch(user, async (newUser, oldUser) => {
 
 export function useTracker() {
   function toggle(cardId: string) {
-    const next = new Set(ownedIds.value)
-    if (next.has(cardId)) {
-      next.delete(cardId)
+    if (ownedIds.value.has(cardId)) {
+      ownedIds.value.delete(cardId)
     } else {
-      next.add(cardId)
+      ownedIds.value.add(cardId)
     }
-    ownedIds.value = next
+    triggerRef(ownedIds)
   }
 
   function setOwned(cardId: string, owned: boolean) {
     if (ownedIds.value.has(cardId) === owned) return
-    const next = new Set(ownedIds.value)
-    if (owned) next.add(cardId)
-    else next.delete(cardId)
-    ownedIds.value = next
+    if (owned) ownedIds.value.add(cardId)
+    else ownedIds.value.delete(cardId)
+    triggerRef(ownedIds)
   }
 
   function isOwned(cardId: string): boolean {

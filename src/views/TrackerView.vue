@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, shallowRef, triggerRef, watch, type Directive } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
@@ -15,6 +15,17 @@ import { formatPacks } from '../utils/odds'
 import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
 import type { Card } from '../types/card'
+
+// ── Lazy-src directive: sets src only when the image nears the viewport ───────
+
+const vLazySrc: Directive<HTMLImageElement, string> = {
+  mounted(el, { value }) {
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { el.src = value; io.disconnect() }
+    }, { rootMargin: '400px' })
+    io.observe(el)
+  },
+}
 
 // ── Image / number helpers ────────────────────────────────────────────────────
 
@@ -39,7 +50,19 @@ const { ownedIds, toggle, setOwned, isOwned } = useTracker()
 const showMissingOnly = ref(false)
 const navExpanded = ref(false)
 const selectedCard = ref<Card | null>(null)
-const loadedCards = reactive(new Set<string>())
+const loadedCards = shallowRef(new Set<string>())
+function onCardImageLoaded(cardId: string) {
+  loadedCards.value.add(cardId)
+  triggerRef(loadedCards)
+}
+
+// Debounced snapshot so bestPacks / easiestSets don't recompute on every click
+const ownedIdsForAnalysis = shallowRef(ownedIds.value)
+let _analysisTimer: ReturnType<typeof setTimeout> | null = null
+watch(ownedIds, () => {
+  if (_analysisTimer) clearTimeout(_analysisTimer)
+  _analysisTimer = setTimeout(() => { triggerRef(ownedIdsForAnalysis) }, 500)
+})
 
 const sets = computed(() => {
   const seen = new Set<string>()
@@ -78,27 +101,34 @@ interface SetStats { diamonds: GroupCount; stars: GroupCount; shinies: GroupCoun
 const EXCLUDED_SET_NAMES = new Set(['Deluxe Pack: ex'])
 
 const bestPacks = computed(() => {
-  // Which sets have more than one pack? (to decide whether to show pack name)
+  const snapshot = ownedIdsForAnalysis.value
+  const isOwnedFn = (id: string) => snapshot.has(id)
+
   const packsPerSet = new Map<string, Set<string>>()
   for (const card of cards.value) {
     if (!packsPerSet.has(card.set)) packsPerSet.set(card.set, new Set())
     packsPerSet.get(card.set)!.add(card.pack)
   }
 
-  // Group by (setCode, pack), accumulating log-probability of drawing no new card
   interface Group { setCode: string; setName: string; pack: string; logNoNew: number; hasUnowned: boolean }
   const groups = new Map<string, Group>()
 
+  const noneCollectedCache = new Map<string, boolean>()
+  const cachedNoneCollected = (setCode: string) => {
+    if (!noneCollectedCache.has(setCode)) noneCollectedCache.set(setCode, noneCollected(setCode, isOwnedFn))
+    return noneCollectedCache.get(setCode)!
+  }
+
   for (const card of cards.value) {
     if (EXCLUDED_SET_NAMES.has(card.setName)) continue
-    if (noneCollected(card.set)) continue
+    if (cachedNoneCollected(card.set)) continue
     if (card.perPackRate <= 0) continue
 
     const key = `${card.set}||${card.pack}`
     if (!groups.has(key)) {
       groups.set(key, { setCode: card.set, setName: card.setName, pack: card.pack, logNoNew: 0, hasUnowned: false })
     }
-    if (!isOwned(card.id)) {
+    if (!isOwnedFn(card.id)) {
       const g = groups.get(key)!
       g.logNoNew += Math.log(1 - card.perPackRate)
       g.hasUnowned = true
@@ -116,19 +146,14 @@ const bestPacks = computed(() => {
     .slice(0, 5)
 })
 
-function noneCollected(setCode: string): boolean {
-  const s = statsForSet(setCode)
-  return s.diamonds.owned + s.stars.owned + s.shinies.owned === 0
-}
-
-function statsForSet(setCode: string): SetStats {
+function statsForSet(setCode: string, ownedFn: (id: string) => boolean = isOwned): SetStats {
   const stats: SetStats = {
     diamonds: { owned: 0, total: 0 },
     stars:    { owned: 0, total: 0 },
     shinies:  { owned: 0, total: 0 },
   }
   for (const card of cardsBySet.value.get(setCode) ?? []) {
-    const owned = isOwned(card.id)
+    const owned = ownedFn(card.id)
     if (DIAMOND_RARITIES.has(card.rarity)) {
       stats.diamonds.total++; if (owned) stats.diamonds.owned++
     } else if (STAR_RARITIES.has(card.rarity)) {
@@ -140,21 +165,36 @@ function statsForSet(setCode: string): SetStats {
   return stats
 }
 
+function noneCollected(setCode: string, ownedFn: (id: string) => boolean = isOwned): boolean {
+  const s = statsForSet(setCode, ownedFn)
+  return s.diamonds.owned + s.stars.owned + s.shinies.owned === 0
+}
+
+// Pre-computes all set stats once per render — template reads from here
+// instead of calling statsForSet() 6× per set.
+const setStatsMap = computed(() => {
+  const m = new Map<string, SetStats>()
+  for (const set of sets.value) m.set(set.code, statsForSet(set.code))
+  return m
+})
+
 // ── Easiest set to complete ───────────────────────────────────────────────────
 
 const targetPct = ref(50)
 const rarityGroups = reactive({ diamond: true, star12: true, shiny: true, hard: true, packPoints: true })
 
 const easiestSets = computed(() => {
+  const snapshot = ownedIdsForAnalysis.value
+  const isOwnedFn = (id: string) => snapshot.has(id)
   const results: { label: string; cardsLeft: number; packsNeeded: number; pointCost: number }[] = []
   const target = targetPct.value / 100
 
   for (const set of sets.value) {
     if (EXCLUDED_SET_NAMES.has(set.name)) continue
-    if (noneCollected(set.code)) continue
+    if (noneCollected(set.code, isOwnedFn)) continue
 
     const unowned = cards.value
-      .filter(c => c.set === set.code && !isOwned(c.id))
+      .filter(c => c.set === set.code && !isOwnedFn(c.id))
       .map(c => ({ id: c.id, rate: c.perPackRate, rarity: c.rarity }))
 
     const result = computeSetCompletion(unowned, target, rarityGroups)
@@ -234,8 +274,9 @@ let dragStartIdx = -1
 let dragCurrentIdx = -1
 let dragTargetState = false
 let preDragSnapshot = new Map<string, boolean>()
+let touchOptimisticState: boolean | null = null
 
-const dragRangeIds = ref(new Set<string>())
+const dragRangeIds = shallowRef(new Set<string>())
 const pendingCardId = ref<string | null>(null)
 
 function cardIndexInSet(setCards: Card[], cardId: string): number {
@@ -265,12 +306,13 @@ function startLongPress(card: Card, setCards: Card[]) {
     longPressTimer = null
     if (gestureState.value !== 'pending') return
     gestureState.value = 'dragging'
-    dragTargetState = !isOwned(card.id)
+    dragTargetState = touchOptimisticState!  // already applied on touchstart
     dragStartIdx = cardIndexInSet(setCards, card.id)
     dragCurrentIdx = dragStartIdx
     preDragSnapshot = new Map(setCards.map(c => [c.id, isOwned(c.id)]))
+    preDragSnapshot.set(card.id, !touchOptimisticState!)  // restore pre-tap state for rollback
     dragRangeIds.value = new Set([card.id])
-    setOwned(card.id, dragTargetState)
+    // setOwned already called optimistically — no-op here
   }, LONG_PRESS_MS)
 }
 
@@ -291,6 +333,8 @@ function endGesture() {
 
 function onCardMouseDown(card: Card, setCards: Card[]) {
   if (gestureState.value !== 'idle') return
+  console.time('[click]')
+  console.timeLog('[click]', 'handler start')
   pendingSetCards = setCards
   gestureState.value = 'dragging'
   dragTargetState = !isOwned(card.id)
@@ -298,7 +342,10 @@ function onCardMouseDown(card: Card, setCards: Card[]) {
   dragCurrentIdx = dragStartIdx
   preDragSnapshot = new Map(setCards.map(c => [c.id, isOwned(c.id)]))
   dragRangeIds.value = new Set([card.id])
+  console.timeLog('[click]', 'before setOwned')
   setOwned(card.id, dragTargetState)
+  console.timeLog('[click]', 'after setOwned — scheduling nextTick')
+  nextTick(() => console.timeEnd('[click]'))
 }
 
 function onCardMouseEnter(card: Card) {
@@ -333,9 +380,16 @@ function onWindowMouseUp() {
 
 function onCardTouchStart(event: TouchEvent, card: Card, setCards: Card[]) {
   if (gestureState.value !== 'idle') return
+  console.time('[touch]')
+  console.timeLog('[touch]', 'handler start')
   const touch = event.touches[0]
   touchStartX = touch.clientX; touchStartY = touch.clientY
   gestureState.value = 'pending'
+  touchOptimisticState = !isOwned(card.id)
+  console.timeLog('[touch]', 'before setOwned')
+  setOwned(card.id, touchOptimisticState)
+  console.timeLog('[touch]', 'after setOwned — scheduling nextTick')
+  nextTick(() => console.timeEnd('[touch]'))
   startLongPress(card, setCards)
 }
 
@@ -344,7 +398,10 @@ function onGridTouchMove(event: TouchEvent) {
   if (gestureState.value === 'pending') {
     if (Math.abs(touch.clientX - touchStartX) > TOUCH_MOVE_THRESHOLD ||
         Math.abs(touch.clientY - touchStartY) > TOUCH_MOVE_THRESHOLD) {
-      cancelLongPress(); gestureState.value = 'idle'
+      cancelLongPress()
+      if (pendingCard && touchOptimisticState !== null) setOwned(pendingCard.id, !touchOptimisticState)
+      touchOptimisticState = null
+      gestureState.value = 'idle'
     }
     return
   }
@@ -363,11 +420,10 @@ function onGridTouchMove(event: TouchEvent) {
 function onWindowTouchEnd() {
   if (gestureState.value === 'pending') {
     cancelLongPress()
-    if (pendingCard) {
-      const newOwned = !isOwned(pendingCard.id)
-      toggle(pendingCard.id)
-      posthog.capture('card_collected_toggled', { card_id: pendingCard.id, owned: newOwned })
+    if (pendingCard && touchOptimisticState !== null) {
+      posthog.capture('card_collected_toggled', { card_id: pendingCard.id, owned: touchOptimisticState })
     }
+    touchOptimisticState = null
   } else if (gestureState.value === 'dragging') {
     const count = dragRangeIds.value.size
     if (count === 1) {
@@ -452,21 +508,21 @@ onUnmounted(() => {
                   <td class="py-1.5 px-1 whitespace-nowrap text-xs">
                     <span class="flex items-center gap-0.5">
                       <DiamondIcon :size="9" />
-                      {{ statsForSet(set.code).diamonds.owned }}/{{ statsForSet(set.code).diamonds.total }}
+                      {{ setStatsMap.get(set.code)!.diamonds.owned }}/{{ setStatsMap.get(set.code)!.diamonds.total }}
                     </span>
                   </td>
                   <!-- Star count -->
                   <td class="py-1.5 px-1 whitespace-nowrap text-xs">
-                    <span v-if="statsForSet(set.code).stars.total > 0" class="flex items-center gap-0.5">
+                    <span v-if="setStatsMap.get(set.code)!.stars.total > 0" class="flex items-center gap-0.5">
                       <StarIcon :size="11" />
-                      {{ statsForSet(set.code).stars.owned }}/{{ statsForSet(set.code).stars.total }}
+                      {{ setStatsMap.get(set.code)!.stars.owned }}/{{ setStatsMap.get(set.code)!.stars.total }}
                     </span>
                   </td>
                   <!-- Shiny count -->
                   <td class="py-1.5 pl-1 pr-3 rounded-r-lg whitespace-nowrap text-xs">
-                    <span v-if="statsForSet(set.code).shinies.total > 0" class="flex items-center gap-0.5">
+                    <span v-if="setStatsMap.get(set.code)!.shinies.total > 0" class="flex items-center gap-0.5">
                       <ShinyIcon :size="11" />
-                      {{ statsForSet(set.code).shinies.owned }}/{{ statsForSet(set.code).shinies.total }}
+                      {{ setStatsMap.get(set.code)!.shinies.owned }}/{{ setStatsMap.get(set.code)!.shinies.total }}
                     </span>
                   </td>
                 </template>
@@ -607,20 +663,20 @@ onUnmounted(() => {
                 <template v-else>
                   <span class="flex items-center gap-1">
                     <DiamondIcon :size="10" color="#94a3b8" />
-                    <span :class="statsForSet(set.code).diamonds.owned === statsForSet(set.code).diamonds.total ? 'text-blue-600' : 'text-gray-600'">
-                      {{ statsForSet(set.code).diamonds.owned }}/{{ statsForSet(set.code).diamonds.total }}
+                    <span :class="setStatsMap.get(set.code)!.diamonds.owned === setStatsMap.get(set.code)!.diamonds.total ? 'text-blue-600' : 'text-gray-600'">
+                      {{ setStatsMap.get(set.code)!.diamonds.owned }}/{{ setStatsMap.get(set.code)!.diamonds.total }}
                     </span>
                   </span>
-                  <span v-if="statsForSet(set.code).stars.total > 0" class="flex items-center gap-1">
+                  <span v-if="setStatsMap.get(set.code)!.stars.total > 0" class="flex items-center gap-1">
                     <StarIcon :size="12" color="#fbbf24" />
-                    <span :class="statsForSet(set.code).stars.owned === statsForSet(set.code).stars.total ? 'text-blue-600' : 'text-gray-600'">
-                      {{ statsForSet(set.code).stars.owned }}/{{ statsForSet(set.code).stars.total }}
+                    <span :class="setStatsMap.get(set.code)!.stars.owned === setStatsMap.get(set.code)!.stars.total ? 'text-blue-600' : 'text-gray-600'">
+                      {{ setStatsMap.get(set.code)!.stars.owned }}/{{ setStatsMap.get(set.code)!.stars.total }}
                     </span>
                   </span>
-                  <span v-if="statsForSet(set.code).shinies.total > 0" class="flex items-center gap-1">
+                  <span v-if="setStatsMap.get(set.code)!.shinies.total > 0" class="flex items-center gap-1">
                     <ShinyIcon :size="12" />
-                    <span :class="statsForSet(set.code).shinies.owned === statsForSet(set.code).shinies.total ? 'text-blue-600' : 'text-gray-600'">
-                      {{ statsForSet(set.code).shinies.owned }}/{{ statsForSet(set.code).shinies.total }}
+                    <span :class="setStatsMap.get(set.code)!.shinies.owned === setStatsMap.get(set.code)!.shinies.total ? 'text-blue-600' : 'text-gray-600'">
+                      {{ setStatsMap.get(set.code)!.shinies.owned }}/{{ setStatsMap.get(set.code)!.shinies.total }}
                     </span>
                   </span>
                 </template>
@@ -641,11 +697,12 @@ onUnmounted(() => {
               <div
                 v-for="card in cardsForSet(set.code)"
                 :key="card.id"
+                v-memo="[isOwned(card.id), loadedCards.has(card.id), dragRangeIds.has(card.id), pendingCardId === card.id, selectedCard?.id === card.id]"
                 :data-card-id="card.id"
                 :title="`${card.name} — tap to view, hold to mark`"
                 class="relative aspect-[2/3] rounded overflow-hidden"
                 :class="gestureState === 'idle' ? 'cursor-pointer' : 'cursor-grabbing'"
-                style="touch-action: manipulation"
+                :style="isOwned(card.id) ? 'touch-action: manipulation; background: linear-gradient(135deg, #5f7067, #625b6e)' : 'touch-action: manipulation'"
                 @mousedown.prevent="onCardMouseDown(card, cardsForSet(set.code))"
                 @mouseenter="onCardMouseEnter(card)"
                 @touchstart="onCardTouchStart($event, card, cardsForSet(set.code))"
@@ -654,18 +711,16 @@ onUnmounted(() => {
                   <div
                     v-if="!loadedCards.has(card.id)"
                     class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    style="background: linear-gradient(135deg, #5f7067, #625b6e)"
                   >
                     <div class="w-4 h-4 rounded-full border-2 border-purple-200 border-t-green-300 animate-spin" />
                   </div>
 
                   <img
-                    :src="cardImageUrl(card)"
+                    v-lazy-src="cardImageUrl(card)"
                     :alt="card.name"
-                    loading="lazy"
                     class="w-full h-full object-cover block pointer-events-none transition-opacity duration-200"
                     :class="loadedCards.has(card.id) ? 'opacity-100' : 'opacity-0'"
-                    @load="loadedCards.add(card.id)"
+                    @load="onCardImageLoaded(card.id)"
                   />
                 </template>
                 <div
