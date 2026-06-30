@@ -3,7 +3,7 @@
 // script is fast on subsequent runs. Reads public/cards.json (built first by
 // buildCardDb.js) to determine which images are needed.
 
-import { existsSync, mkdirSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import sharp from 'sharp'
@@ -11,7 +11,13 @@ import sharp from 'sharp'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root     = resolve(__dirname, '..')
 const OUT_DIR  = resolve(root, 'public', 'images', 'cards')
-const BASE_URL = 'https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set'
+// Primary source: our own deployed site already serves the resized thumbnails
+// from the last successful build — fast (GitHub CDN), correctly sized, and it
+// avoids cold-hammering the upstream CDN (which throttles bulk requests). New
+// images not in the last deploy fall back to the upstream CDN below.
+const PAGES_URL = 'https://kkuepper.github.io/pokemon-tcg/images/cards'
+// Fallback source: upstream full-size originals, resized locally to TARGET_HEIGHT.
+const CDN_URL  = 'https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set'
 const TARGET_HEIGHT = 200
 const CONCURRENCY   = 20
 const MAX_RETRIES   = 4      // for transient CDN errors (503/429/network)
@@ -64,26 +70,45 @@ async function fetchImage(url) {
   throw lastErr
 }
 
+function progress() {
+  done++
+  if (done % 100 === 0 || done === todo.length) {
+    process.stdout.write(`\r  ${done}/${todo.length}`)
+  }
+}
+
 async function processOne({ set, num }) {
   const outDir  = resolve(OUT_DIR, set)
   const outPath = resolve(outDir, `${num}.webp`)
-  const url     = `${BASE_URL}/${set}/${num}.webp`
 
   try {
-    const buf = await fetchImage(url)
-    if (buf === null) {
+    // 1. Prefer the already-resized thumbnail from our deployed site. Save its
+    //    bytes directly — no re-encode needed. A transient failure here just
+    //    falls through to the upstream CDN, so it never blocks an image.
+    let pre = null
+    try {
+      pre = await fetchImage(`${PAGES_URL}/${set}/${num}.webp`)
+    } catch { /* fall back to the upstream CDN */ }
+    if (pre) {
+      mkdirSync(outDir, { recursive: true })
+      writeFileSync(outPath, pre)
+      progress()
+      return
+    }
+
+    // 2. Fall back to the upstream full-size original and resize it. Used for
+    //    brand-new images that weren't in the last deploy.
+    const full = await fetchImage(`${CDN_URL}/${set}/${num}.webp`)
+    if (full === null) {
       missing++
       return
     }
     mkdirSync(outDir, { recursive: true })
-    await sharp(buf)
+    await sharp(full)
       .resize({ height: TARGET_HEIGHT, withoutEnlargement: true })
       .webp({ quality: 85 })
       .toFile(outPath)
-    done++
-    if (done % 100 === 0 || done === todo.length) {
-      process.stdout.write(`\r  ${done}/${todo.length}`)
-    }
+    progress()
   } catch (err) {
     errored++
     console.error(`\nFailed ${set}/${num}: ${err.message}`)
