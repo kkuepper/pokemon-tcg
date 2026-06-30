@@ -27,7 +27,8 @@
       "Bash(curl -sI \"https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/A1/1.webp\")",
       "Bash(curl -s \"https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/A1/1.webp\")",
       "Bash(curl -s \"https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set/A1/1.webp\" -o /tmp/sample-card.webp)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(npm view *)"
     ]
   }
 }
