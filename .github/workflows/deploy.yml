@@ -36,6 +36,11 @@ jobs:
         with:
           path: public/images/cards
           key: card-images-${{ hashFiles('package-lock.json') }}
+          # Restore the latest existing image cache on a key change (e.g. a
+          # dependency bump) so only newly-added images are downloaded, instead
+          # of cold-fetching every image and getting throttled by the CDN.
+          restore-keys: |
+            card-images-
 
       - name: Test
         run: npm test
