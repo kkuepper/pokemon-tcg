@@ -331,10 +331,18 @@ function endGesture() {
 
 // ── Mouse handlers ────────────────────────────────────────────────────────────
 
+// Logs perceived toggle latency for one card, measured from `startedAt` through
+// layout + paint (two rAFs), so the number reflects what the user actually feels.
+function logCollectTiming(startedAt: number, card: Card, owned: boolean) {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const ms = (performance.now() - startedAt).toFixed(1)
+    console.log(`[collect] ${owned ? 'added' : 'removed'} ${card.name} (${card.id}) — ${ms}ms`)
+  }))
+}
+
 function onCardMouseDown(card: Card, setCards: Card[]) {
   if (gestureState.value !== 'idle') return
-  console.time('[click]')
-  console.timeLog('[click]', 'handler start')
+  const startedAt = performance.now()
   pendingSetCards = setCards
   gestureState.value = 'dragging'
   dragTargetState = !isOwned(card.id)
@@ -342,10 +350,8 @@ function onCardMouseDown(card: Card, setCards: Card[]) {
   dragCurrentIdx = dragStartIdx
   preDragSnapshot = new Map(setCards.map(c => [c.id, isOwned(c.id)]))
   dragRangeIds.value = new Set([card.id])
-  console.timeLog('[click]', 'before setOwned')
   setOwned(card.id, dragTargetState)
-  console.timeLog('[click]', 'after setOwned — scheduling nextTick')
-  nextTick(() => console.timeEnd('[click]'))
+  logCollectTiming(startedAt, card, dragTargetState)
 }
 
 function onCardMouseEnter(card: Card) {
@@ -380,16 +386,13 @@ function onWindowMouseUp() {
 
 function onCardTouchStart(event: TouchEvent, card: Card, setCards: Card[]) {
   if (gestureState.value !== 'idle') return
-  console.time('[touch]')
-  console.timeLog('[touch]', 'handler start')
+  const startedAt = performance.now()
   const touch = event.touches[0]
   touchStartX = touch.clientX; touchStartY = touch.clientY
   gestureState.value = 'pending'
   touchOptimisticState = !isOwned(card.id)
-  console.timeLog('[touch]', 'before setOwned')
   setOwned(card.id, touchOptimisticState)
-  console.timeLog('[touch]', 'after setOwned — scheduling nextTick')
-  nextTick(() => console.timeEnd('[touch]'))
+  logCollectTiming(startedAt, card, touchOptimisticState)
   startLongPress(card, setCards)
 }
 
@@ -642,6 +645,7 @@ onUnmounted(() => {
             :id="`set-${set.code}`"
             :data-set-code="set.code"
             class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden scroll-mt-6"
+            style="content-visibility: auto; contain-intrinsic-size: auto 600px"
           >
             <!-- Set header -->
             <div class="px-3 pt-3 pb-2 border-b border-gray-100">
