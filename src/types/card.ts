@@ -17,6 +17,8 @@ export interface Card {
   perPackRate: number
   /** Contribution from the Rare Pack ("God Pack") [0,1] */
   rarePackContrib: number
+  /** True when rates are extrapolated because upstream has no pull rate data for this set yet */
+  ratesEstimated?: boolean
 }
 
 export const RARITY_LABELS: Record<CardRarity, string> = {

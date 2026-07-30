@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { ESTIMATED_PULL_RATES } from './estimatedPullRates.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
@@ -17,6 +18,18 @@ function loadJson(filename) {
 const cards = loadJson('cards.min.json')
 const pullRates = loadJson('pullRates.json')
 const setsData = loadJson('sets.json')
+
+// Upstream ships a new set's card list before its pull rates. Fill the gap from
+// scripts/estimatedPullRates.js so the set still appears; upstream always wins.
+const estimatedSets = new Set()
+for (const [set, rates] of Object.entries(ESTIMATED_PULL_RATES)) {
+  if (pullRates[set]) {
+    console.log(`ℹ upstream now ships pull rates for ${set} — drop it from scripts/estimatedPullRates.js`)
+    continue
+  }
+  pullRates[set] = rates
+  estimatedSets.add(set)
+}
 
 // Build set name and packs lookup
 const setNames = {}
@@ -200,6 +213,7 @@ for (const card of cards) {
       slot5Rate: round8(slot5Rate),
       perPackRate: round8(perPackRate),
       rarePackContrib: round8(rareAppr * rarePackRate),
+      ...(estimatedSets.has(set) ? { ratesEstimated: true } : {}),
     })
   }
 }
@@ -228,6 +242,11 @@ for (const card of output) {
 mkdirSync(resolve(root, 'public'), { recursive: true })
 writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
 console.log(`✓ Built ${output.length} card entries → public/cards.json`)
+
+for (const set of estimatedSets) {
+  const n = output.filter(c => c.set === set).length
+  console.log(`⚠ ${set}: ${n} entries use ESTIMATED pull rates (upstream has none yet)`)
+}
 
 // Sitemap — deduplicate by card ID (same card can appear in multiple packs)
 function cardToSlug(card) {

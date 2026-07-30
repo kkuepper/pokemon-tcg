@@ -63,5 +63,12 @@ const isShinySlot6 = computed(() => props.card.slot4Rate === 0 && props.card.slo
     <p v-if="card.perPackRate === 0" class="text-xs text-gray-400 italic">
       This card is not obtainable through regular pack pulls.
     </p>
+
+    <p v-if="card.ratesEstimated" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">
+      <span class="font-semibold">Estimated.</span>
+      Official pull rates for {{ card.setName }} aren't published yet. These numbers are
+      extrapolated from the slot rates shared by earlier sets in the same series and will be
+      updated once the real rates are available.
+    </p>
   </div>
 </template>

@@ -31,7 +31,10 @@
       "Bash(npm view *)",
       "Bash(gh run *)",
       "Bash(gh release *)",
-      "Bash(gh auth *)"
+      "Bash(gh auth *)",
+      "Bash(npm pack *)",
+      "Bash(tar tzf *)",
+      "Bash(npm install *)"
     ]
   }
 }
