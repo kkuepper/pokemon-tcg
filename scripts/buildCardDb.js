@@ -41,6 +41,30 @@ for (const series of Object.values(setsData)) {
   }
 }
 
+// Emit a GitHub Actions annotation when running in CI, so warnings from an
+// unattended scheduled build surface in the run summary instead of scrolling by.
+function warn(message) {
+  console.warn(process.env.GITHUB_ACTIONS ? `::warning::${message}` : `⚠ ${message}`)
+}
+
+// A set with cards but no rates (neither upstream nor estimated) is skipped
+// entirely below. That is how a newly released set silently fails to appear on
+// a scheduled build, so call it out rather than letting the cards vanish.
+const unratedSets = [
+  ...new Set(
+    cards
+      .filter(c => (c.packs ?? setPacksMap[c.set] ?? []).length > 0 && !pullRates[c.set])
+      .map(c => c.set)
+  ),
+]
+for (const set of unratedSets) {
+  const n = cards.filter(c => c.set === set).length
+  warn(
+    `${set} (${setNames[set] ?? 'unknown set'}): ${n} cards skipped — no pull rate data upstream ` +
+      `and no entry in scripts/estimatedPullRates.js. Add one to include this set.`
+  )
+}
+
 // Detect foil variant: image filename contains _01_ (vs _00_ for non-foil)
 function isFoil(image) {
   return image?.includes('_01_') ?? false
@@ -245,7 +269,7 @@ console.log(`✓ Built ${output.length} card entries → public/cards.json`)
 
 for (const set of estimatedSets) {
   const n = output.filter(c => c.set === set).length
-  console.log(`⚠ ${set}: ${n} entries use ESTIMATED pull rates (upstream has none yet)`)
+  warn(`${set}: ${n} entries use ESTIMATED pull rates (upstream has none yet)`)
 }
 
 // Sitemap — deduplicate by card ID (same card can appear in multiple packs)

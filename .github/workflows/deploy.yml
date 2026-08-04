@@ -3,6 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Weekly rebuild so newly released sets go live without a commit. The build
+  # always pulls the newest pokemon-tcg-pocket-database (see "Update card
+  # database" below), which is where new set data arrives.
+  schedule:
+    - cron: '0 6 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -31,14 +36,34 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The card database is the one dependency we deliberately float: new sets
+      # ship as new versions of it, and npm ci alone would pin us to the
+      # lockfile forever. Every other dependency stays locked, so a weekly
+      # rebuild can pick up new cards without risking an unrelated bump
+      # breaking the build. package.json/package-lock.json are left untouched
+      # (--no-save) — the repo stays reproducible, only this run floats.
+      - name: Update card database to latest
+        id: carddb
+        run: |
+          npm install --no-save pokemon-tcg-pocket-database@latest
+          VERSION=$(node -p "require('./node_modules/pokemon-tcg-pocket-database/package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building against pokemon-tcg-pocket-database@$VERSION" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Cache card images
         uses: actions/cache@v4
         with:
           path: public/images/cards
-          key: card-images-${{ hashFiles('package-lock.json') }}
-          # Restore the latest existing image cache on a key change (e.g. a
-          # dependency bump) so only newly-added images are downloaded, instead
-          # of cold-fetching every image and getting throttled by the CDN.
+          # Keyed on the resolved database version, NOT package-lock.json: with
+          # --no-save the lockfile never changes, so a lockfile-based key would
+          # hit exactly every week. actions/cache skips saving on an exact hit,
+          # meaning a new set's images would be re-downloaded every run and
+          # never persisted. Versioning the key lets each new release save a
+          # fresh cache seeded from the previous one.
+          key: card-images-${{ steps.carddb.outputs.version }}
+          # Restore the latest existing image cache on a key change so only
+          # newly-added images are downloaded, instead of cold-fetching every
+          # image and getting throttled by the CDN.
           restore-keys: |
             card-images-
 

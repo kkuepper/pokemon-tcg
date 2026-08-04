@@ -9,12 +9,13 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "update-db": "npm install pokemon-tcg-pocket-database@latest && node scripts/buildCardDb.js"
   },
   "dependencies": {
     "firebase": "^12.14.0",
     "fuse.js": "^7.3.0",
-    "pokemon-tcg-pocket-database": "^2.9.1",
+    "pokemon-tcg-pocket-database": "^2.9.2",
     "posthog-js": "^1.375.0",
     "vue": "^3.5.13",
     "vue-router": "^4.6.4"
