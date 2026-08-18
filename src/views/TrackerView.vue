@@ -155,7 +155,7 @@ const bestPacks = computed(() => {
       return { label, prob: 1 - Math.exp(g.logNoNew) }
     })
     .sort((a, b) => b.prob - a.prob)
-    .slice(0, 5)
+    .slice(0, 10)
 })
 
 function statsForSet(setCode: string, ownedFn: (id: string) => boolean = isOwned): SetStats {
