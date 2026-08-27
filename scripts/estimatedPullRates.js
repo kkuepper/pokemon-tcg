@@ -31,6 +31,31 @@
 //      AR 24 | SR 14+8 SAR = 22 | IM 2 | UR 2  →  total 50
 //      AR 24/50 = 48%   SR 22/50 = 44%   IM 2/50 = 4%   UR 2/50 = 4%
 //
+// ---------------------------------------------------------------------------
+// B4a "Team Rocket's Ambition" (110 cards, 1 pack "Team Rocket")
+//
+// Same two-part reasoning as B4, and the mini-set case is even better pinned:
+//
+// 1. Slot tables are universal across the whole B series. Slots 4/5 are
+//    byte-identical in B1, B2, B3, B1a, B2a, B2b, B3a, B3b (the only variance
+//    is upstream rounding noise: B1a writes UR 0.158/U 60 and B3b writes
+//    SR 0.499). The shiny 6th-card slot is {SSR 31.82, S 68.18} in every set
+//    except B2b, whose IM 6.4 exists solely for its slot-6-only Mew. B4a has a
+//    single IM (B4a-094), the normal mini-set shape, so the standard table
+//    applies and no CARD_OVERRIDES entry is needed.
+//
+// 2. Rare Pack rates are a uniform draw over the set's own rare pool. Verified
+//    exact (within upstream's 3-decimal rounding) for all 8 rated B sets —
+//    including B2b once its slot-6-only Mew is excluded from the pool, which
+//    reproduces upstream's 33.333/50/5.555/11.111 precisely.
+//
+//    B4a rare pool (SAR folds into the SR pool, matching poolKey()):
+//      AR 6 | SR 9+6 SAR = 15 | IM 1 | UR 2  ->  total 24
+//      AR 6/24 = 25%   SR 15/24 = 62.5%   IM 1/24 = 4.167%   UR 2/24 = 8.333%
+//
+//    Cross-check: B2a has an identically shaped pool (AR 6, SR 15, IM 1, UR 2)
+//    and upstream ships exactly these rates for it.
+//
 // Caveat: B2b introduced a 0.005% "Themed Rare Pack" that shaved Regular Pack
 // from 94.711% to 94.706%. Whether B4 has one is unknowable ahead of release,
 // so none is assumed — if it does, per-pack rates here run ~0.005% high.
@@ -46,6 +71,7 @@ const B_MAIN_SLOTS_1_TO_5 = {
 }
 
 const B4_RARE_SLOT = { AR: 48, SR: 44, IM: 4, UR: 4 }
+const B4A_RARE_SLOT = { AR: 25, SR: 62.5, IM: 4.167, UR: 8.333 }
 
 export const ESTIMATED_PULL_RATES = {
   B4: {
@@ -63,6 +89,33 @@ export const ESTIMATED_PULL_RATES = {
         3: { ...B4_RARE_SLOT },
         4: { ...B4_RARE_SLOT },
         5: { ...B4_RARE_SLOT },
+      },
+    },
+    'Regular Pack +1': {
+      appearance_rate: 5.238,
+      cards: 6,
+      slots: {
+        ...B_MAIN_SLOTS_1_TO_5,
+        // Shiny slot: the 6th card is always S or SSR.
+        6: { SSR: 31.82, S: 68.18 },
+      },
+    },
+  },
+  B4a: {
+    'Regular Pack': {
+      appearance_rate: 94.711,
+      cards: 5,
+      slots: { ...B_MAIN_SLOTS_1_TO_5 },
+    },
+    'Rare Pack': {
+      appearance_rate: 0.05,
+      cards: 5,
+      slots: {
+        1: { ...B4A_RARE_SLOT },
+        2: { ...B4A_RARE_SLOT },
+        3: { ...B4A_RARE_SLOT },
+        4: { ...B4A_RARE_SLOT },
+        5: { ...B4A_RARE_SLOT },
       },
     },
     'Regular Pack +1': {
