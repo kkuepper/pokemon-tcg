@@ -98,19 +98,25 @@ interface SetStats { diamonds: GroupCount; stars: GroupCount; shinies: GroupCoun
 
 // ── Best pack recommendation ──────────────────────────────────────────────────
 
-// Deluxe Pack: ex is normally kept out of the "best pack" / "easiest set"
-// recommendations: it was a limited-time pack, so telling someone to open it is
-// advice they can't act on. It is purchasable again for a short window, during
-// which the exclusion lifts and it competes with every other pack as normal.
+// Deluxe packs are limited-time, so once one can no longer be opened it is kept
+// out of the "best pack" / "easiest set" recommendations — telling someone to
+// open it is advice they can't act on. Until its cutoff it competes with every
+// other pack as normal. Cutoffs carry an explicit offset (Ontario time).
 //
 // Read once at module load rather than in a computed: Date.now() is not a
 // reactive dependency, so a computed would cache its first value anyway and
-// only mislead about being live. A tab left open across the cutoff keeps
-// showing Deluxe until reload, which is acceptable for a multi-day window.
-const DELUXE_AVAILABLE_UNTIL = Date.parse('2026-08-21T06:00:00Z')
+// only mislead about being live. A tab left open across a cutoff keeps
+// showing that pack until reload, which is acceptable for a multi-day window.
+const LIMITED_SET_AVAILABLE_UNTIL: Record<string, number> = {
+  'Deluxe Pack: ex': Date.parse('2026-08-21T02:00:00-04:00'),
+  'Deluxe Pack: Mega': Date.parse('2026-10-28T20:59:00-04:00'),
+}
 
-const EXCLUDED_SET_NAMES: Set<string> =
-  Date.now() < DELUXE_AVAILABLE_UNTIL ? new Set() : new Set(['Deluxe Pack: ex'])
+const EXCLUDED_SET_NAMES: Set<string> = new Set(
+  Object.entries(LIMITED_SET_AVAILABLE_UNTIL)
+    .filter(([, until]) => Date.now() >= until)
+    .map(([name]) => name)
+)
 
 const bestPacks = computed(() => {
   const snapshot = ownedIdsForAnalysis.value
