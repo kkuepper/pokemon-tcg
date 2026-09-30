@@ -15,8 +15,9 @@
 // ---------------------------------------------------------------------------
 // B4b "Deluxe Pack: Mega" (released 2026-09-30, 429 cards, 1 pack)
 //
-// Built from screenshots of the in-game "Offering Rates" screen. Most of it is
-// READ directly; what had to be GUESSED is marked per line below. The screen
+// Built from screenshots of the in-game "Offering Rates" screen; every slot
+// is read or pinned by a read tier total. Remaining assumption: the +1 pack's
+// cards 1-3 match the Regular pack's (its card 4 and 5 were read). The screen
 // truncates to 3 decimals (82.27/65 = 1.2657 shows as 1.265), so a displayed
 // 0.301 means [0.301, 0.302).
 //
@@ -35,9 +36,9 @@
 // regular pack), AR 12.858 (2.143 each). Every parallel foil — C, U and R
 // alike — shows 0.301%, and the foil-U tier header reads 19.578% = 65 x
 // 0.3012, so all three foil pools use that per-card weight and plain U is
-// absent. Plain R was not captured: it takes the remaining 33.971% (1.132
-// each), assuming no SSR in this slot (guessed; the 3-diamond header should
-// then read 43.007%).
+// absent. Plain R is the remaining 33.971% (1.132 each): the 3-diamond
+// header reads 43.006% vs R + RF = 43.007 here, a truncation difference, which
+// confirms nothing else (e.g. SSR) is in this slot.
 //
 // Cards 1-2 (read): identical to A4b. Card 1 is 71 plain C at 1.408% each;
 // card 2 is C 17.73% (0.249% each) / U 82.27% (1.265% each), no foils.
@@ -52,7 +53,7 @@ const B4B_CARDS_1_TO_4 = {
   3: {
     UR: 0.158, IM: 0.889, SRex: 1.5, SR: 0.625, AR: 12.858, // read
     UF: 19.578, CF: 21.385, RF: 9.036, // read: 0.3012% per foil card
-    R: 33.971, // remainder (guessed: assumes nothing else in this slot)
+    R: 33.971, // remainder; confirmed by the R+RF tier header (43.006)
   },
   4: { UR: 0.04, IM: 0.222, SRex: 0.375, RR: 99.363 }, // read
 }
