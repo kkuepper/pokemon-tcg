@@ -15,39 +15,44 @@
 // ---------------------------------------------------------------------------
 // B4b "Deluxe Pack: Mega" (released 2026-09-30, 429 cards, 1 pack)
 //
-// Built from the in-game "Offering Rates" screen, which was only partially
-// captured. What is READ from it vs GUESSED is marked per line below.
+// Built from screenshots of the in-game "Offering Rates" screen. Most of it is
+// READ directly; what had to be GUESSED is marked per line below.
 //
 //   Pack selection (read): Regular 98.283%, Regular +1 card 1.666%, Rare 0.050%
 //
-// Key finding: the 4th card is an ex-only slot. It shows UR 0.040% (Miraidon
-// ex / Koraidon ex 0.020% each), IM 0.222% (Mega Charizard X ex) and SR only
-// 0.375% = 12 x 0.03125% (Mega Venusaur ex 0.031%) — exactly B4b's 12 SR *ex*
-// cards; its 4 trainer SRs are absent. Every RR, UR, IM and SSR in B4b is an
-// ex, so the rest of that slot is taken to be RR. SR is therefore split into
-// two pools (ESTIMATED_POOL_SPLITS): 'SRex' (12 Mega ex) and 'SR' (4 trainers).
+// Same 4-card shape as A4b "Deluxe Pack: ex" — cards 1-2 plain C/U, card 3 the
+// hit slot, card 4 an ex slot — with the +1 pack adding a 5th card.
 //
-// Cards 1-3 share one table that was NOT captured beyond one row: Rookidee
-// [parallel foil] 0.301%. The guess: foil C and U at that same per-card weight
-// (A4b "Deluxe Pack: ex" gives CF and UF identical per-card weights), and the
-// remaining 59.064% split over plain C / U, R / RF, AR and trainer SR in the
-// proportions A4b's cards 1-3 use on average. These are the least certain
-// numbers here — the tier header rows of that screen would replace them.
+// SR is split into two pools (ESTIMATED_POOL_SPLITS): 'SRex' for the 12 Mega
+// ex SRs and 'SR' for the 4 trainer SRs, because card 4 draws only the former
+// (its SR 0.375% = 12 x 0.03125%, Mega Venusaur ex 0.031%). Every RR, UR, IM
+// and SSR in B4b is an ex.
 //
-// Rare pack cards 1-3 (read in part): UR 8% (4% each), IM 4%. That is a
-// uniform 4% draw over a 25-card pool = AR 6 + SR 16 + IM 1 + UR 2, i.e. no
-// SSR, matching the B-series rule that rare packs carry no shinies.
+// Card 3 (read in part): UR 0.158 (0.079 each), IM 0.889, SR 2.125. Mega
+// Venusaur ex is 0.125%, so 12 SR ex = 1.5 and the 4 trainer SRs share 0.625
+// (0.15625 each — exactly A4b's per-card SR rate). Foil Rookidee is 0.301%,
+// taken as the weight of every foil C and U (A4b gives CF and UF identical
+// per-card weights). The rest of card 3 was not captured: AR, R and RF split
+// the remaining 55.892% in A4b's card-3 proportions (guessed).
+//
+// Cards 1-2 were not captured at all: copied from A4b (guessed).
+//
+// Rare pack (read): cards 1-3 are a uniform 4% draw over AR 6 + SR 16 + IM 1
+// + UR 2 (no SSR); card 4 is 6.666% each over the 15 ex rares.
 // ---------------------------------------------------------------------------
 
-const B4B_CARDS_1_TO_3 = {
-  CF: 21.371, UF: 19.565, // read: 0.301% per card (71 CF, 65 UF)
-  C: 27.361, U: 19.120, R: 4.725, RF: 4.725, AR: 2.988, SR: 0.145, // guessed
+const B4B_CARDS_1_TO_4 = {
+  1: { C: 100 }, // guessed (A4b)
+  2: { C: 17.73, U: 82.27 }, // guessed (A4b)
+  3: {
+    UR: 0.158, IM: 0.889, SRex: 1.5, SR: 0.625, // read
+    CF: 21.371, UF: 19.565, // read: 0.301% per card (71 CF, 65 UF)
+    AR: 13.428, R: 21.232, RF: 21.232, // guessed
+  },
+  4: { UR: 0.04, IM: 0.222, SRex: 0.375, RR: 99.363 }, // read
 }
 
-// read: UR 0.040, IM 0.222, SRex 0.375; RR is the remainder (inferred).
-const B4B_CARD_4 = { UR: 0.04, IM: 0.222, SRex: 0.375, RR: 99.363 }
-
-// read: UR 8, IM 4 -> 4% per card over AR 6 + SR 4 + SRex 12 + IM 1 + UR 2.
+// read: 4% per card over AR 6 + SR 4 + SRex 12 + IM 1 + UR 2.
 const B4B_RARE_CARDS_1_TO_3 = { AR: 24, SR: 16, SRex: 48, IM: 4, UR: 8 }
 
 export const ESTIMATED_PULL_RATES = {
@@ -55,36 +60,24 @@ export const ESTIMATED_PULL_RATES = {
     'Regular Pack': {
       appearance_rate: 98.283,
       cards: 4,
-      slots: {
-        1: { ...B4B_CARDS_1_TO_3 },
-        2: { ...B4B_CARDS_1_TO_3 },
-        3: { ...B4B_CARDS_1_TO_3 },
-        4: { ...B4B_CARD_4 },
-      },
+      slots: { ...B4B_CARDS_1_TO_4 },
     },
     'Rare Pack': {
       appearance_rate: 0.05,
-      // guessed: 4 cards, the last mirroring the regular ex-only 4th card as a
-      // uniform draw over the 15 ex rares (UR 2, IM 1, SRex 12).
       cards: 4,
       slots: {
         1: { ...B4B_RARE_CARDS_1_TO_3 },
         2: { ...B4B_RARE_CARDS_1_TO_3 },
         3: { ...B4B_RARE_CARDS_1_TO_3 },
-        4: { SRex: 80, IM: 6.667, UR: 13.333 },
+        4: { UR: 13.333, IM: 6.666, SRex: 80 }, // read
       },
     },
     'Regular Pack +1': {
       appearance_rate: 1.666,
       cards: 5,
       slots: {
-        1: { ...B4B_CARDS_1_TO_3 },
-        2: { ...B4B_CARDS_1_TO_3 },
-        3: { ...B4B_CARDS_1_TO_3 },
-        4: { ...B4B_CARD_4 },
-        // guessed: B-series extra cards are shiny-only and B4b has no S, so
-        // the extra card is one of its 2 SSRs.
-        5: { SSR: 100 },
+        ...B4B_CARDS_1_TO_4, // read for card 4; cards 1-3 assumed same as Regular
+        5: { SSR: 100 }, // read: Dedenne ex / Mega Diancie ex 50% each
       },
     },
   },
