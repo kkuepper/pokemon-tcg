@@ -16,6 +16,13 @@ function loadJson(filename) {
 }
 
 const cards = loadJson('cards.min.json')
+
+// The tracker renders cards in output order, so sort each set by card number
+// (upstream shipped B4b shuffled). Sets keep their upstream order, which the
+// UI relies on for newest-first listing.
+const setOrder = new Map()
+for (const c of cards) if (!setOrder.has(c.set)) setOrder.set(c.set, setOrder.size)
+cards.sort((a, b) => setOrder.get(a.set) - setOrder.get(b.set) || a.number - b.number)
 const pullRates = loadJson('pullRates.json')
 const setsData = loadJson('sets.json')
 

@@ -18346,6 +18346,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/bulbasaur-b4b-001</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/ivysaur-b4b-002</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-venusaur-ex-b4b-003</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18366,12 +18376,37 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/scyther-b4b-007</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-pinsir-ex-b4b-008</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/celebi-b4b-009</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/treecko-b4b-010</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/grovyle-b4b-011</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-sceptile-ex-b4b-012</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/budew-b4b-013</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18386,7 +18421,77 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/cottonee-b4b-016</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/whimsicott-ex-b4b-017</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/petilil-b4b-018</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/lilligant-b4b-019</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/durant-b4b-020</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/sprigatito-b4b-021</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/floragato-b4b-022</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meowscarada-ex-b4b-023</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/smoliv-b4b-024</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/dolliv-b4b-025</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/arboliva-b4b-026</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/teal-mask-ogerpon-b4b-027</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/teal-mask-ogerpon-ex-b4b-028</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/charmander-b4b-029</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/charmeleon-b4b-030</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18411,6 +18516,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/rapidash-ex-b4b-035</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/cyndaquil-b4b-036</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18426,7 +18536,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/torchic-b4b-039</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/combusken-b4b-040</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-blaziken-ex-b4b-041</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/numel-b4b-042</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18436,7 +18561,72 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/victini-b4b-044</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/blacephalon-ex-b4b-045</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/fuecoco-b4b-046</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/crocalor-b4b-047</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/skeledirge-b4b-048</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/charcadet-b4b-049</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/armarouge-ex-b4b-050</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/hearthflame-mask-ogerpon-b4b-051</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/squirtle-b4b-052</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/wartortle-b4b-053</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-blastoise-ex-b4b-054</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-vulpix-b4b-055</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-ninetales-ex-b4b-056</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/slowpoke-b4b-057</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18446,7 +18636,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magikarp-b4b-059</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-gyarados-ex-b4b-060</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/vaporeon-ex-b4b-061</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/mudkip-b4b-062</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/marshtomp-b4b-063</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18486,6 +18696,61 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/froakie-b4b-071</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/frogadier-b4b-072</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/greninja-ex-b4b-073</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/sobble-b4b-074</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/drizzile-b4b-075</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/inteleon-b4b-076</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/iron-bundle-ex-b4b-077</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/frigibax-b4b-078</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/arctibax-b4b-079</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/baxcalibur-b4b-080</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/chien-pao-ex-b4b-081</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/pikachu-b4b-082</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18496,7 +18761,42 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magnemite-b4b-084</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magneton-b4b-085</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magnezone-ex-b4b-086</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/jolteon-ex-b4b-087</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/mareep-b4b-088</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/flaaffy-b4b-089</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-ampharos-ex-b4b-090</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/electrike-b4b-091</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18531,6 +18831,36 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/toxel-b4b-098</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/toxtricity-ex-b4b-099</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/tadbulb-b4b-100</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/bellibolt-ex-b4b-101</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/iron-thorns-b4b-102</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/miraidon-ex-b4b-103</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/ralts-b4b-104</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18556,7 +18886,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/chingling-b4b-109</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mime-jr-b4b-110</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meloetta-b4b-111</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18566,7 +18906,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/klefki-b4b-113</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-diancie-ex-b4b-114</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/mimikyu-ex-b4b-115</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/indeedee-ex-b4b-116</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18576,7 +18931,47 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/bramblin-b4b-118</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/brambleghast-b4b-119</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/flutter-mane-ex-b4b-120</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/gimmighoul-b4b-121</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/onix-b4b-122</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/hitmonchan-ex-b4b-123</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/trapinch-b4b-124</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-lopunny-ex-b4b-125</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/riolu-b4b-126</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18591,12 +18986,62 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/roggenrola-b4b-129</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/boldore-b4b-130</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/gigalith-ex-b4b-131</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/dwebble-b4b-132</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/crustle-ex-b4b-133</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/rockruff-b4b-134</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/falinks-b4b-135</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/koraidon-ex-b4b-136</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-grimer-b4b-137</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-muk-b4b-138</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/gastly-b4b-139</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/haunter-b4b-140</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18616,12 +19061,57 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/darkrai-b4b-144</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/zorua-b4b-145</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/zoroark-ex-b4b-146</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/skrelp-b4b-147</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/dragalge-ex-b4b-148</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/hoopa-ex-b4b-149</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/zarude-b4b-150</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/bombirdier-b4b-151</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/roaring-moon-b4b-152</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-meowth-b4b-153</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-perrserker-b4b-154</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18656,6 +19146,46 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/honedge-b4b-161</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/doublade-b4b-162</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-163</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-164</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meltan-b4b-165</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/melmetal-ex-b4b-166</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/corviknight-ex-b4b-167</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/gholdengo-ex-b4b-168</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/dratini-b4b-169</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18666,7 +19196,32 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/vibrava-b4b-171</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/flygon-ex-b4b-172</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-rayquaza-ex-b4b-173</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/axew-b4b-174</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/fraxure-b4b-175</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/haxorus-b4b-176</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18686,12 +19241,52 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meowth-b4b-180</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mega-kangaskhan-ex-b4b-181</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/tauros-ex-b4b-182</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/eevee-b4b-183</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/skitty-b4b-184</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/delcatty-b4b-185</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/swablu-b4b-186</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/buneary-b4b-187</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/munchlax-b4b-188</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/lillipup-b4b-189</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18717,6 +19312,16 @@
   </url>
   <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/swanna-ex-b4b-194</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/rookidee-b4b-195</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/corvisquire-b4b-196</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18921,6 +19526,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/bulbasaur-b4b-237</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/ivysaur-b4b-238</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/caterpie-b4b-239</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18936,12 +19551,92 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/scyther-b4b-242</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/celebi-b4b-243</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/treecko-b4b-244</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/grovyle-b4b-245</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/budew-b4b-246</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/combee-b4b-247</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/cottonee-b4b-248</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/petilil-b4b-249</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/lilligant-b4b-250</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/durant-b4b-251</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/sprigatito-b4b-252</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/floragato-b4b-253</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/smoliv-b4b-254</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/dolliv-b4b-255</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/arboliva-b4b-256</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/teal-mask-ogerpon-b4b-257</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/charmander-b4b-258</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/charmeleon-b4b-259</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -18966,6 +19661,86 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/torchic-b4b-264</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/combusken-b4b-265</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/numel-b4b-266</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/victini-b4b-267</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/fuecoco-b4b-268</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/crocalor-b4b-269</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/skeledirge-b4b-270</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/charcadet-b4b-271</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/hearthflame-mask-ogerpon-b4b-272</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/squirtle-b4b-273</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/wartortle-b4b-274</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-vulpix-b4b-275</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/slowpoke-b4b-276</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magikarp-b4b-277</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/mudkip-b4b-278</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/marshtomp-b4b-279</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/carvanha-b4b-280</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -18981,12 +19756,77 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/froakie-b4b-283</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/frogadier-b4b-284</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/sobble-b4b-285</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/drizzile-b4b-286</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/inteleon-b4b-287</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/frigibax-b4b-288</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/arctibax-b4b-289</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/baxcalibur-b4b-290</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/pikachu-b4b-291</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/raichu-b4b-292</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magnemite-b4b-293</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/magneton-b4b-294</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/mareep-b4b-295</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/flaaffy-b4b-296</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/electrike-b4b-297</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19002,6 +19842,16 @@
   </url>
   <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/yamper-b4b-300</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/toxel-b4b-301</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/tadbulb-b4b-302</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19026,7 +19876,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/chingling-b4b-307</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/mime-jr-b4b-308</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meloetta-b4b-309</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19036,12 +19896,107 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/klefki-b4b-311</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/fidough-b4b-312</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/bramblin-b4b-313</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/brambleghast-b4b-314</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/gimmighoul-b4b-315</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/onix-b4b-316</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/trapinch-b4b-317</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/riolu-b4b-318</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/roggenrola-b4b-319</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/boldore-b4b-320</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/dwebble-b4b-321</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/rockruff-b4b-322</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/falinks-b4b-323</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-grimer-b4b-324</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-muk-b4b-325</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/gastly-b4b-326</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/haunter-b4b-327</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/darkrai-b4b-328</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/zorua-b4b-329</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/skrelp-b4b-330</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/zarude-b4b-331</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19056,12 +20011,47 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-meowth-b4b-334</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-perrserker-b4b-335</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/beldum-b4b-336</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/metang-b4b-337</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/honedge-b4b-338</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/doublade-b4b-339</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-340</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-341</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meltan-b4b-342</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19081,6 +20071,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/axew-b4b-346</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/fraxure-b4b-347</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/haxorus-b4b-348</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/drampa-b4b-349</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -19092,6 +20097,31 @@
   </url>
   <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/raticate-b4b-351</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/meowth-b4b-352</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/eevee-b4b-353</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/skitty-b4b-354</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/delcatty-b4b-355</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kkuepper.github.io/pokemon-tcg/swablu-b4b-356</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19457,1036 +20487,6 @@
   </url>
   <url>
     <loc>https://kkuepper.github.io/pokemon-tcg/koraidon-ex-b4b-429</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/bulbasaur-b4b-001</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/ivysaur-b4b-002</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/scyther-b4b-007</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/celebi-b4b-009</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/treecko-b4b-010</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/grovyle-b4b-011</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/budew-b4b-013</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/cottonee-b4b-016</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/whimsicott-ex-b4b-017</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/petilil-b4b-018</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/lilligant-b4b-019</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/durant-b4b-020</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/sprigatito-b4b-021</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/floragato-b4b-022</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meowscarada-ex-b4b-023</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/smoliv-b4b-024</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/dolliv-b4b-025</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/arboliva-b4b-026</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/teal-mask-ogerpon-ex-b4b-028</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/charmander-b4b-029</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/charmeleon-b4b-030</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/rapidash-ex-b4b-035</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/torchic-b4b-039</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/combusken-b4b-040</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/numel-b4b-042</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/victini-b4b-044</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/blacephalon-ex-b4b-045</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/fuecoco-b4b-046</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/crocalor-b4b-047</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/skeledirge-b4b-048</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/charcadet-b4b-049</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/armarouge-ex-b4b-050</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/hearthflame-mask-ogerpon-b4b-051</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/squirtle-b4b-052</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/wartortle-b4b-053</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-vulpix-b4b-055</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-ninetales-ex-b4b-056</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/slowpoke-b4b-057</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magikarp-b4b-059</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/vaporeon-ex-b4b-061</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/mudkip-b4b-062</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/marshtomp-b4b-063</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/froakie-b4b-071</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/frogadier-b4b-072</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/greninja-ex-b4b-073</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/sobble-b4b-074</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/drizzile-b4b-075</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/inteleon-b4b-076</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/iron-bundle-ex-b4b-077</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/frigibax-b4b-078</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/arctibax-b4b-079</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/baxcalibur-b4b-080</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/chien-pao-ex-b4b-081</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magnemite-b4b-084</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magneton-b4b-085</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magnezone-ex-b4b-086</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/jolteon-ex-b4b-087</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/mareep-b4b-088</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/flaaffy-b4b-089</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/electrike-b4b-091</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/toxel-b4b-098</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/toxtricity-ex-b4b-099</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/tadbulb-b4b-100</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/bellibolt-ex-b4b-101</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/iron-thorns-b4b-102</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/miraidon-ex-b4b-103</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/chingling-b4b-109</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meloetta-b4b-111</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/klefki-b4b-113</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/mimikyu-ex-b4b-115</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/indeedee-ex-b4b-116</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/bramblin-b4b-118</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/brambleghast-b4b-119</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/flutter-mane-ex-b4b-120</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/gimmighoul-b4b-121</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/onix-b4b-122</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/hitmonchan-ex-b4b-123</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/trapinch-b4b-124</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/riolu-b4b-126</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/roggenrola-b4b-129</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/boldore-b4b-130</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/gigalith-ex-b4b-131</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/dwebble-b4b-132</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/crustle-ex-b4b-133</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/falinks-b4b-135</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-grimer-b4b-137</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-muk-b4b-138</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/gastly-b4b-139</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/haunter-b4b-140</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/darkrai-b4b-144</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/zorua-b4b-145</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/zoroark-ex-b4b-146</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/skrelp-b4b-147</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/dragalge-ex-b4b-148</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/zarude-b4b-150</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/bombirdier-b4b-151</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-meowth-b4b-153</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-perrserker-b4b-154</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/honedge-b4b-161</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/doublade-b4b-162</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-163</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-164</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meltan-b4b-165</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/melmetal-ex-b4b-166</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/corviknight-ex-b4b-167</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/gholdengo-ex-b4b-168</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/vibrava-b4b-171</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/flygon-ex-b4b-172</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/axew-b4b-174</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/fraxure-b4b-175</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/haxorus-b4b-176</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meowth-b4b-180</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/tauros-ex-b4b-182</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/eevee-b4b-183</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/skitty-b4b-184</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/delcatty-b4b-185</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/swablu-b4b-186</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/buneary-b4b-187</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/lillipup-b4b-189</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/rookidee-b4b-195</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/corvisquire-b4b-196</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/bulbasaur-b4b-237</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/ivysaur-b4b-238</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/scyther-b4b-242</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/celebi-b4b-243</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/treecko-b4b-244</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/grovyle-b4b-245</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/budew-b4b-246</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/cottonee-b4b-248</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/petilil-b4b-249</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/lilligant-b4b-250</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/durant-b4b-251</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/sprigatito-b4b-252</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/floragato-b4b-253</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/smoliv-b4b-254</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/dolliv-b4b-255</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/arboliva-b4b-256</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/charmander-b4b-258</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/charmeleon-b4b-259</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/torchic-b4b-264</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/combusken-b4b-265</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/numel-b4b-266</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/victini-b4b-267</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/fuecoco-b4b-268</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/crocalor-b4b-269</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/skeledirge-b4b-270</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/charcadet-b4b-271</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/hearthflame-mask-ogerpon-b4b-272</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/squirtle-b4b-273</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/wartortle-b4b-274</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-vulpix-b4b-275</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/slowpoke-b4b-276</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magikarp-b4b-277</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/mudkip-b4b-278</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/marshtomp-b4b-279</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/froakie-b4b-283</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/frogadier-b4b-284</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/sobble-b4b-285</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/drizzile-b4b-286</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/inteleon-b4b-287</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/frigibax-b4b-288</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/arctibax-b4b-289</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/baxcalibur-b4b-290</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magnemite-b4b-293</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/magneton-b4b-294</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/mareep-b4b-295</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/flaaffy-b4b-296</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/electrike-b4b-297</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/toxel-b4b-301</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/tadbulb-b4b-302</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/chingling-b4b-307</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meloetta-b4b-309</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/klefki-b4b-311</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/bramblin-b4b-313</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/brambleghast-b4b-314</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/gimmighoul-b4b-315</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/onix-b4b-316</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/trapinch-b4b-317</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/riolu-b4b-318</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/roggenrola-b4b-319</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/boldore-b4b-320</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/dwebble-b4b-321</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/falinks-b4b-323</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-grimer-b4b-324</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/alolan-muk-b4b-325</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/gastly-b4b-326</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/haunter-b4b-327</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/darkrai-b4b-328</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/zorua-b4b-329</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/skrelp-b4b-330</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/zarude-b4b-331</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-meowth-b4b-334</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/galarian-perrserker-b4b-335</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/honedge-b4b-338</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/doublade-b4b-339</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-340</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/aegislash-b4b-341</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meltan-b4b-342</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/axew-b4b-346</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/fraxure-b4b-347</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/haxorus-b4b-348</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/meowth-b4b-352</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/eevee-b4b-353</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/skitty-b4b-354</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/delcatty-b4b-355</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://kkuepper.github.io/pokemon-tcg/swablu-b4b-356</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
