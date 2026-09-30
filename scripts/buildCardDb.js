@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { ESTIMATED_PULL_RATES } from './estimatedPullRates.js'
+import { ESTIMATED_PULL_RATES, ESTIMATED_POOL_SPLITS } from './estimatedPullRates.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
@@ -88,6 +88,15 @@ function poolKey(rarity, foil = false, setRates = null) {
   return rarity === 'SAR' ? 'SR' : rarity
 }
 
+// Pool key for a specific card. An estimated set may split a rarity into
+// sub-pools (e.g. B4b's ex-only 4th card draws only its SR ex cards); the split
+// only applies while the set's rates come from the estimate, since upstream's
+// tables won't know the sub-pool keys.
+function cardPoolKey(card) {
+  const split = estimatedSets.has(card.set) ? ESTIMATED_POOL_SPLITS[card.set]?.(card) : null
+  return split ?? poolKey(card.rarity, isFoil(card.image), pullRates[card.set])
+}
+
 // Rarities eligible for Rare Pack
 const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 
@@ -95,7 +104,7 @@ const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 const packPoolMap = {}
 for (const card of cards) {
   const cardPacks = card.packs ?? setPacksMap[card.set] ?? []
-  const pk = poolKey(card.rarity, isFoil(card.image), pullRates[card.set])
+  const pk = cardPoolKey(card)
   for (const pack of cardPacks) {
     const k = `${card.set}::${pack}::${pk}`
     packPoolMap[k] = (packPoolMap[k] || 0) + 1
@@ -105,7 +114,7 @@ for (const card of cards) {
 // Build whole-set pool for Rare Pack (not variant-specific)
 const setPoolMap = {}
 for (const card of cards) {
-  const pk = poolKey(card.rarity, isFoil(card.image), pullRates[card.set])
+  const pk = cardPoolKey(card)
   const k = `${card.set}::${pk}`
   setPoolMap[k] = (setPoolMap[k] || 0) + 1
 }
@@ -165,8 +174,7 @@ for (const card of cards) {
   const plus1Appr = (regularPackPlus?.appearance_rate ?? 0) / 100
   const themedAppr = (themedRarePack?.appearance_rate ?? 0) / 100
 
-  const foil = isFoil(image)
-  const pk = poolKey(rarity, foil, rates)
+  const pk = cardPoolKey(card)
 
   for (const pack of packs) {
     const packPoolSz = packPoolMap[`${set}::${pack}::${pk}`] ?? 1
@@ -191,12 +199,9 @@ for (const card of cards) {
     // Rare Pack: pool is across all cards of that rarity in the whole set
     if (rarePack && RARE_PACK_RARITIES.has(rarity)) {
       const setPoolSz = setPoolMap[`${set}::${pk}`] ?? 1
-      // All slots in Rare Pack have the same rates — use slot '1' as reference
-      const rareSlotKey = Object.keys(rarePack.slots)[0]
-      const rSlotPct = rarePack.slots[rareSlotKey]?.[pk] ?? 0
-      const rPerSlot = perCardProb(rSlotPct, setPoolSz)
-      const numSlots = rarePack.cards ?? 5
-      rarePackRate = 1 - Math.pow(1 - rPerSlot, numSlots)
+      // Usually every Rare Pack slot has the same table, but not always (B4b's
+      // 4th card differs), so combine the slots individually.
+      rarePackRate = atLeastOnce(findRarityInSlots(rarePack.slots, pk, setPoolSz))
     }
 
     // Themed Rare Pack (B2b: all SSR)
