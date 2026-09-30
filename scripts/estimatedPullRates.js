@@ -30,13 +30,14 @@
 // (its SR 0.375% = 12 x 0.03125%, Mega Venusaur ex 0.031%). Every RR, UR, IM
 // and SSR in B4b is an ex.
 //
-// Card 3 (read in part): UR 0.158 (0.079 each), IM 0.889, SR 2.125. Mega
-// Venusaur ex is 0.125%, so 12 SR ex = 1.5 and the 4 trainer SRs share 0.625
-// (0.15625 each — exactly A4b's per-card SR rate). Foil Rookidee shows 0.301%:
-// A4b's foil C+U tier (41.006%, one per-card weight for CF and UF alike)
-// spread over B4b's 136 foil C/U gives 0.3015 — consistent, so it is used.
-// The rest of card 3 was not captured: AR, R and RF split the remaining
-// 55.822% in A4b's card-3 proportions (guessed).
+// Card 3 (read): UR 0.158 (0.079 each), IM 0.889, SR 2.125 (12 SR ex at
+// 0.125 + 4 trainer SRs at 0.156 — the trainers appear nowhere else in a
+// regular pack), AR 12.858 (2.143 each). Every parallel foil — C, U and R
+// alike — shows 0.301%, and the foil-U tier header reads 19.578% = 65 x
+// 0.3012, so all three foil pools use that per-card weight and plain U is
+// absent. Plain R was not captured: it takes the remaining 33.971% (1.132
+// each), assuming no SSR in this slot (guessed; the 3-diamond header should
+// then read 43.007%).
 //
 // Cards 1-2 (read): identical to A4b. Card 1 is 71 plain C at 1.408% each;
 // card 2 is C 17.73% (0.249% each) / U 82.27% (1.265% each), no foils.
@@ -49,9 +50,9 @@ const B4B_CARDS_1_TO_4 = {
   1: { C: 100 }, // read
   2: { C: 17.73, U: 82.27 }, // read
   3: {
-    UR: 0.158, IM: 0.889, SRex: 1.5, SR: 0.625, // read
-    CF: 21.408, UF: 19.598, // read: 0.301% per card shown (71 CF, 65 UF)
-    AR: 13.412, R: 21.205, RF: 21.205, // guessed
+    UR: 0.158, IM: 0.889, SRex: 1.5, SR: 0.625, AR: 12.858, // read
+    UF: 19.578, CF: 21.385, RF: 9.036, // read: 0.3012% per foil card
+    R: 33.971, // remainder (guessed: assumes nothing else in this slot)
   },
   4: { UR: 0.04, IM: 0.222, SRex: 0.375, RR: 99.363 }, // read
 }
