@@ -3,6 +3,9 @@ import './style.css'
 import Root from './Root.vue'
 import { router } from './router'
 import posthog from 'posthog-js'
+import { hasAnalyticsConsent, loadAnalytics } from './analytics'
+
+if (hasAnalyticsConsent()) loadAnalytics()
 
 try {
   posthog.init('phc_zYbiSnzsMpq4qYZmCtnVFtgi4PhUeu2JhaFB4UCJRvpL', {
