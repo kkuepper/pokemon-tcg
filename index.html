@@ -4,6 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/pokeball.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Cookieless GA4 (G-881GKMN0JQ). PostHog stays until this is confirmed live. -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-881GKMN0JQ"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied'
+      });
+      gtag('js', new Date());
+      gtag('config', 'G-881GKMN0JQ', { client_storage: 'none' });
+    </script>
     <title>Pokémon TCG Pocket — Tracker & Odds Calculator</title>
     <meta name="description" content="Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket. See probabilities for all sets and rarities." />
     <link rel="canonical" href="https://kkuepper.github.io/pokemon-tcg/" />
