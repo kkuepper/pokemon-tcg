@@ -721,7 +721,7 @@ onUnmounted(() => {
                 :key="card.id"
                 v-memo="[isOwned(card.id), loadedCards.has(card.id), dragRangeIds.has(card.id), pendingCardId === card.id, selectedCard?.id === card.id]"
                 :data-card-id="card.id"
-                :title="`${card.name} — tap to view, hold to mark`"
+                :title="`${card.name} — tap to mark owned, hold to mark more`"
                 class="relative aspect-[2/3] rounded overflow-hidden"
                 :class="gestureState === 'idle' ? 'cursor-pointer' : 'cursor-grabbing'"
                 :style="isOwned(card.id) ? 'touch-action: manipulation; background: linear-gradient(135deg, #5f7067, #625b6e)' : 'touch-action: manipulation'"
