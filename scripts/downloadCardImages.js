@@ -14,9 +14,14 @@ const OUT_DIR  = resolve(root, 'public', 'images', 'cards')
 // Primary source: our own deployed site already serves the resized thumbnails
 // from the last successful build — fast (GitHub CDN), correctly sized, and it
 // avoids cold-hammering the upstream CDN (which throttles bulk requests). New
-// images not in the last deploy fall back to the upstream CDN below.
+// images not in the last deploy try Limitless, then the upstream CDN.
 const PAGES_URL = 'https://kkuepper.github.io/pokemon-tcg/images/cards'
-// Fallback source: upstream full-size originals, resized locally to TARGET_HEIGHT.
+// Second source: Limitless publishes new-set art the day a pack drops. The
+// upstream CDN below often 404s for about a week after release (B4b was live
+// here on 30 Sep 2026 while jsDelivr still had nothing). Small EN thumbs,
+// resized locally to TARGET_HEIGHT. Path is /{set}/{set}_{nnn}_EN_SM.webp.
+const LIMITLESS_URL = 'https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/pocket'
+// Last source: upstream full-size originals, resized locally to TARGET_HEIGHT.
 const CDN_URL  = 'https://cdn.jsdelivr.net/gh/flibustier/pokemon-tcg-exchange@main/public/images/cards-by-set'
 const TARGET_HEIGHT = 200
 const CONCURRENCY   = 20
@@ -96,8 +101,23 @@ async function processOne({ set, num }) {
       return
     }
 
-    // 2. Fall back to the upstream full-size original and resize it. Used for
-    //    brand-new images that weren't in the last deploy.
+    // 2. Limitless, for a pack whose art isn't on our last deploy or upstream yet.
+    const padded = String(num).padStart(3, '0')
+    let early = null
+    try {
+      early = await fetchImage(`${LIMITLESS_URL}/${set}/${set}_${padded}_EN_SM.webp`)
+    } catch { /* fall through to the upstream CDN */ }
+    if (early) {
+      mkdirSync(outDir, { recursive: true })
+      await sharp(early)
+        .resize({ height: TARGET_HEIGHT, withoutEnlargement: true })
+        .webp({ quality: 85 })
+        .toFile(outPath)
+      progress()
+      return
+    }
+
+    // 3. Fall back to the upstream full-size original and resize it.
     const full = await fetchImage(`${CDN_URL}/${set}/${num}.webp`)
     if (full === null) {
       missing++
