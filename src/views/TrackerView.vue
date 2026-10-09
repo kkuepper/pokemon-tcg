@@ -817,7 +817,7 @@ onUnmounted(() => {
             </div>
           </div>
           <div v-else class="hidden lg:flex items-center justify-center h-40 rounded-xl border border-dashed border-gray-200 text-gray-400 text-sm">
-            ← Tap the magnifying glass on a card to see its odds
+            ← Click the magnifying glass on a card to see its odds
           </div>
 
         </div>
