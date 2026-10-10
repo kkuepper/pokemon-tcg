@@ -25,7 +25,13 @@
       "operatingSystem": "Web"
     }
     </script>
-    <script async src="https://analytics.palmeta.net/a.js" data-write-key="I5KM-v6_7blOkHMZmiB6UQ"></script>
+    <script>
+      window.palmetaAnalytics = window.palmetaAnalytics || function (name, value) { ;(window.palmetaAnalytics.q = window.palmetaAnalytics.q || []).push([name, value]) }
+      window.palmetaAnalytics.q = window.palmetaAnalytics.q || []
+      window.palmetaAnalytics.setVisitors = function (mode) { window.palmetaAnalytics('setVisitors', mode) }
+      if (document.cookie.split('; ').indexOf('analytics_consent=granted') !== -1) window.palmetaAnalytics.setVisitors('persistent')
+    </script>
+    <script async src="https://analytics.palmeta.net/a.js" data-write-key="I5KM-v6_7blOkHMZmiB6UQ" data-visitors="session"></script>
   </head>
   <body>
     <div id="app"></div>
