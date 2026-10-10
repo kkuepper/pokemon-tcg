@@ -41,7 +41,7 @@
       <section class="space-y-2">
         <h2 class="text-base font-semibold text-gray-900">PostHog</h2>
         <p>
-          PostHog runs on every visit, including when you choose No thanks or turn analytics off. It stores its own cookie and sends events about how the page is used, such as searches, filters, card choices, pack counts, and collection changes. It can also record errors. Autocapture and heatmaps are off.
+          PostHog runs on every visit, including when you choose No thanks or turn analytics off. It stores a random id in a cookie and in localStorage. It currently records sessions (a replay of the page and what you do on it, with typed input masked, plus console logs), page views and page leaves with the full URL, page performance timing, errors, and events such as searches, filters, card choices, pack counts, and collection changes. Autocapture and heatmaps are off.
         </p>
       </section>
 

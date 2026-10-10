@@ -14,7 +14,7 @@ const visible = computed(() => choice.value === 'unknown')
     aria-label="Analytics"
   >
     <p>
-      This tab stores an analytics session marker. If you accept, a visitor id is stored in this browser and Google Analytics may set cookies. PostHog runs either way.
+      This tab stores an analytics session marker. If you accept, a visitor id is stored in this browser and Google Analytics may set cookies. PostHog runs either way, including session recording.
       <RouterLink to="/privacy" class="font-medium text-blue-700 underline hover:text-blue-800">Privacy</RouterLink>
     </p>
     <button

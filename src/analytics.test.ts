@@ -172,7 +172,7 @@ describe('palmeta visitor consent', () => {
     const banner = readFileSync(resolve('src/components/CookieBanner.vue'), 'utf8')
     expect(banner).toContain('analytics session marker')
     expect(banner).toContain('visitor id')
-    expect(banner).toContain('PostHog runs either way')
+    expect(banner).toContain('PostHog runs either way, including session recording.')
     expect(banner).not.toContain('This site uses analytics cookies')
     expect(banner).toContain('to="/privacy"')
   })
@@ -201,7 +201,7 @@ describe('palmeta visitor consent', () => {
     expect(page).toContain('deletes the visitor id')
     expect(page).toContain('removes those _ga cookies')
     expect(page).toContain('G-881GKMN0JQ')
-    expect(page).toContain('PostHog runs on every visit')
+    expect(page).toContain('PostHog runs on every visit, including when you choose No thanks or turn analytics off. It stores a random id in a cookie and in localStorage. It currently records sessions (a replay of the page and what you do on it, with typed input masked, plus console logs), page views and page leaves with the full URL, page performance timing, errors, and events such as searches, filters, card choices, pack counts, and collection changes. Autocapture and heatmaps are off.')
     const router = readFileSync(resolve('src/router.ts'), 'utf8')
     expect(router.indexOf("path: '/privacy'")).toBeLessThan(router.indexOf("path: '/:slug?'"))
     expect(readFileSync(resolve('src/main.ts'), 'utf8')).toContain('installGaPageViews(router)')
@@ -251,6 +251,11 @@ describe('google analytics hits', () => {
 
     expect(pageViewsOf(win)).toHaveLength(1)
     expect(win[GA_DISABLE_KEY]).toBe(true)
+    const denied = (win.dataLayer as IArguments[]).some((entry) => {
+      const update = entry[2] as { analytics_storage?: string } | undefined
+      return entry[0] === 'consent' && entry[1] === 'update' && update?.analytics_storage === 'denied'
+    })
+    expect(denied).toBe(true)
     expect(writes).toEqual(expect.arrayContaining(gaCookieClears()))
     for (const clear of gaCookieClears()) {
       expect(clear.startsWith('_ga')).toBe(true)
