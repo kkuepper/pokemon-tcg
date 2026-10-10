@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { acceptAnalytics, hasAnalyticsConsent } from '../analytics'
+import { acceptAnalytics, declineAnalytics, hasAnalyticsConsent } from '../analytics'
 
 const visible = ref(!hasAnalyticsConsent())
 
@@ -10,6 +10,7 @@ function accept() {
 }
 
 function decline() {
+  declineAnalytics()
   visible.value = false
 }
 </script>
@@ -21,7 +22,7 @@ function decline() {
     role="region"
     aria-label="Cookies"
   >
-    <p>This site uses analytics cookies to understand visits.</p>
+    <p>This site uses analytics cookies to understand visits. An analytics session marker is stored in this tab. After you accept, a visitor id is stored in this browser to count unique visitors.</p>
     <button
       type="button"
       class="rounded-lg bg-blue-600 px-3 py-1.5 font-medium text-white hover:bg-blue-700"
