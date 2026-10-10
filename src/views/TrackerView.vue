@@ -5,6 +5,7 @@ import { useCardDb } from '../composables/useCardDb'
 import { useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
 import AuthButton from '../components/AuthButton.vue'
+import SiteFooter from '../components/SiteFooter.vue'
 import PackOdds from '../components/PackOdds.vue'
 import BestPackPanel from '../components/BestPackPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
@@ -825,11 +826,6 @@ onUnmounted(() => {
       </div>
     </main>
 
-    <footer class="text-center text-xs text-gray-400 py-6">
-      Pull rates sourced from
-      <a href="https://github.com/flibustier/pokemon-tcg-pocket-database" target="_blank" rel="noopener"
-        class="underline hover:text-gray-600">pokemon-tcg-pocket-database</a>.
-      Not affiliated with The Pokémon Company.
-    </footer>
+    <SiteFooter />
   </div>
 </template>
