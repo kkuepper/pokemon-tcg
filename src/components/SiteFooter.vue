@@ -15,10 +15,9 @@ function toggle() {
       <button
         type="button"
         class="underline hover:text-gray-600"
-        :aria-pressed="choice === 'granted'"
         @click="toggle"
       >
-        Analytics: {{ choice === 'granted' ? 'on' : 'off' }}
+        Analytics: {{ choice === 'granted' ? 'on' : choice === 'declined' ? 'off' : 'not set' }}
       </button>
       <span aria-hidden="true"> · </span>
       <RouterLink to="/privacy" class="underline hover:text-gray-600">Privacy</RouterLink>

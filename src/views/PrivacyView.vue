@@ -34,7 +34,7 @@
       <section class="space-y-2">
         <h2 class="text-base font-semibold text-gray-900">Google Analytics</h2>
         <p>
-          Google Analytics (G-881GKMN0JQ) loads only after you accept, and it may set analytics cookies. Analytics off deletes the consent cookie named analytics_consent. Later visits do not load Google Analytics until you turn it on again.
+          Google Analytics (G-881GKMN0JQ) loads only after you accept, and it may set _ga cookies. Analytics off removes those _ga cookies and the consent cookie named analytics_consent. Later visits do not load Google Analytics until you turn it on again.
         </p>
       </section>
 

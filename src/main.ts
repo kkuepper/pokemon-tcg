@@ -3,8 +3,9 @@ import './style.css'
 import Root from './Root.vue'
 import { router } from './router'
 import posthog from 'posthog-js'
-import { hasAnalyticsConsent, loadAnalytics } from './analytics'
+import { hasAnalyticsConsent, installGaPageViews, loadAnalytics } from './analytics'
 
+installGaPageViews(router)
 if (hasAnalyticsConsent()) loadAnalytics()
 
 try {
