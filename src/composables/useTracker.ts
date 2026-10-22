@@ -1,12 +1,14 @@
 import { ref, shallowRef, triggerRef, watch } from 'vue'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
-import { trackPalmetaEvent } from '../analytics'
+import { cardTrackedAwaitingScript, trackPalmetaEvent } from '../analytics'
 import { useAuth } from './useAuth'
 
 const STORAGE_KEY = 'ptcgp-tracker-owned'
-/** Ids already included in a card_tracked event from this browser. Not sent. */
+/** Card ids already included in a card_tracked count. The count does not send these ids. */
 const REPORTED_KEY = 'ptcgp-tracked-reported'
+/** Card ids still waiting to be included in a card_tracked count. This count does not send them. */
+const PENDING_KEY = 'ptcgp-tracked-pending'
 const SAVE_DEBOUNCE_MS = 300
 
 const ownedIds = shallowRef<Set<string>>(
@@ -19,44 +21,82 @@ let _lsTimer: ReturnType<typeof setTimeout> | null = null
 
 // Moved from untracked to tracked through toggle or setOwned since the last save.
 // Firestore merges and the localStorage load assign ownedIds directly, so they stay out.
-const pendingTracked = new Set<string>()
+// Ids left here are only this count's queue, including ones a blocked a.js has not taken.
+const pendingTracked = new Set<string>(readIdList(PENDING_KEY))
+let flushHolds = 0
 
 function noteTracked(cardId: string) {
   pendingTracked.add(cardId)
 }
 
-function loadReported(): Set<string> {
+function readIdList(key: string): string[] {
   try {
-    const raw = localStorage.getItem(REPORTED_KEY)
-    if (!raw) return new Set()
+    const raw = localStorage.getItem(key)
+    if (!raw) return []
     const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return new Set()
-    return new Set(parsed.filter((id): id is string => typeof id === 'string'))
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((id): id is string => typeof id === 'string')
   } catch {
-    return new Set()
+    return []
   }
+}
+
+function loadReported(): Set<string> {
+  return new Set(readIdList(REPORTED_KEY))
 }
 
 function saveReported(ids: Set<string>) {
   try {
     localStorage.setItem(REPORTED_KEY, JSON.stringify([...ids]))
   } catch {
-    // Private mode can reject storage. The count was already handed to Palmeta.
+    // Private mode can reject storage. This count was already handed to a.js.
   }
 }
 
-// Runs after the owned-card save debounce. Drops cards a drag put back, and
-// cards this browser has already reported. One card_tracked batch per flush, or none.
+function persistPending() {
+  try {
+    if (pendingTracked.size === 0) localStorage.removeItem(PENDING_KEY)
+    else localStorage.setItem(PENDING_KEY, JSON.stringify([...pendingTracked]))
+  } catch {
+    // Private mode can reject storage. The in-memory queue for this count remains.
+  }
+}
+
+/**
+ * Touch marks stay provisional until touchend or until a scroll cancels them.
+ * While held, this count is not flushed.
+ */
+export function holdCardTrackedFlush() {
+  flushHolds++
+}
+
+export function releaseCardTrackedFlush() {
+  if (flushHolds === 0) return
+  flushHolds--
+  if (flushHolds === 0) flushCardTracked()
+}
+
+// Drops cards a drag or scroll put back, and cards this count already included.
+// One card_tracked batch per flush, or none. A second flush does not resend.
 function flushCardTracked() {
+  if (flushHolds > 0) return
+
   const stillTracked: string[] = []
   for (const id of pendingTracked) {
     if (ownedIds.value.has(id)) stillTracked.push(id)
   }
   pendingTracked.clear()
+  for (const id of stillTracked) pendingTracked.add(id)
 
   const reported = loadReported()
-  const fresh = stillTracked.filter(id => !reported.has(id))
-  if (fresh.length === 0) return
+  for (const id of stillTracked) {
+    if (reported.has(id)) pendingTracked.delete(id)
+  }
+  const fresh = [...pendingTracked]
+  if (fresh.length === 0) {
+    persistPending()
+    return
+  }
 
   let sent = false
   try {
@@ -64,10 +104,31 @@ function flushCardTracked() {
   } catch {
     sent = false
   }
-  if (!sent) return
+  if (!sent) {
+    // Consent off drops this count. A missing or still-stubbed script keeps it
+    // for a later visit. Reported ids are written only after a.js accepts it.
+    if (!cardTrackedAwaitingScript()) pendingTracked.clear()
+    persistPending()
+    return
+  }
 
-  for (const id of fresh) reported.add(id)
+  for (const id of fresh) {
+    reported.add(id)
+    pendingTracked.delete(id)
+  }
   saveReported(reported)
+  persistPending()
+}
+
+function onVisibilityChange() {
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+    flushCardTracked()
+  }
+}
+
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('pagehide', flushCardTracked)
+  window.addEventListener('visibilitychange', onVisibilityChange)
 }
 
 // Defer off the render critical path so it doesn't block visual updates

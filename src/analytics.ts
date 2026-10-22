@@ -9,9 +9,10 @@
  * A decline is remembered as the fixed localStorage word "declined". That value
  * is not an identifier and is not sent with requests.
  *
- * Custom events go through palmetaAnalytics('event', { name, count }). They carry
- * no visitor id. a.js keeps at most 50 of a pending count per write and flushes
- * on pagehide. Calls are skipped without consent, and when the script is absent.
+ * card_tracked is one anonymous count. This count sends no card names or ids and
+ * no visitor id. a.js keeps at most 50 of that count per write. The count is
+ * skipped without consent, when palmetaAnalytics is missing, and while the
+ * index.html queue stub is still the function that receives calls.
  */
 
 export const GA_MEASUREMENT_ID = 'G-881GKMN0JQ'
@@ -170,9 +171,37 @@ export function installGaPageViews(router: { afterEach: (guard: () => void) => v
 const PALMETA_EVENT_LIMIT = 50
 
 /**
- * One anonymous custom event. Nothing is sent without consent, or when
- * palmetaAnalytics is missing. A thrown script does not escape.
- * A count above 50 is split across calls so the extra is queued, not dropped.
+ * The index.html stub pushes every call onto palmetaAnalytics.q. a.js replaces
+ * that function; a probe call then no longer grows .q. .q itself may be absent.
+ */
+function queueStubStillInstalled(send: NonNullable<Window['palmetaAnalytics']>): boolean {
+  if (!Array.isArray(send.q)) return false
+  const queue = send.q
+  const before = queue.length
+  try {
+    send('queue-probe', '')
+  } catch {
+    return true
+  }
+  if (queue.length === before) return false
+  queue.length = before
+  return true
+}
+
+/** Consent allows a Palmeta count, but a.js has not taken over from the queue stub. */
+export function cardTrackedAwaitingScript(): boolean {
+  if (!maySendAnalytics()) return false
+  if (typeof window === 'undefined') return false
+  const send = window.palmetaAnalytics
+  if (typeof send !== 'function') return true
+  return queueStubStillInstalled(send)
+}
+
+/**
+ * Hand one card_tracked count to Palmeta. False, and no throw, when consent is
+ * off, palmetaAnalytics is missing, or the queue stub still has the call.
+ * This count sends no card names or ids and no visitor id. A count above 50 is
+ * split so the extra is queued instead of dropped.
  */
 export function trackPalmetaEvent(name: string, count: number): boolean {
   if (!Number.isInteger(count) || count < 1) return false
@@ -180,6 +209,7 @@ export function trackPalmetaEvent(name: string, count: number): boolean {
   if (typeof window === 'undefined') return false
   const send = window.palmetaAnalytics
   if (typeof send !== 'function') return false
+  if (queueStubStillInstalled(send)) return false
   try {
     let remaining = count
     while (remaining > 0) {

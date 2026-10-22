@@ -45,8 +45,11 @@ async function freshTracker(preOwned: string[] = []) {
   delete lsStore[STORAGE_KEY]
   if (preOwned.length) lsStore[STORAGE_KEY] = JSON.stringify(preOwned)
   vi.resetModules()
-  const { useTracker } = await import('./useTracker')
-  return useTracker()
+  const mod = await import('./useTracker')
+  return Object.assign(mod.useTracker(), {
+    holdCardTrackedFlush: mod.holdCardTrackedFlush,
+    releaseCardTrackedFlush: mod.releaseCardTrackedFlush,
+  })
 }
 
 // ── Correctness ───────────────────────────────────────────────────────────────
@@ -164,7 +167,10 @@ describe('useTracker — performance', () => {
 // ── Anonymous card_tracked events ─────────────────────────────────────────────
 
 const REPORTED_KEY = 'ptcgp-tracked-reported'
+const PENDING_KEY = 'ptcgp-tracked-pending'
 const SAVE_DEBOUNCE_MS = 300
+
+type ListenerMap = Record<string, Array<() => void>>
 
 describe('useTracker — card_tracked', () => {
   // Earlier tests schedule the real 300ms save. Let those finish before this
@@ -176,6 +182,7 @@ describe('useTracker — card_tracked', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     delete lsStore[REPORTED_KEY]
+    delete lsStore[PENDING_KEY]
     delete lsStore[STORAGE_KEY]
     getDocMock.mockReset()
     getDocMock.mockResolvedValue({ exists: () => false })
@@ -190,15 +197,41 @@ describe('useTracker — card_tracked', () => {
 
   function stubDocument(cookie: string) {
     // Vue reads document while the module is loading. A cookie-only stub throws.
-    vi.stubGlobal('document', {
+    const doc = {
       cookie,
+      visibilityState: 'visible' as DocumentVisibilityState,
       createElement: () => ({}),
-    })
+    }
+    vi.stubGlobal('document', doc)
+    return doc
+  }
+
+  function stubWindow(palmeta?: (...args: unknown[]) => void) {
+    const listeners: ListenerMap = {}
+    const win: Record<string, unknown> = {
+      addEventListener(type: string, fn: () => void) {
+        ;(listeners[type] ??= []).push(fn)
+      },
+      removeEventListener(type: string, fn: () => void) {
+        const list = listeners[type]
+        if (!list) return
+        const index = list.indexOf(fn)
+        if (index >= 0) list.splice(index, 1)
+      },
+    }
+    if (palmeta) win.palmetaAnalytics = palmeta
+    vi.stubGlobal('window', win)
+    return { listeners, win }
   }
 
   function grantConsent(palmeta?: (...args: unknown[]) => void) {
-    vi.stubGlobal('window', palmeta ? { palmetaAnalytics: palmeta } : {})
+    const installed = stubWindow(palmeta)
     stubDocument(`${CONSENT_COOKIE}=${CONSENT_VALUE}`)
+    return installed
+  }
+
+  function fire(listeners: ListenerMap, type: string) {
+    for (const fn of listeners[type] ?? []) fn()
   }
 
   it('counts a single tap once the save debounce flushes', async () => {
@@ -326,7 +359,7 @@ describe('useTracker — card_tracked', () => {
 
   it('sends nothing when analytics consent is off', async () => {
     const palmeta = vi.fn()
-    vi.stubGlobal('window', { palmetaAnalytics: palmeta })
+    stubWindow(palmeta)
     stubDocument('')
     const { toggle } = await freshTracker()
 
@@ -335,5 +368,91 @@ describe('useTracker — card_tracked', () => {
 
     expect(palmeta).not.toHaveBeenCalled()
     expect(lsStore[REPORTED_KEY]).toBeUndefined()
+  })
+
+  it('does not count a touch that is still provisional, including a scroll that puts it back', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { setOwned, holdCardTrackedFlush, releaseCardTrackedFlush, isOwned } = await freshTracker()
+
+    holdCardTrackedFlush()
+    setOwned('a1-001', true)
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS + 50)
+    expect(palmeta).not.toHaveBeenCalled()
+    expect(isOwned('a1-001')).toBe(true)
+
+    setOwned('a1-001', false)
+    releaseCardTrackedFlush()
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+
+    expect(isOwned('a1-001')).toBe(false)
+    expect(palmeta).not.toHaveBeenCalled()
+    expect(lsStore[REPORTED_KEY]).toBeUndefined()
+    expect(lsStore[PENDING_KEY]).toBeUndefined()
+  })
+
+  it('counts a touch once the gesture is released and the card stays tracked', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { setOwned, holdCardTrackedFlush, releaseCardTrackedFlush } = await freshTracker()
+
+    holdCardTrackedFlush()
+    setOwned('a1-001', true)
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+    expect(palmeta).not.toHaveBeenCalled()
+
+    releaseCardTrackedFlush()
+    expect(palmeta).toHaveBeenCalledTimes(1)
+    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+  })
+
+  it('flushes on pagehide and when the page is hidden, and does not send twice', async () => {
+    const palmeta = vi.fn()
+    const { listeners } = grantConsent(palmeta)
+    const doc = stubDocument(`${CONSENT_COOKIE}=${CONSENT_VALUE}`)
+    const { toggle } = await freshTracker()
+
+    toggle('a1-001')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(palmeta).not.toHaveBeenCalled()
+
+    doc.visibilityState = 'hidden'
+    fire(listeners, 'visibilitychange')
+    expect(palmeta).toHaveBeenCalledTimes(1)
+    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+
+    fire(listeners, 'pagehide')
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+    expect(palmeta).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps ids pending while the queue stub is installed, then sends them once a.js has replaced it', async () => {
+    const queued: unknown[] = []
+    function palmetaStub(name: unknown, value: unknown) {
+      queued.push([name, value])
+    }
+    palmetaStub.q = queued
+    grantConsent(palmetaStub)
+    const first = await freshTracker()
+    first.toggle('a1-009')
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+
+    expect(queued).toEqual([])
+    expect(lsStore[REPORTED_KEY]).toBeUndefined()
+    expect(JSON.parse(lsStore[PENDING_KEY])).toEqual(['a1-009'])
+
+    const loaded = vi.fn()
+    const secondWindow = stubWindow(loaded)
+    stubDocument(`${CONSENT_COOKIE}=${CONSENT_VALUE}`)
+    await freshTracker(['a1-009'])
+    fire(secondWindow.listeners, 'pagehide')
+
+    expect(loaded).toHaveBeenCalledTimes(1)
+    expect(loaded).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-009'])
+    expect(lsStore[PENDING_KEY]).toBeUndefined()
+
+    fire(secondWindow.listeners, 'pagehide')
+    expect(loaded).toHaveBeenCalledTimes(1)
   })
 })

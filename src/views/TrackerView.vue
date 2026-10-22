@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, shallowRef, triggerRef, watch, type Directive } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCardDb } from '../composables/useCardDb'
-import { useTracker } from '../composables/useTracker'
+import { holdCardTrackedFlush, releaseCardTrackedFlush, useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
 import AuthButton from '../components/AuthButton.vue'
 import SiteFooter from '../components/SiteFooter.vue'
@@ -410,6 +410,7 @@ function onCardTouchStart(event: TouchEvent, card: Card, setCards: Card[]) {
   touchStartX = touch.clientX; touchStartY = touch.clientY
   gestureState.value = 'pending'
   touchOptimisticState = !isOwned(card.id)
+  holdCardTrackedFlush()
   setOwned(card.id, touchOptimisticState)
   logCollectTiming(startedAt, card, touchOptimisticState)
   startLongPress(card, setCards)
@@ -424,6 +425,7 @@ function onGridTouchMove(event: TouchEvent) {
       if (pendingCard && touchOptimisticState !== null) setOwned(pendingCard.id, !touchOptimisticState)
       touchOptimisticState = null
       gestureState.value = 'idle'
+      releaseCardTrackedFlush()
     }
     return
   }
@@ -455,6 +457,7 @@ function onWindowTouchEnd() {
     }
   }
   endGesture()
+  releaseCardTrackedFlush()
 }
 
 // ── Global listeners ──────────────────────────────────────────────────────────
@@ -467,6 +470,7 @@ onUnmounted(() => {
   window.removeEventListener('mouseup', onWindowMouseUp)
   window.removeEventListener('touchend', onWindowTouchEnd)
   cancelLongPress()
+  releaseCardTrackedFlush()
 })
 </script>
 

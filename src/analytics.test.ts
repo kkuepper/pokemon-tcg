@@ -199,7 +199,7 @@ describe('palmeta visitor consent', () => {
     expect(page).toContain('a.c')
     expect(page).toContain('a.u')
     expect(page).toContain('deletes the visitor id')
-    expect(page).toContain('an anonymous count of tracked cards is sent, with no card names or visitor id')
+    expect(page).toContain('After you accept, an anonymous count of tracked cards is sent. This count sends no card names or IDs and no visitor id.')
     expect(page).toContain('removes those _ga cookies')
     expect(page).toContain('G-881GKMN0JQ')
     expect(page).toContain('PostHog runs on every visit, including when you choose No thanks or turn analytics off. It stores a random id in a cookie and in localStorage. It currently records sessions (a replay of the page and what you do on it, with typed input masked, plus console logs), page views and page leaves with the full URL, page performance timing, errors, and events such as searches, filters, card choices, pack counts, and collection changes. Autocapture and heatmaps are off.')
