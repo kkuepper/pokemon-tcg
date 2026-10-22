@@ -8,6 +8,10 @@
  *
  * A decline is remembered as the fixed localStorage word "declined". That value
  * is not an identifier and is not sent with requests.
+ *
+ * Custom events go through palmetaAnalytics('event', { name, count }). They carry
+ * no visitor id. a.js keeps at most 50 of a pending count per write and flushes
+ * on pagehide. Calls are skipped without consent, and when the script is absent.
  */
 
 export const GA_MEASUREMENT_ID = 'G-881GKMN0JQ'
@@ -83,8 +87,13 @@ type Gtag = (...args: unknown[]) => void
 /** Modes a.js accepts. `off` stores nothing; this site does not use it. */
 export type PalmetaVisitorMode = 'session' | 'persistent'
 
+export interface PalmetaEvent {
+  name: string
+  count: number
+}
+
 interface PalmetaAnalytics {
-  (name: string, value: string): void
+  (name: string, value?: string | PalmetaEvent): void
   q?: unknown[]
   setVisitors?: (mode: PalmetaVisitorMode) => void
 }
@@ -131,13 +140,18 @@ export function loadAnalytics(): void {
   document.head.appendChild(script)
 }
 
+/** Same gate as a Google page view: consent granted, and not withdrawn this visit. */
+function maySendAnalytics(): boolean {
+  return !gaWithdrawn && hasAnalyticsConsent()
+}
+
 /**
  * One page view for the current URL. Skipped without consent, and after Off,
  * even if the consent cookie has not been dropped from document.cookie yet.
  */
 export function trackPageView(): void {
   if (typeof window === 'undefined' || typeof location === 'undefined') return
-  if (gaWithdrawn || !hasAnalyticsConsent()) return
+  if (!maySendAnalytics()) return
   if (typeof window.gtag !== 'function') return
   window.gtag('event', 'page_view', {
     page_path: location.pathname + location.search + location.hash,
@@ -150,6 +164,33 @@ export function installGaPageViews(router: { afterEach: (guard: () => void) => v
   router.afterEach(() => {
     trackPageView()
   })
+}
+
+/** One call keeps at most this many. A larger pending sum carries to the next write. */
+const PALMETA_EVENT_LIMIT = 50
+
+/**
+ * One anonymous custom event. Nothing is sent without consent, or when
+ * palmetaAnalytics is missing. A thrown script does not escape.
+ * A count above 50 is split across calls so the extra is queued, not dropped.
+ */
+export function trackPalmetaEvent(name: string, count: number): boolean {
+  if (!Number.isInteger(count) || count < 1) return false
+  if (!maySendAnalytics()) return false
+  if (typeof window === 'undefined') return false
+  const send = window.palmetaAnalytics
+  if (typeof send !== 'function') return false
+  try {
+    let remaining = count
+    while (remaining > 0) {
+      const chunk = remaining > PALMETA_EVENT_LIMIT ? PALMETA_EVENT_LIMIT : remaining
+      send('event', { name, count: chunk })
+      remaining -= chunk
+    }
+    return true
+  } catch {
+    return false
+  }
 }
 
 /** Switch Palmeta's store. `session` is the pre-consent default; `persistent` counts a visitor. */
