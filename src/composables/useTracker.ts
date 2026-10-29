@@ -105,8 +105,8 @@ function flushCardTracked() {
     sent = false
   }
   if (!sent) {
-    // Consent off drops this count. A missing or still-stubbed script keeps it
-    // for a later visit. Reported ids are written only after a.js accepts it.
+    // A missing or still-stubbed script keeps this count for a later visit.
+    // Reported ids are written only after a.js accepts it. Consent does not drop it.
     if (!cardTrackedAwaitingScript()) pendingTracked.clear()
     persistPending()
     return

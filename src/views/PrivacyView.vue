@@ -21,7 +21,7 @@
           This site loads analytics from analytics.palmeta.net. A pageview sends the page address without the query string, and the UTC day with no time. The host name is included with that address. The visitor id is not sent.
         </p>
         <p>
-          After you accept, an anonymous count of tracked cards is sent. This count sends no card names or IDs and no visitor id.
+          An anonymous count of tracked cards is always sent. This count sends no card names or IDs and no visitor id.
         </p>
         <p>
           Before you accept, this tab stores an analytics session marker named a.s. It lives in sessionStorage, so it stays in this tab, and it is not sent.

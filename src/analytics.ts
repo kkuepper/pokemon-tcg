@@ -10,9 +10,12 @@
  * is not an identifier and is not sent with requests.
  *
  * card_tracked is one anonymous count. This count sends no card names or ids and
- * no visitor id. a.js keeps at most 50 of that count per write. The count is
- * skipped without consent, when palmetaAnalytics is missing, and while the
- * index.html queue stub is still the function that receives calls.
+ * no visitor id. a.js keeps at most 50 of that count per write, and that write
+ * does not read a visitor id. The count is sent whenever a.js is ready,
+ * including after a decline and after analytics is turned off. It is skipped
+ * when palmetaAnalytics is missing, and while the index.html queue stub is
+ * still the function that receives calls. Google Analytics and the persistent
+ * visitor id stay behind consent.
  */
 
 export const GA_MEASUREMENT_ID = 'G-881GKMN0JQ'
@@ -188,9 +191,8 @@ function queueStubStillInstalled(send: NonNullable<Window['palmetaAnalytics']>):
   return true
 }
 
-/** Consent allows a Palmeta count, but a.js has not taken over from the queue stub. */
+/** a.js has not taken over from the queue stub. Consent does not apply to this count. */
 export function cardTrackedAwaitingScript(): boolean {
-  if (!maySendAnalytics()) return false
   if (typeof window === 'undefined') return false
   const send = window.palmetaAnalytics
   if (typeof send !== 'function') return true
@@ -198,14 +200,14 @@ export function cardTrackedAwaitingScript(): boolean {
 }
 
 /**
- * Hand one card_tracked count to Palmeta. False, and no throw, when consent is
- * off, palmetaAnalytics is missing, or the queue stub still has the call.
+ * Hand one card_tracked count to Palmeta. False, and no throw, when
+ * palmetaAnalytics is missing or the queue stub still has the call.
+ * A decline and Off do not skip this count.
  * This count sends no card names or ids and no visitor id. A count above 50 is
  * split so the extra is queued instead of dropped.
  */
 export function trackPalmetaEvent(name: string, count: number): boolean {
   if (!Number.isInteger(count) || count < 1) return false
-  if (!maySendAnalytics()) return false
   if (typeof window === 'undefined') return false
   const send = window.palmetaAnalytics
   if (typeof send !== 'function') return false

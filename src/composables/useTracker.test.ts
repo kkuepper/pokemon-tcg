@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
-import { CONSENT_COOKIE, CONSENT_VALUE } from '../analytics'
+import { CONSENT_COOKIE, CONSENT_VALUE, DECLINED_PREFERENCE_KEY, DECLINED_PREFERENCE_VALUE, GA_DISABLE_KEY } from '../analytics'
 
 // ── External dependency mocks ─────────────────────────────────────────────────
 
@@ -184,6 +184,7 @@ describe('useTracker — card_tracked', () => {
     delete lsStore[REPORTED_KEY]
     delete lsStore[PENDING_KEY]
     delete lsStore[STORAGE_KEY]
+    delete lsStore[DECLINED_PREFERENCE_KEY]
     getDocMock.mockReset()
     getDocMock.mockResolvedValue({ exists: () => false })
   })
@@ -357,17 +358,72 @@ describe('useTracker — card_tracked', () => {
     expect(JSON.parse(lsStore[REPORTED_KEY])).toHaveLength(51)
   })
 
-  it('sends nothing when analytics consent is off', async () => {
+  it('sends the anonymous count when analytics consent is declined', async () => {
     const palmeta = vi.fn()
     stubWindow(palmeta)
     stubDocument('')
+    lsStore[DECLINED_PREFERENCE_KEY] = DECLINED_PREFERENCE_VALUE
     const { toggle } = await freshTracker()
 
     toggle('a1-001')
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
 
-    expect(palmeta).not.toHaveBeenCalled()
-    expect(lsStore[REPORTED_KEY]).toBeUndefined()
+    expect(palmeta).toHaveBeenCalledTimes(1)
+    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-001'])
+    expect(palmeta.mock.calls.every((call) => !('visitorId' in (call[1] as object)))).toBe(true)
+  })
+
+  it('sends the anonymous count after analytics is turned off, and does not send a page view or a visitor id', async () => {
+    const setVisitors = vi.fn()
+    const palmeta = Object.assign(vi.fn(), { setVisitors })
+    const gtag = vi.fn()
+    const { win } = stubWindow(palmeta)
+    win.gtag = gtag
+    const cookies = new Map<string, string>([[CONSENT_COOKIE, CONSENT_VALUE]])
+    vi.stubGlobal('document', {
+      visibilityState: 'visible' as DocumentVisibilityState,
+      createElement: () => ({}),
+      head: { appendChild: () => {} },
+      get cookie() {
+        return [...cookies.entries()].map(([key, value]) => `${key}=${value}`).join('; ')
+      },
+      set cookie(value: string) {
+        const [pair, ...attrs] = value.split(';').map((part) => part.trim())
+        const eq = pair.indexOf('=')
+        const name = pair.slice(0, eq)
+        const stored = pair.slice(eq + 1)
+        const maxAge = attrs.find((attr) => attr.toLowerCase().startsWith('max-age='))
+        if (maxAge && Number(maxAge.split('=')[1]) <= 0) cookies.delete(name)
+        else cookies.set(name, stored)
+      },
+    })
+    vi.stubGlobal('location', {
+      pathname: '/pokemon-tcg/',
+      search: '',
+      hash: '',
+      href: 'https://kkuepper.github.io/pokemon-tcg/',
+    })
+    const { toggle } = await freshTracker()
+    const { trackPageView, withdrawAnalytics } = await import('../analytics')
+
+    trackPageView()
+    expect(gtag).toHaveBeenCalledWith('event', 'page_view', expect.anything())
+
+    withdrawAnalytics()
+    expect(setVisitors).toHaveBeenCalledWith('session')
+    expect(setVisitors).not.toHaveBeenCalledWith('persistent')
+    expect(win[GA_DISABLE_KEY]).toBe(true)
+    gtag.mockClear()
+
+    trackPageView()
+    toggle('a1-004')
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+
+    expect(palmeta).toHaveBeenCalledTimes(1)
+    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(gtag).not.toHaveBeenCalled()
+    expect(setVisitors).not.toHaveBeenCalledWith('persistent')
   })
 
   it('does not count a touch that is still provisional, including a scroll that puts it back', async () => {
@@ -454,5 +510,35 @@ describe('useTracker — card_tracked', () => {
 
     fire(secondWindow.listeners, 'pagehide')
     expect(loaded).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a declined count pending until a.js is ready, then sends it with no visitor id', async () => {
+    lsStore[DECLINED_PREFERENCE_KEY] = DECLINED_PREFERENCE_VALUE
+    const queued: unknown[] = []
+    function palmetaStub(name: unknown, value: unknown) {
+      queued.push([name, value])
+    }
+    palmetaStub.q = queued
+    stubWindow(palmetaStub)
+    stubDocument('')
+    const first = await freshTracker()
+    first.toggle('a1-009')
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+
+    expect(queued).toEqual([])
+    expect(lsStore[REPORTED_KEY]).toBeUndefined()
+    expect(JSON.parse(lsStore[PENDING_KEY])).toEqual(['a1-009'])
+
+    const loaded = vi.fn()
+    const secondWindow = stubWindow(loaded)
+    stubDocument('')
+    await freshTracker(['a1-009'])
+    fire(secondWindow.listeners, 'pagehide')
+
+    expect(loaded).toHaveBeenCalledTimes(1)
+    expect(loaded).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-009'])
+    expect(lsStore[PENDING_KEY]).toBeUndefined()
+    expect(lsStore[DECLINED_PREFERENCE_KEY]).toBe(DECLINED_PREFERENCE_VALUE)
   })
 })
