@@ -199,7 +199,8 @@ describe('palmeta visitor consent', () => {
     expect(page).toContain('a.c')
     expect(page).toContain('a.u')
     expect(page).toContain('deletes the visitor id')
-    expect(page).toContain('After you accept, an anonymous count of tracked cards is sent. This count sends no card names or IDs and no visitor id.')
+    expect(page).toContain('An anonymous count of tracked cards is always sent. This count sends no card names or IDs and no visitor id.')
+    expect(page).not.toContain('After you accept, an anonymous count')
     expect(page).toContain('removes those _ga cookies')
     expect(page).toContain('G-881GKMN0JQ')
     expect(page).toContain('PostHog runs on every visit, including when you choose No thanks or turn analytics off. It stores a random id in a cookie and in localStorage. It currently records sessions (a replay of the page and what you do on it, with typed input masked, plus console logs), page views and page leaves with the full URL, page performance timing, errors, and events such as searches, filters, card choices, pack counts, and collection changes. Autocapture and heatmaps are off.')
@@ -342,5 +343,68 @@ describe('google analytics hits', () => {
     expect(scripts).toBe(1)
     expect(win[GA_DISABLE_KEY]).toBe(false)
     expect(pageViewsOf(win)).toHaveLength(3)
+  })
+
+  it('sends card_tracked after a decline and after Off, and still blocks the page view and visitor id', async () => {
+    vi.resetModules()
+    const setVisitors = vi.fn()
+    const send = Object.assign(vi.fn(), { setVisitors })
+    const win: Record<string, unknown> = { palmetaAnalytics: send }
+    const store: Record<string, string> = {}
+    const cookies = new Map<string, string>()
+    const loc = {
+      pathname: '/pokemon-tcg/',
+      search: '',
+      hash: '',
+      href: 'https://kkuepper.github.io/pokemon-tcg/',
+    }
+    vi.stubGlobal('window', win)
+    vi.stubGlobal('location', loc)
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => store[key] ?? null,
+      setItem: (key: string, value: string) => { store[key] = value },
+      removeItem: (key: string) => { delete store[key] },
+    })
+    vi.stubGlobal('document', {
+      createElement: () => ({}),
+      head: { appendChild: () => {} },
+      get cookie() {
+        return [...cookies.entries()].map(([key, value]) => `${key}=${value}`).join('; ')
+      },
+      set cookie(value: string) {
+        const [pair, ...attrs] = value.split(';').map((part) => part.trim())
+        const eq = pair.indexOf('=')
+        const name = pair.slice(0, eq)
+        const stored = pair.slice(eq + 1)
+        const maxAge = attrs.find((attr) => attr.toLowerCase().startsWith('max-age='))
+        if (maxAge && Number(maxAge.split('=')[1]) <= 0) cookies.delete(name)
+        else cookies.set(name, stored)
+      },
+    })
+
+    const { declineAnalytics, trackPageView, trackPalmetaEvent, withdrawAnalytics, acceptAnalytics } = await import('./analytics')
+
+    declineAnalytics()
+    trackPageView()
+    expect(pageViewsOf(win)).toHaveLength(0)
+    expect(setVisitors).toHaveBeenCalledWith('session')
+    expect(setVisitors).not.toHaveBeenCalledWith('persistent')
+    expect(trackPalmetaEvent('card_tracked', 1)).toBe(true)
+    expect(send).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(send.mock.calls[0][1]).toEqual({ name: 'card_tracked', count: 1 })
+
+    acceptAnalytics()
+    expect(pageViewsOf(win)).toHaveLength(1)
+    expect(setVisitors).toHaveBeenLastCalledWith('persistent')
+
+    send.mockClear()
+    withdrawAnalytics()
+    trackPageView()
+    expect(pageViewsOf(win)).toHaveLength(1)
+    expect(win[GA_DISABLE_KEY]).toBe(true)
+    expect(setVisitors).toHaveBeenLastCalledWith('session')
+    expect(trackPalmetaEvent('card_tracked', 3)).toBe(true)
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(send).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 3 })
   })
 })
