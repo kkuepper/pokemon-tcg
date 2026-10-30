@@ -13,6 +13,7 @@ import {
   recordPairingMatchups,
   SAMPLE_WINDOW_DAYS,
   selectTournamentsInWindow,
+  scoreIconMatch,
   sortDecksForDisplay,
   windowCutoff,
 } from './metaDeckStats.js'
@@ -134,6 +135,92 @@ describe('sample window and ranking', () => {
     expect(meetsRankGate(decks[0])).toBe(false)
     const sorted = sortDecksForDisplay(decks)
     expect(sorted.map((d) => d.id)).toEqual(['top', 'mid', 'low'])
+  })
+})
+
+describe('icon highlight scoring', () => {
+  it('prefers Greninja ex over Greninja and evolution lines when deck name implies ex', () => {
+    const deckName = 'Greninja ex Suicune ex'
+    expect(scoreIconMatch('Greninja ex', 'greninja', { deckName })).toBeGreaterThan(
+      scoreIconMatch('Greninja', 'greninja', { deckName }),
+    )
+    expect(scoreIconMatch('Greninja ex', 'greninja', { deckName })).toBeGreaterThan(
+      scoreIconMatch('Frogadier', 'greninja', { deckName }),
+    )
+
+    /** @type {import('./metaDeckStats.js').CardAgg[]} */
+    const pokemonCards = [
+      { name: 'Greninja', category: 'pokemon', listCount: 1, totalCopies: 1 },
+      { name: 'Frogadier', category: 'pokemon', listCount: 1, totalCopies: 1 },
+      { name: 'Greninja ex', category: 'pokemon', listCount: 1, totalCopies: 2 },
+    ]
+    const index = buildCardIndex([
+      { id: 'A1-089', name: 'Greninja', set: 'A1' },
+      { id: 'B1-012', name: 'Greninja ex', set: 'B1' },
+      { id: 'A1-088', name: 'Frogadier', set: 'A1' },
+    ])
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'greninja-ex-suicune',
+          name: deckName,
+          icons: ['greninja', 'suicune'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Greninja', count: 1 },
+            { name: 'Frogadier', count: 1 },
+            { name: 'Greninja ex', count: 2 },
+            { name: 'Suicune ex', count: 2 },
+          ],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    const highlights = result.decks[0].highlightCards.map((c) => c.name)
+    expect(highlights).toContain('Greninja ex')
+    expect(highlights).not.toContain('Greninja')
+    expect(highlights.every((n) => n.includes(' ex') || n.toLowerCase().includes('mega'))).toBe(true)
+  })
+
+  it('prefers Mega Greninja ex over Greninja ex for greninja-mega icon', () => {
+    const deckName = 'Mega Greninja ex Greninja ex'
+    expect(scoreIconMatch('Mega Greninja ex', 'greninja-mega', { deckName })).toBeGreaterThan(
+      scoreIconMatch('Greninja ex', 'greninja-mega', { deckName }),
+    )
+    const index = buildCardIndex([
+      { id: 'C1-001', name: 'Mega Greninja ex', set: 'C1' },
+      { id: 'B1-012', name: 'Greninja ex', set: 'B1' },
+    ])
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'mega-greninja',
+          name: deckName,
+          icons: ['greninja-mega'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Greninja ex', count: 2 },
+            { name: 'Mega Greninja ex', count: 2 },
+          ],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    expect(result.decks[0].highlightCards[0]?.name).toBe('Mega Greninja ex')
   })
 })
 

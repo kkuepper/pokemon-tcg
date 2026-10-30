@@ -276,7 +276,7 @@ function pickHighlightCards(entry, cardIndex) {
   const pokemonCards = [...entry.cards.values()].filter((c) => c.category === 'pokemon')
 
   for (const icon of entry.icons) {
-    const match = bestPokemonForIcon(icon, pokemonCards, cardIndex)
+    const match = bestPokemonForIcon(icon, pokemonCards, cardIndex, entry.name)
     if (match && !used.has(match.name)) {
       picked.push(match)
       used.add(match.name)
@@ -291,11 +291,23 @@ function pickHighlightCards(entry, cardIndex) {
       rate: c.listCount / entry.deckCount,
     }))
     .filter((x) => x.ref)
-    .sort((a, b) => b.rate - a.rate)
+    .sort((a, b) => {
+      if (b.rate !== a.rate) return b.rate - a.rate
+      return tieBreakRank(b.ref.name, '', entry.name) - tieBreakRank(a.ref.name, '', entry.name)
+    })
 
-  for (const row of byRate) {
+  let fillCandidates = byRate.filter((row) => {
+    const n = row.ref.name.toLowerCase()
+    return nameIncludesEx(n) || n.includes('mega')
+  })
+  if (fillCandidates.length + picked.length < 3) {
+    fillCandidates = byRate
+  }
+
+  for (const row of fillCandidates) {
     if (picked.length >= 3) break
     if (used.has(row.ref.name)) continue
+    if (shouldSkipRedundantHighlight(row.card.name, pokemonCards)) continue
     picked.push(row.ref)
     used.add(row.ref.name)
   }
@@ -303,13 +315,18 @@ function pickHighlightCards(entry, cardIndex) {
   return picked
 }
 
-/** @param {string} icon @param {CardAgg[]} pokemonCards @param {CardIndex | null} cardIndex */
-function bestPokemonForIcon(icon, pokemonCards, cardIndex) {
+/** @param {string} icon @param {CardAgg[]} pokemonCards @param {CardIndex | null} cardIndex @param {string} [deckName] */
+function bestPokemonForIcon(icon, pokemonCards, cardIndex, deckName = '') {
   let best = null
-  let bestScore = 0
+  let bestScore = -Infinity
   for (const c of pokemonCards) {
-    const score = scoreIconMatch(c.name, icon)
-    if (score > bestScore) {
+    const score = scoreIconMatch(c.name, icon, { deckName })
+    if (score <= 0) continue
+    if (
+      !best ||
+      score > bestScore ||
+      (score === bestScore && tieBreakPrefers(c.name, best.name, icon, deckName))
+    ) {
       bestScore = score
       best = c
     }
@@ -319,21 +336,110 @@ function bestPokemonForIcon(icon, pokemonCards, cardIndex) {
   }
   for (const c of pokemonCards) {
     const ref = resolveLimitlessCard(c, cardIndex)
-    if (ref && scoreIconMatch(ref.name, icon) > 0) return ref
+    if (!ref) continue
+    const score = scoreIconMatch(ref.name, icon, { deckName })
+    if (score <= 0) continue
+    if (
+      !best ||
+      score > bestScore ||
+      (score === bestScore && tieBreakPrefers(ref.name, best.name, icon, deckName))
+    ) {
+      bestScore = score
+      best = c
+    }
+  }
+  if (best && bestScore > 0) {
+    return resolveLimitlessCard(best, cardIndex) ?? { name: best.name }
   }
   return null
 }
 
-/** @param {string} cardName @param {string} iconSlug */
-export function scoreIconMatch(cardName, iconSlug) {
+/**
+ * @param {string} cardName
+ * @param {string} iconSlug
+ * @param {{ deckName?: string }} [context]
+ */
+export function scoreIconMatch(cardName, iconSlug, context = {}) {
   const name = cardName.toLowerCase()
-  const parts = iconSlug.split('-').filter((p) => p !== 'ex' && p !== 'p' && p !== 'b')
+  const deckName = (context.deckName ?? '').toLowerCase()
+  const slug = iconSlug.toLowerCase()
+  const parts = slug.split('-').filter((p) => p !== 'p' && p !== 'b')
+  const slugWantsEx = parts.includes('ex')
+  const slugWantsMega = parts.includes('mega') || slug.includes('-mega-')
+
   let score = 0
   for (const part of parts) {
-    if (part === 'mega' && name.includes('mega')) score += 2
-    else if (name.includes(part)) score += 1
+    if (part === 'ex') {
+      if (nameIncludesEx(name)) score += 3
+    } else if (part === 'mega') {
+      if (name.includes('mega')) score += 3
+    } else if (name.includes(part)) {
+      score += 1
+    }
   }
+
+  const speciesTokens = parts.filter((p) => p !== 'ex' && p !== 'mega')
+  for (const token of speciesTokens) {
+    const deckUsesEx = deckNameIncludesSpeciesEx(deckName, token)
+    if (deckUsesEx || slugWantsEx) {
+      if (nameIncludesEx(name)) score += 2
+      else if (isEvolutionLineName(name, token)) score -= 1
+    }
+    if (slugWantsMega || (deckName.includes(token) && deckName.includes('mega'))) {
+      if (name.includes('mega')) score += 2
+    }
+  }
+
   return score
+}
+
+/** @param {string} nameA @param {string} nameB @param {string} icon @param {string} deckName */
+export function tieBreakPrefers(nameA, nameB, icon, deckName) {
+  return tieBreakRank(nameA, icon, deckName) > tieBreakRank(nameB, icon, deckName)
+}
+
+/** @param {string} cardName @param {string} iconSlug @param {string} deckName */
+function tieBreakRank(cardName, iconSlug, deckName) {
+  const name = cardName.toLowerCase()
+  let rank = 0
+  if (name.includes('mega')) rank += 8
+  if (nameIncludesEx(name)) rank += 4
+  if (isEvolutionLineName(name, iconSlug.split('-')[0] ?? '')) rank -= 2
+  void deckName
+  return rank
+}
+
+function nameIncludesEx(name) {
+  return name.includes(' ex') || name.endsWith('ex')
+}
+
+/** @param {string} deckName @param {string} token */
+function deckNameIncludesSpeciesEx(deckName, token) {
+  if (!deckName || !token) return false
+  const idx = deckName.indexOf(token)
+  if (idx === -1) return false
+  const after = deckName.slice(idx + token.length)
+  return after.startsWith(' ex') || after.startsWith('-ex')
+}
+
+/** Penalize mid-evolution lines when matching a species icon (Frogadier vs Greninja ex). */
+function isEvolutionLineName(name, token) {
+  if (nameIncludesEx(name) || name.includes('mega')) return false
+  return name.includes(token) && name !== token
+}
+
+/** Skip base species / pre-evolutions when an ex (or mega) line card exists in the archetype. */
+/** @param {string} cardName @param {CardAgg[]} pokemonCards */
+function shouldSkipRedundantHighlight(cardName, pokemonCards) {
+  const name = cardName.toLowerCase()
+  if (nameIncludesEx(name) || name.includes('mega')) return false
+  for (const other of pokemonCards) {
+    const otherName = other.name.toLowerCase()
+    if (otherName === `${name} ex` || otherName === `mega ${name} ex`) return true
+    if (nameIncludesEx(otherName) && otherName.includes(name) && otherName !== name) return true
+    if (otherName.includes('mega') && otherName.includes(name.split(' ')[0])) return true
+  }
+  return false
 }
 
 /** @param {DeckAgg} entry @param {Set<string>} highlightKeys @param {CardIndex | null} cardIndex */
