@@ -36,6 +36,8 @@ export interface MetaDecksPayload {
   fetchedAt: string
   tournamentCount: number
   totalDeckEntries: number
+  totalMatches?: number
+  refreshFailedAt?: string
   source?: string
   docs?: string
   error?: string

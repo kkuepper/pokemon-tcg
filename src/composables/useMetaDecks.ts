@@ -13,7 +13,7 @@ async function fetchMetaDecks() {
     loadError.value = null
     try {
       const base = import.meta.env.BASE_URL
-      const res = await fetch(`${base}meta-decks.json`)
+      const res = await fetch(`${base}meta-decks.json?v=${__BUILD_TIME__}`)
       if (!res.ok) throw new Error(`Failed to load meta decks (${res.status})`)
       payload.value = (await res.json()) as MetaDecksPayload
     } catch (e) {

@@ -68,16 +68,10 @@ export function aggregateMetaDecks(standings, pairings, meta) {
 
   /** @type {Map<string, Map<string, { wins: number, losses: number, ties: number }>>} */
   const matchupMatrix = new Map()
+  let totalMatches = 0
 
   for (const batch of pairings) {
-    const { player1, player2, winner } = batch
-    if (!player1 || !player2) continue
-    if (winner === -1) continue
-    const deck1 = batch._deck1
-    const deck2 = batch._deck2
-    if (!deck1 || !deck2 || deck1 === deck2) continue
-
-    addMatchup(matchupMatrix, deck1, deck2, outcomeForPlayer(winner, player1, player2))
+    if (recordPairingMatchups(matchupMatrix, batch)) totalMatches += 1
   }
 
   const deckList = [...decks.values()]
@@ -113,6 +107,7 @@ export function aggregateMetaDecks(standings, pairings, meta) {
   return {
     ...meta,
     totalDeckEntries: totalDecks,
+    totalMatches,
     decks: deckList,
   }
 }
@@ -162,11 +157,41 @@ export function playerDeckMapFromStandings(standings) {
 }
 
 /** @param {string | number} winner @param {string} player1 @param {string} player2 */
-function outcomeForPlayer(winner, player1, player2) {
-  if (winner === 0) return { p1: 0, p2: 0 }
-  if (winner === player1) return { p1: 1, p2: 0 }
-  if (winner === player2) return { p1: 0, p2: 1 }
+export function outcomeForPlayer(winner, player1, player2) {
+  if (winner === 0) return { deckAWin: 0, deckBLoss: 0, tie: 1 }
+  if (winner === player1) return { deckAWin: 1, deckBLoss: 0, tie: 0 }
+  if (winner === player2) return { deckAWin: 0, deckBLoss: 1, tie: 0 }
   return null
+}
+
+/**
+ * Record one Limitless pairing for both deck seats (A vs B and B vs A).
+ * @param {Map<string, Map<string, { wins: number, losses: number, ties: number }>>} matrix
+ * @param {PairingEntry & { _deck1?: string, _deck2?: string }} batch
+ * @returns {boolean} true if the pairing was counted
+ */
+export function recordPairingMatchups(matrix, batch) {
+  const { player1, player2, winner } = batch
+  if (!player1 || !player2) return false
+  if (winner === -1) return false
+  const deck1 = batch._deck1
+  const deck2 = batch._deck2
+  if (!deck1 || !deck2 || deck1 === deck2) return false
+
+  const fromDeck1 = outcomeForPlayer(winner, player1, player2)
+  if (!fromDeck1) return false
+  addMatchup(matrix, deck1, deck2, fromDeck1)
+  addMatchup(matrix, deck2, deck1, invertDeckOutcome(fromDeck1))
+  return true
+}
+
+/** @param {{ deckAWin: number, deckBLoss: number, tie: number }} outcome */
+export function invertDeckOutcome(outcome) {
+  return {
+    deckAWin: outcome.deckBLoss,
+    deckBLoss: outcome.deckAWin,
+    tie: outcome.tie,
+  }
 }
 
 /**
@@ -207,7 +232,7 @@ function buildMatchupBias(row, idToName) {
  * @param {Map<string, Map<string, { wins: number, losses: number, ties: number }>>} matrix
  * @param {string} deckA
  * @param {string} deckB
- * @param {{ p1: number, p2: number } | null} outcome
+ * @param {{ deckAWin: number, deckBLoss: number, tie: number }} outcome
  */
 function addMatchup(matrix, deckA, deckB, outcome) {
   if (!outcome) return
@@ -221,11 +246,11 @@ function addMatchup(matrix, deckA, deckB, outcome) {
     vsB = { wins: 0, losses: 0, ties: 0 }
     rowA.set(deckB, vsB)
   }
-  if (outcome.p1 === 1) {
+  if (outcome.deckAWin) {
     vsB.wins += 1
-  } else if (outcome.p1 === 0 && outcome.p2 === 1) {
+  } else if (outcome.deckBLoss) {
     vsB.losses += 1
-  } else {
+  } else if (outcome.tie) {
     vsB.ties += 1
   }
 }

@@ -12,7 +12,12 @@ const decks = computed(() => payload.value?.decks ?? [])
 const displayDecks = computed(() => decks.value.slice(0, 60))
 const hasMoreDecks = computed(() => decks.value.length > displayDecks.value.length)
 const bannerError = computed(() => payload.value?.error ?? loadError.value)
-const totalMatchGames = computed(() => decks.value.reduce((s, d) => s + d.games, 0))
+
+function formatMatchupLine(rows: MetaDeck['matchups']['favorable']) {
+  return rows
+    .map((m) => `${m.opponentName} (${formatPct(m.winRate)}, n=${m.games})`)
+    .join(', ')
+}
 
 function formatPct(rate: number | null, digits = 1): string {
   if (rate == null || Number.isNaN(rate)) return '—'
@@ -99,7 +104,7 @@ watchEffect(() => {
         >
           Sample: {{ payload.tournamentCount }} tournaments ·
           {{ payload.totalDeckEntries }} deck entries ·
-          {{ totalMatchGames }} match games · Updated {{ formatFetched(payload.fetchedAt) }}
+          {{ payload.totalMatches ?? '—' }} head-to-head matches recorded · Updated {{ formatFetched(payload.fetchedAt) }}
         </p>
       </div>
 
@@ -155,8 +160,9 @@ watchEffect(() => {
                 {{ deck.consistencyScore ?? '—' }}<span v-if="deck.consistencyScore != null" class="text-sm font-normal text-gray-500">/100</span>
               </p>
               <p class="text-[10px] text-gray-400 mt-0.5">
-                Brick risk {{ deck.brickRiskScore ?? '—' }}<span v-if="deck.brickRiskScore != null">/100</span>
-                <span v-if="deck.consistencySample < 2"> · n={{ deck.consistencySample }}</span>
+                Brick risk proxy {{ deck.brickRiskScore ?? '—' }}<span v-if="deck.brickRiskScore != null">/100</span>
+                <span v-if="deck.consistencyScore != null"> · {{ deck.consistencySample }} pilots</span>
+                <span v-else-if="deck.consistencySample < 2"> · n={{ deck.consistencySample }}</span>
               </p>
             </div>
             <div class="bg-white p-3 col-span-2 sm:col-span-1 lg:col-span-2">
@@ -164,11 +170,11 @@ watchEffect(() => {
               <template v-if="deck.matchups.hasData">
                 <p class="text-xs text-gray-700 mt-1">
                   <span class="text-green-700 font-medium">Favors:</span>
-                  {{ deck.matchups.favorable.map(m => `${m.opponentName} (${formatPct(m.winRate)})`).join(', ') }}
+                  {{ formatMatchupLine(deck.matchups.favorable) }}
                 </p>
                 <p class="text-xs text-gray-700 mt-1">
                   <span class="text-red-700 font-medium">Struggles:</span>
-                  {{ deck.matchups.unfavorable.map(m => `${m.opponentName} (${formatPct(m.winRate)})`).join(', ') }}
+                  {{ formatMatchupLine(deck.matchups.unfavorable) }}
                 </p>
               </template>
               <p v-else class="text-sm text-gray-400 mt-1">Not enough paired games (need 5+ per matchup).</p>

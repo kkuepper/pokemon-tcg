@@ -24,7 +24,8 @@ const allStandings = []
 /** @type {import('./metaDeckStats.js').PairingEntry[]} */
 const allPairings = []
 let tournamentsUsed = 0
-let errorMessage = null
+/** @type {string[]} */
+const fetchWarnings = []
 
 /**
  * @typedef {import('./metaDeckStats.js').StandingEntry} StandingEntry
@@ -55,11 +56,36 @@ async function loadTournaments() {
   return list.filter(shouldIncludeTournament).slice(0, MAX_TOURNAMENTS)
 }
 
+function readExistingPayload() {
+  if (existsSync(OUT_PATH)) {
+    try {
+      return JSON.parse(readFileSync(OUT_PATH, 'utf-8'))
+    } catch {
+      /* ignore */
+    }
+  }
+  return { decks: [], totalDeckEntries: 0, source: 'https://play.limitlesstcg.com/' }
+}
+
+function isNonEmptyPayload(payload) {
+  return Array.isArray(payload?.decks) && payload.decks.length > 0
+}
+
+function mergeErrors(...parts) {
+  return parts.filter(Boolean).join(' ')
+}
+
+function writePayload(payload) {
+  writeFileSync(OUT_PATH, JSON.stringify(payload))
+}
+
 async function main() {
+  const previous = readExistingPayload()
+
   try {
     const tournaments = await loadTournaments()
     if (tournaments.length === 0) {
-      errorMessage = 'No eligible Pokémon TCG Pocket tournaments found.'
+      fetchWarnings.push('No eligible Pokémon TCG Pocket tournaments found.')
     }
 
     for (const t of tournaments) {
@@ -75,7 +101,9 @@ async function main() {
         allPairings.push(...enriched)
         tournamentsUsed += 1
       } catch (err) {
-        console.warn(`Skipping tournament ${t.id}:`, err.message)
+        const msg = err instanceof Error ? err.message : String(err)
+        console.warn(`Skipping tournament ${t.id}:`, msg)
+        fetchWarnings.push(`Skipped tournament ${t.id}: ${msg}`)
       }
     }
 
@@ -87,39 +115,47 @@ async function main() {
       docs: 'https://docs.limitlesstcg.com/developer/tournaments',
     })
 
-    if (errorMessage) payload.error = errorMessage
-    if (payload.decks.length === 0 && !errorMessage) {
-      payload.error = 'Tournament data loaded but no categorized decks were found.'
+    if (payload.decks.length === 0) {
+      fetchWarnings.push('Tournament data loaded but no categorized decks were found.')
     }
 
-    writeFileSync(OUT_PATH, JSON.stringify(payload))
+    if (!isNonEmptyPayload(payload) && isNonEmptyPayload(previous)) {
+      const kept = {
+        ...previous,
+        error: mergeErrors(...fetchWarnings, previous.error),
+        refreshFailedAt: new Date().toISOString(),
+      }
+      writePayload(kept)
+      console.warn(
+        `Kept previous ${OUT_PATH} (${previous.decks.length} decks); refresh produced no decks.`,
+      )
+      return
+    }
+
+    if (fetchWarnings.length) payload.error = mergeErrors(...fetchWarnings)
+    writePayload(payload)
     console.log(
       `Wrote ${OUT_PATH} — ${payload.decks.length} decks from ${tournamentsUsed} tournaments (${payload.totalDeckEntries} entries)`,
     )
   } catch (err) {
-    console.error('Meta deck build failed:', err.message)
-    const fallback = readFallback()
-    const payload = {
-      ...fallback,
-      error: err.message,
-      fetchedAt: new Date().toISOString(),
-      tournamentCount: 0,
-      game: GAME,
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('Meta deck build failed:', msg)
+    if (isNonEmptyPayload(previous)) {
+      writePayload({
+        ...previous,
+        error: mergeErrors(msg, previous.error),
+        refreshFailedAt: new Date().toISOString(),
+      })
+      console.warn(`Kept previous ${OUT_PATH} after total fetch failure.`)
+    } else {
+      writePayload({
+        ...previous,
+        error: msg,
+        game: GAME,
+      })
     }
-    writeFileSync(OUT_PATH, JSON.stringify(payload))
     process.exitCode = 0
   }
-}
-
-function readFallback() {
-  if (existsSync(OUT_PATH)) {
-    try {
-      return JSON.parse(readFileSync(OUT_PATH, 'utf-8'))
-    } catch {
-      /* ignore */
-    }
-  }
-  return { decks: [], totalDeckEntries: 0, source: 'https://play.limitlesstcg.com/' }
 }
 
 main()
