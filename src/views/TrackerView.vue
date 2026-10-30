@@ -486,6 +486,7 @@ onUnmounted(() => {
           </h1>
           <nav class="flex items-center gap-1 text-sm font-medium shrink-0">
             <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
+            <RouterLink to="/meta-decks" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Meta Decks</RouterLink>
             <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors">Pack Odds</RouterLink>
             <AuthButton />
           </nav>

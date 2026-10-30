@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "prebuild": "node scripts/buildCardDb.js && node scripts/downloadCardImages.js",
-    "dev": "node scripts/buildCardDb.js && node scripts/downloadCardImages.js && vite",
+    "prebuild": "node scripts/buildCardDb.js && node scripts/downloadCardImages.js && node scripts/buildMetaDecks.js",
+    "dev": "node scripts/buildCardDb.js && node scripts/downloadCardImages.js && node scripts/buildMetaDecks.js && vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
