@@ -6,18 +6,22 @@ import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import {
   aggregateMetaDecks,
+  buildCardIndex,
   enrichPairingsWithDecks,
   playerDeckMapFromStandings,
+  SAMPLE_WINDOW_DAYS,
+  windowCutoff,
 } from './metaDeckStats.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
 const OUT_PATH = resolve(root, 'public/meta-decks.json')
+const CARDS_PATH = resolve(root, 'public/cards.json')
 const API = 'https://play.limitlesstcg.com/api'
 const GAME = 'POCKET'
 
-const MAX_TOURNAMENTS = Number(process.env.LIMITLESS_MAX_TOURNAMENTS || 20)
 const REQUEST_DELAY_MS = Number(process.env.LIMITLESS_REQUEST_DELAY_MS || 150)
+const MAX_LIST_PAGES = Number(process.env.LIMITLESS_MAX_LIST_PAGES || 30)
 
 /** @type {StandingEntry[]} */
 const allStandings = []
@@ -50,10 +54,21 @@ function shouldIncludeTournament(t) {
   return true
 }
 
-async function loadTournaments() {
-  const list = await fetchJson(`/tournaments?game=${GAME}&limit=50`)
-  if (!Array.isArray(list)) throw new Error('Unexpected tournaments response')
-  return list.filter(shouldIncludeTournament).slice(0, MAX_TOURNAMENTS)
+async function loadTournamentsInWindow(now = new Date()) {
+  const cutoff = windowCutoff(now, SAMPLE_WINDOW_DAYS)
+  /** @type {Array<{ id: string, date: string, format?: string | null }>} */
+  const selected = []
+  for (let page = 1; page <= MAX_LIST_PAGES; page++) {
+    const list = await fetchJson(`/tournaments?game=${GAME}&limit=50&page=${page}`)
+    if (!Array.isArray(list) || list.length === 0) break
+    for (const t of list) {
+      if (!shouldIncludeTournament(t)) continue
+      if (new Date(t.date) >= cutoff) selected.push(t)
+    }
+    const oldest = new Date(list[list.length - 1].date)
+    if (oldest < cutoff) break
+  }
+  return { tournaments: selected, windowStart: cutoff.toISOString(), now: now.toISOString() }
 }
 
 function readExistingPayload() {
@@ -79,13 +94,26 @@ function writePayload(payload) {
   writeFileSync(OUT_PATH, JSON.stringify(payload))
 }
 
+function loadCardIndex() {
+  try {
+    const cards = JSON.parse(readFileSync(CARDS_PATH, 'utf-8'))
+    return buildCardIndex(cards)
+  } catch (err) {
+    console.warn('Could not load cards.json for meta deck art mapping:', err.message)
+    return null
+  }
+}
+
 async function main() {
   const previous = readExistingPayload()
+  const cardIndex = loadCardIndex()
 
   try {
-    const tournaments = await loadTournaments()
+    const { tournaments, windowStart } = await loadTournamentsInWindow()
     if (tournaments.length === 0) {
-      fetchWarnings.push('No eligible Pokémon TCG Pocket tournaments found.')
+      fetchWarnings.push(
+        `No eligible Pokémon TCG Pocket tournaments in the last ${SAMPLE_WINDOW_DAYS} days.`,
+      )
     }
 
     for (const t of tournaments) {
@@ -111,9 +139,10 @@ async function main() {
       game: GAME,
       fetchedAt: new Date().toISOString(),
       tournamentCount: tournamentsUsed,
+      sampleWindowStart: windowStart,
       source: 'https://play.limitlesstcg.com/',
       docs: 'https://docs.limitlesstcg.com/developer/tournaments',
-    })
+    }, cardIndex)
 
     if (payload.decks.length === 0) {
       fetchWarnings.push('Tournament data loaded but no categorized decks were found.')
@@ -135,7 +164,7 @@ async function main() {
     if (fetchWarnings.length) payload.error = mergeErrors(...fetchWarnings)
     writePayload(payload)
     console.log(
-      `Wrote ${OUT_PATH} — ${payload.decks.length} decks from ${tournamentsUsed} tournaments (${payload.totalDeckEntries} entries)`,
+      `Wrote ${OUT_PATH} — ${payload.decks.length} decks from ${tournamentsUsed} tournaments in ${SAMPLE_WINDOW_DAYS}d window (${payload.totalDeckEntries} entries)`,
     )
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

@@ -1,3 +1,16 @@
+export interface MetaCardRef {
+  name: string
+  cardId?: string
+  imageSet?: string
+  imageNum?: number
+}
+
+export interface MetaDeckOtherCard extends MetaCardRef {
+  category: string
+  listRate: number
+  avgCount: number
+}
+
 export interface MetaMatchupRow {
   opponentId: string
   opponentName: string
@@ -18,6 +31,8 @@ export interface MetaDeck {
   id: string
   name: string
   icons: string[]
+  highlightCards: MetaCardRef[]
+  otherCards: MetaDeckOtherCard[]
   playShare: number | null
   winRate: number | null
   wins: number
@@ -29,12 +44,17 @@ export interface MetaDeck {
   brickRiskScore: number | null
   consistencySample: number
   matchups: MetaDeckMatchups
+  meetsSampleGate: boolean
 }
 
 export interface MetaDecksPayload {
   game: string
   fetchedAt: string
   tournamentCount: number
+  sampleWindowDays?: number
+  sampleWindowStart?: string
+  rankMinGames?: number
+  rankMinEntries?: number
   totalDeckEntries: number
   totalMatches?: number
   refreshFailedAt?: string

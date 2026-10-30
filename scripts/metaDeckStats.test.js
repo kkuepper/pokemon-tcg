@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
   aggregateMetaDecks,
+  buildCardIndex,
   computeConsistency,
   enrichPairingsWithDecks,
   invertDeckOutcome,
+  meetsRankGate,
+  MIN_RANK_ENTRIES,
+  MIN_RANK_GAMES,
   outcomeForPlayer,
   playerDeckMapFromStandings,
   recordPairingMatchups,
+  SAMPLE_WINDOW_DAYS,
+  selectTournamentsInWindow,
+  sortDecksForDisplay,
+  windowCutoff,
 } from './metaDeckStats.js'
 
 describe('computeConsistency', () => {
@@ -95,6 +103,71 @@ describe('outcomeForPlayer / invertDeckOutcome', () => {
     const fromA = outcomeForPlayer('p1', 'p1', 'p2')
     expect(fromA).toEqual({ deckAWin: 1, deckBLoss: 0, tie: 0 })
     expect(invertDeckOutcome(fromA)).toEqual({ deckAWin: 0, deckBLoss: 1, tie: 0 })
+  })
+})
+
+describe('sample window and ranking', () => {
+  const now = new Date('2026-10-30T12:00:00.000Z')
+  const tournaments = [
+    { id: '1', date: '2026-10-29T12:00:00.000Z', format: null },
+    { id: '2', date: '2026-10-20T12:00:00.000Z', format: null },
+    { id: '3', date: '2026-10-29T12:00:00.000Z', format: 'CUSTOM' },
+  ]
+
+  it('selects non-CUSTOM tournaments within 7 days', () => {
+    const picked = selectTournamentsInWindow(tournaments, now)
+    expect(picked.map((t) => t.id)).toEqual(['1'])
+  })
+
+  it('computes rolling cutoff from SAMPLE_WINDOW_DAYS', () => {
+    const cutoff = windowCutoff(now, SAMPLE_WINDOW_DAYS)
+    expect(cutoff.toISOString()).toBe('2026-10-23T12:00:00.000Z')
+  })
+
+  it('gates and sorts by win rate with ranked decks first', () => {
+    const decks = [
+      { id: 'low', winRate: 0.9, games: 10, deckEntries: 2, meetsSampleGate: false },
+      { id: 'mid', winRate: 0.55, games: MIN_RANK_GAMES, deckEntries: MIN_RANK_ENTRIES, meetsSampleGate: true },
+      { id: 'top', winRate: 0.62, games: 40, deckEntries: 10, meetsSampleGate: true },
+    ]
+    expect(meetsRankGate(decks[1])).toBe(true)
+    expect(meetsRankGate(decks[0])).toBe(false)
+    const sorted = sortDecksForDisplay(decks)
+    expect(sorted.map((d) => d.id)).toEqual(['top', 'mid', 'low'])
+  })
+})
+
+describe('decklist aggregation', () => {
+  it('builds highlight and other cards from decklists', () => {
+    const cards = [
+      { id: 'A4a-010', name: 'Entei ex', set: 'A4a' },
+      { id: 'B1a-001', name: 'Mega Charizard Y ex', set: 'B1a' },
+      { id: 'C1-128', name: 'Rika', set: 'C1' },
+    ]
+    const index = buildCardIndex(cards)
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 10, ties: 0 },
+        deck: { id: 'charizard', name: 'Mega Charizard Y ex Entei ex', icons: ['charizard-mega-y', 'entei'] },
+        decklist: {
+          pokemon: [
+            { name: 'Mega Charizard Y ex', set: 'B1a', number: '1', count: 2 },
+            { name: 'Entei ex', set: 'A4a', number: '10', count: 2 },
+          ],
+          trainer: [{ name: 'Rika', set: 'C1', number: '128', count: 2 }],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    const deck = result.decks[0]
+    expect(deck.highlightCards.length).toBeGreaterThan(0)
+    expect(deck.otherCards.some((c) => c.name === 'Rika')).toBe(true)
+    expect(deck.highlightCards.every((c) => c.name !== 'Rika')).toBe(true)
   })
 })
 
