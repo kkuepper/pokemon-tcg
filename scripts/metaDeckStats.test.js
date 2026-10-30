@@ -14,6 +14,7 @@ import {
   SAMPLE_WINDOW_DAYS,
   selectTournamentsInWindow,
   scoreIconMatch,
+  cardMatchesIconSpecies,
   sortDecksForDisplay,
   windowCutoff,
 } from './metaDeckStats.js'
@@ -294,6 +295,82 @@ describe('icon highlight scoring', () => {
     const names = result.decks[0].highlightCards.map((c) => c.name)
     expect(names.filter((n) => n.toLowerCase().includes('magnezone')).length).toBeGreaterThanOrEqual(2)
     expect(scoreIconMatch('Miraidon ex', 'magnezone', { deckName })).toBe(0)
+  })
+
+  it('uses word boundaries so mew icon does not match Mewtwo', () => {
+    expect(cardMatchesIconSpecies('Mew ex', 'mew')).toBe(true)
+    expect(cardMatchesIconSpecies('Mewtwo ex', 'mew')).toBe(false)
+    expect(scoreIconMatch('Mewtwo ex', 'mew', { deckName: 'Mew ex Mega Diancie ex' })).toBe(0)
+
+    const index = buildCardIndex([
+      { id: 'C1-050', name: 'Mew ex', set: 'C1' },
+      { id: 'C1-051', name: 'Mewtwo ex', set: 'C1' },
+      { id: 'B3b-040', name: 'Mega Diancie ex', set: 'B3b' },
+    ])
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'mew-diancie',
+          name: 'Mew ex Mega Diancie ex',
+          icons: ['mew', 'diancie-mega'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Mew ex', count: 2 },
+            { name: 'Mewtwo ex', count: 2 },
+            { name: 'Mega Diancie ex', count: 2 },
+          ],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    const names = result.decks[0].highlightCards.map((c) => c.name)
+    expect(names[0]).toBe('Mew ex')
+    expect(names).not.toContain('Mewtwo ex')
+  })
+
+  it('prefers Mega Charizard X over Y for charizard-mega-x icon', () => {
+    const deckName = 'Mega Charizard X ex Mega Charizard Y ex'
+    expect(scoreIconMatch('Mega Charizard X ex', 'charizard-mega-x', { deckName })).toBeGreaterThan(
+      scoreIconMatch('Mega Charizard Y ex', 'charizard-mega-x', { deckName }),
+    )
+    expect(cardMatchesIconSpecies('mega charizard y ex', 'x')).toBe(false)
+
+    const index = buildCardIndex([
+      { id: 'B1a-001', name: 'Mega Charizard X ex', set: 'B1a' },
+      { id: 'B1a-002', name: 'Mega Charizard Y ex', set: 'B1a' },
+    ])
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'charizard-xy',
+          name: deckName,
+          icons: ['charizard-mega-x', 'charizard-mega-y'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Mega Charizard X ex', count: 2 },
+            { name: 'Mega Charizard Y ex', count: 2 },
+          ],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    const names = result.decks[0].highlightCards.map((c) => c.name)
+    expect(names[0]).toMatch(/Charizard X/i)
+    expect(names[1]).toMatch(/Charizard Y/i)
   })
 })
 

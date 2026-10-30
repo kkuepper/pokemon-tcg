@@ -308,6 +308,12 @@ function pickHighlightCards(entry, cardIndex) {
     if (picked.length >= 3) break
     if (used.has(row.ref.name)) continue
     if (shouldSkipRedundantHighlight(row.card.name, pokemonCards)) continue
+    if (
+      entry.icons.length > 0 &&
+      !entry.icons.some((icon) => scoreIconMatch(row.ref.name, icon, { deckName: entry.name }) > 0)
+    ) {
+      continue
+    }
     picked.push(row.ref)
     used.add(row.ref.name)
   }
@@ -326,7 +332,10 @@ function bestPokemonForIcon(icon, pokemonCards, cardIndex, deckName = '', usedNa
   }
   ranked.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score
-    return tieBreakPrefers(b.card.name, a.card.name, icon, deckName) ? 1 : -1
+    const rankDiff =
+      tieBreakRank(b.card.name, icon, deckName) - tieBreakRank(a.card.name, icon, deckName)
+    if (rankDiff !== 0) return rankDiff
+    return 0
   })
 
   for (const { card: c } of ranked) {
@@ -342,9 +351,24 @@ function bestPokemonForIcon(icon, pokemonCards, cardIndex, deckName = '', usedNa
   return null
 }
 
+/** @param {string} pattern */
+function escapeRegex(pattern) {
+  return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 /** @param {string} name @param {string} token */
 export function cardMatchesIconSpecies(name, token) {
-  return name.toLowerCase().includes(token.toLowerCase())
+  if (!token) return false
+  const re = new RegExp(`\\b${escapeRegex(token.toLowerCase())}\\b`, 'i')
+  return re.test(name)
+}
+
+/** @param {string} name @param {string} iconSlug */
+function countIconSpeciesTokenMatches(name, iconSlug) {
+  const slug = iconSlug.toLowerCase()
+  const parts = slug.split('-').filter((p) => p !== 'p' && p !== 'b')
+  const speciesTokens = parts.filter((p) => p !== 'ex' && p !== 'mega')
+  return speciesTokens.filter((t) => cardMatchesIconSpecies(name, t)).length
 }
 
 /**
@@ -375,12 +399,11 @@ export function scoreIconMatch(cardName, iconSlug, context = {}) {
       if (nameIncludesEx(name)) score += 2
       else if (isEvolutionLineName(name, token)) score -= 1
     }
+  }
 
-    if (slugWantsMega) {
-      if (name.includes('mega')) score += 2
-    } else if (name.includes('mega') && cardMatchesIconSpecies(name, token)) {
-      score -= 2
-    }
+  if (matchedAnySpecies) {
+    if (slugWantsMega && name.includes('mega')) score += 2
+    else if (!slugWantsMega && name.includes('mega')) score -= 2
   }
 
   if (!matchedAnySpecies) return 0
@@ -399,7 +422,7 @@ function tieBreakRank(cardName, iconSlug, deckName) {
   const parts = slug.split('-')
   const slugWantsMega = parts.includes('mega') || slug.includes('-mega-')
   const token = parts.find((p) => p !== 'ex' && p !== 'mega' && p !== 'p' && p !== 'b') ?? ''
-  let rank = 0
+  let rank = countIconSpeciesTokenMatches(name, iconSlug) * 5
   if (cardMatchesIconSpecies(name, token) && name.includes('mega') && slugWantsMega) rank += 8
   if (cardMatchesIconSpecies(name, token) && nameIncludesEx(name)) rank += 4
   if (cardMatchesIconSpecies(name, token) && name.includes('mega') && !slugWantsMega) rank -= 10
@@ -412,25 +435,19 @@ function nameIncludesEx(name) {
   return name.includes(' ex') || name.endsWith('ex')
 }
 
-/** @param {string} deckName @param {string} token */
-function deckNameIncludesSpeciesMega(deckName, token) {
-  if (!deckName || !token) return false
-  return deckName.includes(`mega ${token}`)
-}
-
-/** @param {string} deckName @param {string} token */
 function deckNameIncludesSpeciesEx(deckName, token) {
   if (!deckName || !token) return false
-  const idx = deckName.indexOf(token)
-  if (idx === -1) return false
-  const after = deckName.slice(idx + token.length)
-  return after.startsWith(' ex') || after.startsWith('-ex')
+  const t = escapeRegex(token.toLowerCase())
+  return new RegExp(`\\b${t}\\b(?:\\s+ex|-ex)`, 'i').test(deckName)
 }
 
 /** Penalize mid-evolution lines when matching a species icon (Frogadier vs Greninja ex). */
 function isEvolutionLineName(name, token) {
   if (nameIncludesEx(name) || name.includes('mega')) return false
-  return name.includes(token) && name !== token
+  if (cardMatchesIconSpecies(name, token)) {
+    return name.trim().toLowerCase() !== token.toLowerCase()
+  }
+  return false
 }
 
 /** Skip base species / pre-evolutions when an ex (or mega) line card exists in the archetype. */
