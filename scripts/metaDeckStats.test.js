@@ -222,6 +222,79 @@ describe('icon highlight scoring', () => {
     }, index)
     expect(result.decks[0].highlightCards[0]?.name).toBe('Mega Greninja ex')
   })
+
+  it('does not let partner Mega/ex steal a plain species icon slot', () => {
+    const deckName = 'Mega Sceptile ex Greninja'
+    expect(scoreIconMatch('Mega Sceptile ex', 'greninja', { deckName })).toBe(0)
+    expect(scoreIconMatch('Greninja', 'greninja', { deckName })).toBeGreaterThan(0)
+
+    const index = buildCardIndex([
+      { id: 'B3-001', name: 'Mega Sceptile ex', set: 'B3' },
+      { id: 'A1-089', name: 'Greninja', set: 'A1' },
+      { id: 'B3-010', name: 'Treecko', set: 'B3' },
+    ])
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'mega-sceptile-greninja',
+          name: deckName,
+          icons: ['sceptile-mega', 'greninja'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Mega Sceptile ex', count: 2 },
+            { name: 'Greninja', count: 2 },
+            { name: 'Treecko', count: 1 },
+          ],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    const names = result.decks[0].highlightCards.map((c) => c.name)
+    expect(names).toContain('Mega Sceptile ex')
+    expect(names).toContain('Greninja')
+  })
+
+  it('includes Magnezone for a second magnezone icon on Magnezone ex Magnezone', () => {
+    const deckName = 'Magnezone ex Magnezone'
+    const index = buildCardIndex([
+      { id: 'B3a-001', name: 'Magnezone ex', set: 'B3a' },
+      { id: 'A2-156', name: 'Magnezone', set: 'A2' },
+      { id: 'B3a-002', name: 'Miraidon ex', set: 'B3a' },
+    ])
+    const standings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'magnezone-duo',
+          name: deckName,
+          icons: ['magnezone', 'magnezone'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Magnezone ex', count: 2 },
+            { name: 'Magnezone', count: 2 },
+            { name: 'Miraidon ex', count: 1 },
+          ],
+        },
+      },
+    ]
+    const result = aggregateMetaDecks(standings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, index)
+    const names = result.decks[0].highlightCards.map((c) => c.name)
+    expect(names.filter((n) => n.toLowerCase().includes('magnezone')).length).toBeGreaterThanOrEqual(2)
+    expect(scoreIconMatch('Miraidon ex', 'magnezone', { deckName })).toBe(0)
+  })
 })
 
 describe('decklist aggregation', () => {

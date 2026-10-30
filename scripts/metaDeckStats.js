@@ -276,7 +276,7 @@ function pickHighlightCards(entry, cardIndex) {
   const pokemonCards = [...entry.cards.values()].filter((c) => c.category === 'pokemon')
 
   for (const icon of entry.icons) {
-    const match = bestPokemonForIcon(icon, pokemonCards, cardIndex, entry.name)
+    const match = bestPokemonForIcon(icon, pokemonCards, cardIndex, entry.name, used)
     if (match && !used.has(match.name)) {
       picked.push(match)
       used.add(match.name)
@@ -315,43 +315,36 @@ function pickHighlightCards(entry, cardIndex) {
   return picked
 }
 
-/** @param {string} icon @param {CardAgg[]} pokemonCards @param {CardIndex | null} cardIndex @param {string} [deckName] */
-function bestPokemonForIcon(icon, pokemonCards, cardIndex, deckName = '') {
-  let best = null
-  let bestScore = -Infinity
+/** @param {string} icon @param {CardAgg[]} pokemonCards @param {CardIndex | null} cardIndex @param {string} [deckName] @param {Set<string>} [usedNames] */
+function bestPokemonForIcon(icon, pokemonCards, cardIndex, deckName = '', usedNames = new Set()) {
+  /** @type {{ card: CardAgg, score: number }[]} */
+  const ranked = []
   for (const c of pokemonCards) {
     const score = scoreIconMatch(c.name, icon, { deckName })
     if (score <= 0) continue
-    if (
-      !best ||
-      score > bestScore ||
-      (score === bestScore && tieBreakPrefers(c.name, best.name, icon, deckName))
-    ) {
-      bestScore = score
-      best = c
-    }
+    ranked.push({ card: c, score })
   }
-  if (best && bestScore > 0) {
-    return resolveLimitlessCard(best, cardIndex) ?? { name: best.name }
+  ranked.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score
+    return tieBreakPrefers(b.card.name, a.card.name, icon, deckName) ? 1 : -1
+  })
+
+  for (const { card: c } of ranked) {
+    if (usedNames.has(c.name)) continue
+    return resolveLimitlessCard(c, cardIndex) ?? { name: c.name }
   }
-  for (const c of pokemonCards) {
+
+  for (const { card: c } of ranked) {
     const ref = resolveLimitlessCard(c, cardIndex)
-    if (!ref) continue
-    const score = scoreIconMatch(ref.name, icon, { deckName })
-    if (score <= 0) continue
-    if (
-      !best ||
-      score > bestScore ||
-      (score === bestScore && tieBreakPrefers(ref.name, best.name, icon, deckName))
-    ) {
-      bestScore = score
-      best = c
-    }
-  }
-  if (best && bestScore > 0) {
-    return resolveLimitlessCard(best, cardIndex) ?? { name: best.name }
+    if (!ref || usedNames.has(ref.name)) continue
+    return ref
   }
   return null
+}
+
+/** @param {string} name @param {string} token */
+export function cardMatchesIconSpecies(name, token) {
+  return name.toLowerCase().includes(token.toLowerCase())
 }
 
 /**
@@ -364,32 +357,33 @@ export function scoreIconMatch(cardName, iconSlug, context = {}) {
   const deckName = (context.deckName ?? '').toLowerCase()
   const slug = iconSlug.toLowerCase()
   const parts = slug.split('-').filter((p) => p !== 'p' && p !== 'b')
+  const speciesTokens = parts.filter((p) => p !== 'ex' && p !== 'mega')
   const slugWantsEx = parts.includes('ex')
   const slugWantsMega = parts.includes('mega') || slug.includes('-mega-')
 
-  let score = 0
-  for (const part of parts) {
-    if (part === 'ex') {
-      if (nameIncludesEx(name)) score += 3
-    } else if (part === 'mega') {
-      if (name.includes('mega')) score += 3
-    } else if (name.includes(part)) {
-      score += 1
-    }
-  }
+  if (speciesTokens.length === 0) return 0
 
-  const speciesTokens = parts.filter((p) => p !== 'ex' && p !== 'mega')
+  let score = 0
+  let matchedAnySpecies = false
   for (const token of speciesTokens) {
+    if (!cardMatchesIconSpecies(name, token)) continue
+    matchedAnySpecies = true
+    score += 1
+
     const deckUsesEx = deckNameIncludesSpeciesEx(deckName, token)
     if (deckUsesEx || slugWantsEx) {
       if (nameIncludesEx(name)) score += 2
       else if (isEvolutionLineName(name, token)) score -= 1
     }
-    if (slugWantsMega || (deckName.includes(token) && deckName.includes('mega'))) {
+
+    if (slugWantsMega) {
       if (name.includes('mega')) score += 2
+    } else if (name.includes('mega') && cardMatchesIconSpecies(name, token)) {
+      score -= 2
     }
   }
 
+  if (!matchedAnySpecies) return 0
   return score
 }
 
@@ -401,16 +395,27 @@ export function tieBreakPrefers(nameA, nameB, icon, deckName) {
 /** @param {string} cardName @param {string} iconSlug @param {string} deckName */
 function tieBreakRank(cardName, iconSlug, deckName) {
   const name = cardName.toLowerCase()
+  const slug = iconSlug.toLowerCase()
+  const parts = slug.split('-')
+  const slugWantsMega = parts.includes('mega') || slug.includes('-mega-')
+  const token = parts.find((p) => p !== 'ex' && p !== 'mega' && p !== 'p' && p !== 'b') ?? ''
   let rank = 0
-  if (name.includes('mega')) rank += 8
-  if (nameIncludesEx(name)) rank += 4
-  if (isEvolutionLineName(name, iconSlug.split('-')[0] ?? '')) rank -= 2
+  if (cardMatchesIconSpecies(name, token) && name.includes('mega') && slugWantsMega) rank += 8
+  if (cardMatchesIconSpecies(name, token) && nameIncludesEx(name)) rank += 4
+  if (cardMatchesIconSpecies(name, token) && name.includes('mega') && !slugWantsMega) rank -= 10
+  if (cardMatchesIconSpecies(name, token) && isEvolutionLineName(name, token)) rank -= 2
   void deckName
   return rank
 }
 
 function nameIncludesEx(name) {
   return name.includes(' ex') || name.endsWith('ex')
+}
+
+/** @param {string} deckName @param {string} token */
+function deckNameIncludesSpeciesMega(deckName, token) {
+  if (!deckName || !token) return false
+  return deckName.includes(`mega ${token}`)
 }
 
 /** @param {string} deckName @param {string} token */
