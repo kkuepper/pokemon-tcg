@@ -107,10 +107,24 @@ function cardPoolKey(card) {
 // Rarities eligible for Rare Pack
 const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 
+// Packs a card can actually be pulled from. Most cards name their packs. A
+// card that omits the field falls back to every pack of its set — that is how
+// promo sets, which never name a pack per card, still resolve. An estimated
+// set is different: its other cards DO name packs, and a missing array means
+// the card is not in the booster (C1's Sweet Honey AR, Pikachu ex IM, and
+// Mega Mewtwo X ex IM). Falling back would drop them into both Dual Fusion
+// packs and dilute pools the offering rates pin (Mewtwo's IM tier is Umbreon
+// alone; its AR tier is 10 cards).
+function packsFor(card) {
+  if (Array.isArray(card.packs)) return card.packs
+  if (estimatedSets.has(card.set)) return []
+  return setPacksMap[card.set] ?? []
+}
+
 // Build per-(set, pack, poolKey) pool size
 const packPoolMap = {}
 for (const card of cards) {
-  const cardPacks = card.packs ?? setPacksMap[card.set] ?? []
+  const cardPacks = packsFor(card)
   const pk = cardPoolKey(card)
   for (const pack of cardPacks) {
     const k = `${card.set}::${pack}::${pk}`
@@ -118,9 +132,11 @@ for (const card of cards) {
   }
 }
 
-// Build whole-set pool for Rare Pack (not variant-specific)
+// Build whole-set pool for Rare Pack (not variant-specific). Skip estimated
+// cards with no booster pack so they don't inflate the rare-pool divisor.
 const setPoolMap = {}
 for (const card of cards) {
+  if (!packsFor(card).length && estimatedSets.has(card.set)) continue
   const pk = cardPoolKey(card)
   const k = `${card.set}::${pk}`
   setPoolMap[k] = (setPoolMap[k] || 0) + 1
@@ -162,9 +178,10 @@ const output = []
 
 for (const card of cards) {
   const { set, number, name, rarity, image } = card
-  const packs = card.packs ?? setPacksMap[set] ?? []
+  const packs = packsFor(card)
 
-  // Skip cards with no known pack (promos not in pull rate DB)
+  // Skip cards with no known pack (promos not in pull rate DB, and estimated
+  // cards that ship without a packs array — see packsFor).
   if (!packs.length) continue
 
   const setName = setNames[set] ?? set
