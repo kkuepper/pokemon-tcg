@@ -463,6 +463,13 @@ describe('icon highlight scoring', () => {
     expect(goodraDeck?.highlightCards[0]?.name).toBe('Hisuian Goodra')
     expect(zoroarkDeck?.highlightCards[0]?.name).toBe('Hisuian Zoroark ex')
   })
+
+  it('scores glued cards.json regional names after normalization', () => {
+    expect(scoreIconMatch('AlolanNinetales ex', 'ninetales-alola', { deckName: 'Alolan Ninetales ex' })).toBeGreaterThan(0)
+    expect(scoreIconMatch('alolanninetales ex', 'ninetales-alola', { deckName: 'Alolan Ninetales ex' })).toBeGreaterThan(0)
+    expect(cardMatchesIconSpecies('AlolanNinetales ex', 'ninetales')).toBe(true)
+    expect(cardMatchesIconSpecies('AlolanNinetales ex', 'alola')).toBe(true)
+  })
 })
 
 describe('decklist aggregation', () => {

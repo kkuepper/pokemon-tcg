@@ -364,8 +364,10 @@ const REGIONAL_STEM_TO_ADJECTIVE = {
 }
 
 /** @param {string} name */
-function normalizeCardNameForMatching(name) {
-  return name.replace(/([a-z])([A-Z])/g, '$1 $2')
+function normalizedCardNameLower(name) {
+  let n = name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
+  n = n.replace(/(?<![\s-])(alolan|hisuian|galarian|paldean|mega)(?=[a-z])/g, '$1 ')
+  return n
 }
 
 /** @param {string} token */
@@ -380,7 +382,7 @@ function speciesTokenRegexPatterns(token) {
 /** @param {string} name @param {string} token */
 export function cardMatchesIconSpecies(name, token) {
   if (!token) return false
-  const normalized = normalizeCardNameForMatching(name)
+  const normalized = normalizedCardNameLower(name)
   return speciesTokenRegexPatterns(token).some(
     (p) => new RegExp(`\\b${p}\\b`, 'i').test(normalized),
   )
@@ -400,7 +402,7 @@ function countIconSpeciesTokenMatches(name, iconSlug) {
  * @param {{ deckName?: string }} [context]
  */
 export function scoreIconMatch(cardName, iconSlug, context = {}) {
-  const name = cardName.toLowerCase()
+  const name = normalizedCardNameLower(cardName)
   const deckName = (context.deckName ?? '').toLowerCase()
   const slug = iconSlug.toLowerCase()
   const parts = slug.split('-').filter((p) => p !== 'p' && p !== 'b')
@@ -440,7 +442,7 @@ export function tieBreakPrefers(nameA, nameB, icon, deckName) {
 
 /** @param {string} cardName @param {string} iconSlug @param {string} deckName */
 function tieBreakRank(cardName, iconSlug, deckName) {
-  const name = cardName.toLowerCase()
+  const name = normalizedCardNameLower(cardName)
   const slug = iconSlug.toLowerCase()
   const parts = slug.split('-')
   const slugWantsMega = parts.includes('mega') || slug.includes('-mega-')
@@ -455,7 +457,8 @@ function tieBreakRank(cardName, iconSlug, deckName) {
 }
 
 function nameIncludesEx(name) {
-  return name.includes(' ex') || name.endsWith('ex')
+  const n = normalizedCardNameLower(name).trim()
+  return /(?:\s+)ex$/.test(n)
 }
 
 function deckNameIncludesSpeciesEx(deckName, token) {
@@ -469,7 +472,8 @@ function deckNameIncludesSpeciesEx(deckName, token) {
 function isEvolutionLineName(name, token) {
   if (nameIncludesEx(name) || name.includes('mega')) return false
   if (cardMatchesIconSpecies(name, token)) {
-    return name.trim().toLowerCase() !== token.toLowerCase()
+    const species = normalizedCardNameLower(name).trim()
+    return species !== token.toLowerCase() && !species.endsWith(` ${token.toLowerCase()}`)
   }
   return false
 }
