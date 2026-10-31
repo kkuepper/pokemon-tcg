@@ -356,11 +356,34 @@ function escapeRegex(pattern) {
   return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+const REGIONAL_STEM_TO_ADJECTIVE = {
+  alola: 'alolan',
+  hisui: 'hisuian',
+  galar: 'galarian',
+  paldea: 'paldean',
+}
+
+/** @param {string} name */
+function normalizeCardNameForMatching(name) {
+  return name.replace(/([a-z])([A-Z])/g, '$1 $2')
+}
+
+/** @param {string} token */
+function speciesTokenRegexPatterns(token) {
+  const t = token.toLowerCase()
+  const patterns = [escapeRegex(t)]
+  const adjective = REGIONAL_STEM_TO_ADJECTIVE[t]
+  if (adjective) patterns.push(escapeRegex(adjective))
+  return patterns
+}
+
 /** @param {string} name @param {string} token */
 export function cardMatchesIconSpecies(name, token) {
   if (!token) return false
-  const re = new RegExp(`\\b${escapeRegex(token.toLowerCase())}\\b`, 'i')
-  return re.test(name)
+  const normalized = normalizeCardNameForMatching(name)
+  return speciesTokenRegexPatterns(token).some(
+    (p) => new RegExp(`\\b${p}\\b`, 'i').test(normalized),
+  )
 }
 
 /** @param {string} name @param {string} iconSlug */
@@ -437,8 +460,9 @@ function nameIncludesEx(name) {
 
 function deckNameIncludesSpeciesEx(deckName, token) {
   if (!deckName || !token) return false
-  const t = escapeRegex(token.toLowerCase())
-  return new RegExp(`\\b${t}\\b(?:\\s+ex|-ex)`, 'i').test(deckName)
+  return speciesTokenRegexPatterns(token).some((p) =>
+    new RegExp(`\\b${p}\\b(?:\\s+ex|-ex)`, 'i').test(deckName),
+  )
 }
 
 /** Penalize mid-evolution lines when matching a species icon (Frogadier vs Greninja ex). */

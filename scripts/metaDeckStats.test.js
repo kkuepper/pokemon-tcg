@@ -372,6 +372,97 @@ describe('icon highlight scoring', () => {
     expect(names[0]).toMatch(/Charizard X/i)
     expect(names[1]).toMatch(/Charizard Y/i)
   })
+
+  it('prefers regional forms on regional icons when base and regional are both listed', () => {
+    expect(
+      scoreIconMatch('Alolan Exeggutor ex', 'exeggutor-alola', {
+        deckName: 'Alolan Exeggutor ex',
+      }),
+    ).toBeGreaterThan(scoreIconMatch('Exeggutor ex', 'exeggutor-alola', { deckName: 'Alolan Exeggutor ex' }))
+
+    const exeggutorIndex = buildCardIndex([
+      { id: 'A2-101', name: 'Exeggutor ex', set: 'A2' },
+      { id: 'A2-102', name: 'Alolan Exeggutor ex', set: 'A2' },
+    ])
+    const exeggutorStandings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'alola-exeggutor',
+          name: 'Alolan Exeggutor ex',
+          icons: ['exeggutor-alola'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Exeggutor ex', count: 2 },
+            { name: 'Alolan Exeggutor ex', count: 2 },
+          ],
+        },
+      },
+    ]
+    const exeggutorResult = aggregateMetaDecks(exeggutorStandings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, exeggutorIndex)
+    expect(exeggutorResult.decks[0].highlightCards[0]?.name).toBe('Alolan Exeggutor ex')
+
+    expect(scoreIconMatch('Hisuian Goodra', 'goodra-hisui', { deckName: 'Hisuian Goodra' })).toBeGreaterThan(
+      scoreIconMatch('Goodra', 'goodra-hisui', { deckName: 'Hisuian Goodra' }),
+    )
+    expect(scoreIconMatch('Hisuian Zoroark ex', 'zoroark-hisui', { deckName: 'Hisuian Zoroark ex' })).toBeGreaterThan(
+      scoreIconMatch('Zoroark ex', 'zoroark-hisui', { deckName: 'Hisuian Zoroark ex' }),
+    )
+
+    const hisuiIndex = buildCardIndex([
+      { id: 'B2-001', name: 'Goodra', set: 'B2' },
+      { id: 'B2-002', name: 'Hisuian Goodra', set: 'B2' },
+      { id: 'B2-003', name: 'Zoroark ex', set: 'B2' },
+      { id: 'B2-004', name: 'Hisuian Zoroark ex', set: 'B2' },
+    ])
+    const hisuiStandings = [
+      {
+        player: 'a',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'hisui-goodra',
+          name: 'Hisuian Goodra',
+          icons: ['goodra-hisui'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Goodra', count: 2 },
+            { name: 'Hisuian Goodra', count: 2 },
+          ],
+        },
+      },
+      {
+        player: 'b',
+        record: { wins: 30, losses: 5, ties: 0 },
+        deck: {
+          id: 'hisui-zoroark',
+          name: 'Hisuian Zoroark ex',
+          icons: ['zoroark-hisui'],
+        },
+        decklist: {
+          pokemon: [
+            { name: 'Zoroark ex', count: 2 },
+            { name: 'Hisuian Zoroark ex', count: 2 },
+          ],
+        },
+      },
+    ]
+    const hisuiResult = aggregateMetaDecks(hisuiStandings, [], {
+      game: 'POCKET',
+      fetchedAt: '2026-01-01T00:00:00.000Z',
+      tournamentCount: 1,
+    }, hisuiIndex)
+    const goodraDeck = hisuiResult.decks.find((d) => d.id === 'hisui-goodra')
+    const zoroarkDeck = hisuiResult.decks.find((d) => d.id === 'hisui-zoroark')
+    expect(goodraDeck?.highlightCards[0]?.name).toBe('Hisuian Goodra')
+    expect(zoroarkDeck?.highlightCards[0]?.name).toBe('Hisuian Zoroark ex')
+  })
 })
 
 describe('decklist aggregation', () => {
