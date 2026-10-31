@@ -99,7 +99,7 @@ const B4B_RARE_CARDS_1_TO_3 = { AR: 24, SR: 16, SRex: 48, IM: 4, UR: 8 }
 // (what this build divides by the whole-set pool, and what upstream ships
 // for multi-pack sets), rounded to 3 decimals:
 //
-//   AR 20 | SR 15+15 SAR = 30 | IM 2 | UR 3  ->  55
+//   AR 20 | SR 18 + SAR 12 = 30 | IM 2 | UR 3  ->  55
 //   20/55 = 36.364%   30/55 = 54.545%   2/55 = 3.636%   3/55 = 5.455%
 //
 // The three C1 cards that ship with no `packs` array (Sweet Honey AR,
