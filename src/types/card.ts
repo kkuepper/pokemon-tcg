@@ -17,7 +17,7 @@ export interface Card {
   perPackRate: number
   /** Contribution from the Rare Pack ("God Pack") [0,1] */
   rarePackContrib: number
-  /** True when rates are extrapolated because upstream has no pull rate data for this set yet */
+  /** True when pull rates are estimated from in-game Offering Rates because upstream has none for this set yet */
   ratesEstimated?: boolean
 }
 

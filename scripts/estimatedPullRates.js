@@ -61,6 +61,66 @@ const B4B_CARDS_1_TO_4 = {
 // read: 4% per card over AR 6 + SR 4 + SRex 12 + IM 1 + UR 2.
 const B4B_RARE_CARDS_1_TO_3 = { AR: 24, SR: 16, SRex: 48, IM: 4, UR: 8 }
 
+// ---------------------------------------------------------------------------
+// C1 "Dual Fusion" (released 2026-10-29, 217 cards, 2 packs)
+//
+// Read from the in-game Offering Rates screen for the Mega Mewtwo X pack
+// (the Pikachu pack has the same rarity counts, so one set table covers
+// both — same as every other multi-pack set). The screen truncates to 3
+// decimals. Three pack types, and they sum to 100%:
+//
+//   Pack selection (read): Regular 94.711%, Regular +1 card 5.238%, Rare 0.050%
+//
+// That is the B-series main-set split (B1-B4), and every slot that was on
+// screen matches that table card-for-card once the tier total is divided by
+// this pack's pool. Slots 1-3 are 31 commons (100/31 = 3.2258% -> 3.225%,
+// Pinsir / Combee / Foongus / Stufful). Slot 4 / slot 5, all read:
+//
+//   rarity   slot4    slot5    pool   per card (shown)
+//   UR       0.040    0.160    3      0.013 / 0.053   Fuecoco ex, Pawmot, Giratina ex
+//   IM       0.222    0.889    1      0.222 / 0.889   Umbreon
+//   SR+SAR   0.500    2.000    15     0.033 / 0.133   Giratina ex, Bewear ex
+//   AR       2.572    10.286   10     0.257 / 1.028   Ribombee, Charizard, ...
+//   RR       1.667    6.667    6      0.277 / 1.111   1.667/6 truncates to 0.277
+//   R        5.000    20.000   10     0.500 / 2.000
+//   U        89.999   59.998   23     3.913 on slot 4 (Abandoned Station)
+//
+// SAR folds into SR (poolKey). The +1 pack's cards 1-3 were read identical
+// to Regular, and a scroll of that tab shows slot 4's crown tier at 0.040%
+// too. Slot 5 of the +1 pack was not on screen; it uses the Regular table,
+// which is how every B-series set with these appearance rates is built.
+// Slot 6 was not on the screenshots either — those sets all use the same
+// shiny 6th card, so that slot is carried over.
+//
+// Rare pack (read): cards 1-5 share one table. Crown 10.344% = 3 x 3.448%,
+// i.e. a uniform draw over this pack's 29-card rare pool
+// (AR 10 + SR 9 + SAR 6 + IM 1 + UR 3). S and SSR are not in it — they are
+// the +1 shiny slot. The table below is the set-wide version of that draw
+// (what this build divides by the whole-set pool, and what upstream ships
+// for multi-pack sets), rounded to 3 decimals:
+//
+//   AR 20 | SR 18 + SAR 12 = 30 | IM 2 | UR 3  ->  55
+//   20/55 = 36.364%   30/55 = 54.545%   2/55 = 3.636%   3/55 = 5.455%
+//
+// The three C1 cards that ship with no `packs` array (Sweet Honey AR,
+// Pikachu ex IM, Mega Mewtwo X ex IM) are not in that pool. The Mewtwo
+// screen's IM tier is Umbreon alone, and its AR tier is 10 cards, so those
+// three are not in the booster. buildCardDb.js keeps them out of estimated
+// sets' pack fallback so they don't dilute these pools.
+// ---------------------------------------------------------------------------
+
+// Shared by Regular Pack and Regular Pack +1. Slots 1-5 read (slot 5 of the
+// +1 pack assumed, matching every B-series set with these appearance rates).
+const C1_SLOTS_1_TO_5 = {
+  1: { C: 100 }, // read
+  2: { C: 100 }, // read
+  3: { C: 100 }, // read
+  4: { UR: 0.04, IM: 0.222, SR: 0.5, AR: 2.572, RR: 1.667, R: 5, U: 89.999 }, // read
+  5: { UR: 0.16, IM: 0.889, SR: 2, AR: 10.286, RR: 6.667, R: 20, U: 59.998 }, // read
+}
+
+const C1_RARE_SLOT = { AR: 36.364, SR: 54.545, IM: 3.636, UR: 5.455 }
+
 export const ESTIMATED_PULL_RATES = {
   B4b: {
     'Regular Pack': {
@@ -84,6 +144,32 @@ export const ESTIMATED_PULL_RATES = {
       slots: {
         ...B4B_CARDS_1_TO_4, // read for card 4; cards 1-3 assumed same as Regular
         5: { SSR: 100 }, // read: Dedenne ex / Mega Diancie ex 50% each
+      },
+    },
+  },
+  C1: {
+    'Regular Pack': {
+      appearance_rate: 94.711,
+      cards: 5,
+      slots: { ...C1_SLOTS_1_TO_5 },
+    },
+    'Rare Pack': {
+      appearance_rate: 0.05,
+      cards: 5,
+      slots: {
+        1: { ...C1_RARE_SLOT },
+        2: { ...C1_RARE_SLOT },
+        3: { ...C1_RARE_SLOT },
+        4: { ...C1_RARE_SLOT },
+        5: { ...C1_RARE_SLOT },
+      },
+    },
+    'Regular Pack +1': {
+      appearance_rate: 5.238,
+      cards: 6,
+      slots: {
+        ...C1_SLOTS_1_TO_5,
+        6: { SSR: 31.82, S: 68.18 }, // B-series shiny slot; not on the screenshots
       },
     },
   },
