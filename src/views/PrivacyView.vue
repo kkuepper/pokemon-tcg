@@ -7,6 +7,7 @@
         </RouterLink>
         <nav class="flex items-center gap-1 text-sm font-medium shrink-0">
           <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100">Tracker</RouterLink>
+          <RouterLink to="/meta-decks" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100">Meta Decks</RouterLink>
           <RouterLink to="/" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100">Pack Odds</RouterLink>
         </nav>
       </div>

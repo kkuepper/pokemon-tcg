@@ -121,6 +121,10 @@ watchEffect(() => {
             class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
           >Tracker</RouterLink>
           <RouterLink
+            to="/meta-decks"
+            class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+          >Meta Decks</RouterLink>
+          <RouterLink
             to="/"
             class="px-3 py-1.5 rounded-lg bg-blue-600 text-white"
           >Pack Odds</RouterLink>
