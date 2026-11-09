@@ -5,7 +5,7 @@ import type { CardRarity } from '../types/card'
 import { PACK_POINTS_PER_PACK, PACK_POINT_COST } from '../utils/packPoints'
 import posthog from 'posthog-js'
 
-const props = defineProps<{ perPackRate: number; rarity: CardRarity; targetPct: number }>()
+const props = defineProps<{ perPackRate: number; rarity: CardRarity; targetPct: number; mission?: boolean }>()
 const emit = defineEmits<{ 'update:targetPct': [value: number] }>()
 
 const packPointPacks = computed(() =>
@@ -164,6 +164,9 @@ function onCustomPacksChange() {
       </p>
     </div>
 
+    <p v-else-if="mission" class="text-xs text-gray-400 italic">
+      Mission reward. This card isn't in a booster pack, so there is no pack simulation.
+    </p>
     <p v-else class="text-xs text-gray-400 italic">
       Select a card above to run the simulation.
     </p>

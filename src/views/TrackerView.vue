@@ -15,7 +15,8 @@ import CrownIcon from '../components/icons/CrownIcon.vue'
 import { formatPacks } from '../utils/odds'
 import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
-import type { Card } from '../types/card'
+import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
+import { isMissionReward, type Card } from '../types/card'
 
 // ── Lazy-src directive: sets src only when the image nears the viewport ───────
 
@@ -94,6 +95,13 @@ function cardsForSet(setCode: string): Card[] {
   return showMissingOnly.value ? all.filter(c => !isOwned(c.id)) : all
 }
 
+function slotsForSet(setCode: string): TrackerSlot[] {
+  return trackerSlots(cardsBySet.value.get(setCode) ?? [], {
+    missingOnly: showMissingOnly.value,
+    isOwned,
+  })
+}
+
 interface GroupCount { owned: number; total: number }
 interface SetStats { diamonds: GroupCount; stars: GroupCount; shinies: GroupCount }
 
@@ -125,6 +133,7 @@ const bestPacks = computed(() => {
 
   const packsPerSet = new Map<string, Set<string>>()
   for (const card of cards.value) {
+    if (isMissionReward(card)) continue
     if (!packsPerSet.has(card.set)) packsPerSet.set(card.set, new Set())
     packsPerSet.get(card.set)!.add(card.pack)
   }
@@ -213,7 +222,7 @@ const easiestSets = computed(() => {
     if (noneCollected(set.code, isOwnedFn)) continue
 
     const unowned = cards.value
-      .filter(c => c.set === set.code && !isOwnedFn(c.id))
+      .filter(c => c.set === set.code && !isOwnedFn(c.id) && !isMissionReward(c))
       .map(c => ({ id: c.id, rate: c.perPackRate, rarity: c.rarity }))
 
     const result = computeSetCompletion(unowned, target, rarityGroups)
@@ -282,7 +291,7 @@ type GestureState = 'idle' | 'pending' | 'dragging'
 const gestureState = ref<GestureState>('idle')
 
 let pendingCard: Card | null = null
-let pendingSetCards: Card[] = []
+let pendingSetCards: TrackerSlot[] = []
 let longPressTimer: ReturnType<typeof setTimeout> | null = null
 const LONG_PRESS_MS = 150
 let touchStartX = 0
@@ -298,16 +307,17 @@ let touchOptimisticState: boolean | null = null
 const dragRangeIds = shallowRef(new Set<string>())
 const pendingCardId = ref<string | null>(null)
 
-function cardIndexInSet(setCards: Card[], cardId: string): number {
-  return setCards.findIndex(c => c.id === cardId)
+function cardIndexInSet(slots: TrackerSlot[], cardId: string): number {
+  return slots.findIndex(s => s.card?.id === cardId)
 }
 
-function applyRange(setCards: Card[], fromIdx: number, toIdx: number) {
+function applyRange(slots: TrackerSlot[], fromIdx: number, toIdx: number) {
   const lo = Math.min(fromIdx, toIdx)
   const hi = Math.max(fromIdx, toIdx)
   const newRange = new Set<string>()
   for (let i = lo; i <= hi; i++) {
-    const id = setCards[i].id
+    const id = slots[i]?.card?.id
+    if (!id) continue
     newRange.add(id)
     setOwned(id, dragTargetState)
   }
@@ -317,18 +327,26 @@ function applyRange(setCards: Card[], fromIdx: number, toIdx: number) {
   dragRangeIds.value = newRange
 }
 
-function startLongPress(card: Card, setCards: Card[]) {
+function ownedSnapshot(slots: TrackerSlot[]): Map<string, boolean> {
+  const snap = new Map<string, boolean>()
+  for (const slot of slots) {
+    if (slot.card) snap.set(slot.card.id, isOwned(slot.card.id))
+  }
+  return snap
+}
+
+function startLongPress(card: Card, slots: TrackerSlot[]) {
   pendingCard = card
   pendingCardId.value = card.id
-  pendingSetCards = setCards
+  pendingSetCards = slots
   longPressTimer = setTimeout(() => {
     longPressTimer = null
     if (gestureState.value !== 'pending') return
     gestureState.value = 'dragging'
     dragTargetState = touchOptimisticState!  // already applied on touchstart
-    dragStartIdx = cardIndexInSet(setCards, card.id)
+    dragStartIdx = cardIndexInSet(slots, card.id)
     dragCurrentIdx = dragStartIdx
-    preDragSnapshot = new Map(setCards.map(c => [c.id, isOwned(c.id)]))
+    preDragSnapshot = ownedSnapshot(slots)
     preDragSnapshot.set(card.id, !touchOptimisticState!)  // restore pre-tap state for rollback
     dragRangeIds.value = new Set([card.id])
     // setOwned already called optimistically — no-op here
@@ -359,15 +377,15 @@ function logCollectTiming(startedAt: number, card: Card, owned: boolean) {
   }))
 }
 
-function onCardMouseDown(card: Card, setCards: Card[]) {
+function onCardMouseDown(card: Card, slots: TrackerSlot[]) {
   if (gestureState.value !== 'idle') return
   const startedAt = performance.now()
-  pendingSetCards = setCards
+  pendingSetCards = slots
   gestureState.value = 'dragging'
   dragTargetState = !isOwned(card.id)
-  dragStartIdx = cardIndexInSet(setCards, card.id)
+  dragStartIdx = cardIndexInSet(slots, card.id)
   dragCurrentIdx = dragStartIdx
-  preDragSnapshot = new Map(setCards.map(c => [c.id, isOwned(c.id)]))
+  preDragSnapshot = ownedSnapshot(slots)
   dragRangeIds.value = new Set([card.id])
   setOwned(card.id, dragTargetState)
   logCollectTiming(startedAt, card, dragTargetState)
@@ -403,7 +421,7 @@ function onWindowMouseUp() {
 
 // ── Touch handlers ────────────────────────────────────────────────────────────
 
-function onCardTouchStart(event: TouchEvent, card: Card, setCards: Card[]) {
+function onCardTouchStart(event: TouchEvent, card: Card, slots: TrackerSlot[]) {
   if (gestureState.value !== 'idle') return
   const startedAt = performance.now()
   const touch = event.touches[0]
@@ -413,7 +431,7 @@ function onCardTouchStart(event: TouchEvent, card: Card, setCards: Card[]) {
   holdCardTrackedFlush()
   setOwned(card.id, touchOptimisticState)
   logCollectTiming(startedAt, card, touchOptimisticState)
-  startLongPress(card, setCards)
+  startLongPress(card, slots)
 }
 
 function onGridTouchMove(event: TouchEvent) {
@@ -716,66 +734,77 @@ onUnmounted(() => {
               All cards collected!
             </p>
 
-            <!-- Card grid: 5 fixed columns -->
+            <!-- Card grid: 5 fixed columns, one slot per card number -->
             <div
               v-else
               class="grid grid-cols-5 gap-0.5 p-1"
               @touchmove="onGridTouchMove"
             >
               <div
-                v-for="card in cardsForSet(set.code)"
-                :key="card.id"
-                v-memo="[isOwned(card.id), loadedCards.has(card.id), dragRangeIds.has(card.id), pendingCardId === card.id, selectedCard?.id === card.id]"
-                :data-card-id="card.id"
-                :title="`${card.name} — tap to mark owned, hold to mark more`"
+                v-for="slot in slotsForSet(set.code)"
+                :key="set.code + '-' + slot.number"
+                v-memo="slotMemoKey(slot, {
+                  owned: !!(slot.card && isOwned(slot.card.id)),
+                  loaded: !!(slot.card && loadedCards.has(slot.card.id)),
+                  inDrag: !!(slot.card && dragRangeIds.has(slot.card.id)),
+                  pending: !!(slot.card && pendingCardId === slot.card.id),
+                  selected: !!(slot.card && selectedCard?.id === slot.card.id),
+                })"
+                :data-card-id="slot.card?.id"
+                :title="slot.card ? `${slot.card.name} — tap to mark owned, hold to mark more` : undefined"
                 class="relative aspect-[2/3] rounded overflow-hidden"
-                :class="gestureState === 'idle' ? 'cursor-pointer' : 'cursor-grabbing'"
-                :style="isOwned(card.id) ? 'touch-action: manipulation; background: linear-gradient(135deg, #5f7067, #625b6e)' : 'touch-action: manipulation'"
-                @mousedown.prevent="onCardMouseDown(card, cardsForSet(set.code))"
-                @mouseenter="onCardMouseEnter(card)"
-                @touchstart="onCardTouchStart($event, card, cardsForSet(set.code))"
+                :class="slot.card && gestureState === 'idle' ? 'cursor-pointer' : slot.card ? 'cursor-grabbing' : ''"
+                :style="slot.card && isOwned(slot.card.id) ? 'touch-action: manipulation; background: linear-gradient(135deg, #5f7067, #625b6e)' : 'touch-action: manipulation'"
+                @mousedown.prevent="slot.card && onCardMouseDown(slot.card, slotsForSet(set.code))"
+                @mouseenter="slot.card && onCardMouseEnter(slot.card)"
+                @touchstart="slot.card && onCardTouchStart($event, slot.card, slotsForSet(set.code))"
               >
-                <template v-if="isOwned(card.id)">
+                <div
+                  v-if="!slot.card"
+                  class="w-full h-full rounded border border-dashed border-gray-200 bg-gray-50"
+                  aria-hidden="true"
+                />
+                <template v-else-if="isOwned(slot.card.id)">
                   <div
-                    v-if="!loadedCards.has(card.id)"
+                    v-if="!loadedCards.has(slot.card.id)"
                     class="absolute inset-0 flex items-center justify-center pointer-events-none"
                   >
                     <div class="w-4 h-4 rounded-full border-2 border-purple-200 border-t-green-300 animate-spin" />
                   </div>
 
                   <img
-                    v-lazy-src="cardImageUrl(card)"
-                    :alt="card.name"
+                    v-lazy-src="cardImageUrl(slot.card)"
+                    :alt="slot.card.name"
                     class="w-full h-full object-cover block pointer-events-none transition-opacity duration-200"
-                    :class="loadedCards.has(card.id) ? 'opacity-100' : 'opacity-0'"
-                    @load="onCardImageLoaded(card.id)"
+                    :class="loadedCards.has(slot.card.id) ? 'opacity-100' : 'opacity-0'"
+                    @load="onCardImageLoaded(slot.card.id)"
                   />
                 </template>
                 <div
                   v-else
                   class="w-full h-full bg-gray-100 border border-gray-200 flex items-center justify-center rounded pointer-events-none"
                 >
-                  <span class="text-gray-400 font-medium leading-none">{{ cardNumber(card) }}</span>
+                  <span class="text-gray-400 font-medium leading-none">{{ cardNumber(slot.card) }}</span>
                 </div>
 
                 <!-- Blue ring: drag range or pending -->
                 <div
-                  v-if="dragRangeIds.has(card.id) || pendingCardId === card.id"
+                  v-if="slot.card && (dragRangeIds.has(slot.card.id) || pendingCardId === slot.card.id)"
                   class="absolute inset-0 rounded ring-2 ring-blue-500 ring-inset pointer-events-none z-10"
                 />
                 <!-- Amber ring: selected card -->
                 <div
-                  v-else-if="selectedCard?.id === card.id"
+                  v-else-if="slot.card && selectedCard?.id === slot.card.id"
                   class="absolute inset-0 rounded ring-2 ring-amber-400 ring-inset pointer-events-none z-10"
                 />
 
                 <!-- Select corner: triangle with magnifying glass -->
                 <div
-                  v-if="gestureState === 'idle'"
+                  v-if="slot.card && gestureState === 'idle'"
                   class="absolute inset-0 z-20 cursor-pointer"
                   style="clip-path: polygon(50% 0%, 100% 0%, 100% 33.33%); background: rgba(59,130,246,0.55);"
-                  @mousedown.stop.prevent="selectCard(card)"
-                  @touchstart.stop.prevent="selectCard(card)"
+                  @mousedown.stop.prevent="selectCard(slot.card)"
+                  @touchstart.stop.prevent="selectCard(slot.card)"
                   title="View card odds"
                 >
                   <svg class="absolute top-1 right-1 w-4 h-4 text-white drop-shadow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">

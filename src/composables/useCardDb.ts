@@ -79,7 +79,7 @@ export function useCardDb(): CardDb {
     const seen = new Set<string>()
     const result: string[] = []
     for (const c of cards.value) {
-      if (c.set === setFilter.value && !seen.has(c.pack)) {
+      if (c.set === setFilter.value && c.pack && !seen.has(c.pack)) {
         seen.add(c.pack)
         result.push(c.pack)
       }

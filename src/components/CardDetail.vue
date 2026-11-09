@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import type { Card } from '../types/card'
-import { RARITY_LABELS, RARITY_COLORS } from '../types/card'
+import { RARITY_LABELS, RARITY_COLORS, isMissionReward } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
 import CardPlaceholder from './CardPlaceholder.vue'
 
@@ -67,7 +67,9 @@ watch(() => props.card.id, () => { loaded.value = false })
     <!-- Card info -->
     <div class="min-w-0 flex flex-col justify-center">
       <h2 class="text-lg font-bold text-gray-900 leading-tight">{{ card.name }}</h2>
-      <p class="text-sm text-gray-500 mt-0.5">{{ card.setName }} · {{ card.pack }} pack</p>
+      <p class="text-sm text-gray-500 mt-0.5">
+        {{ card.setName }} · {{ isMissionReward(card) ? 'Mission reward' : `${card.pack} pack` }}
+      </p>
       <span
         class="mt-2 inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-0.5 text-xs font-medium"
         :class="RARITY_COLORS[card.rarity]"
@@ -75,7 +77,7 @@ watch(() => props.card.id, () => { loaded.value = false })
         <RarityBadge :rarity="card.rarity" />
         {{ RARITY_LABELS[card.rarity] }}
       </span>
-      <p class="mt-1 text-xs text-gray-400">{{ card.poolSize }} cards at this rarity in this pack</p>
+      <p v-if="!isMissionReward(card)" class="mt-1 text-xs text-gray-400">{{ card.poolSize }} cards at this rarity in this pack</p>
     </div>
   </div>
 </template>

@@ -4,7 +4,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 import { ESTIMATED_PULL_RATES, ESTIMATED_POOL_SPLITS } from './estimatedPullRates.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -15,7 +15,11 @@ function loadJson(filename) {
   return JSON.parse(readFileSync(resolve(DB_PATH, filename), 'utf-8'))
 }
 
-const cards = loadJson('cards.min.json')
+// Pure build so tests can pass a card list and a pull-rate table (including a
+// simulated upstream C1 table) without writing public/cards.json.
+export function buildCardEntries(cards, pullRates, setsData) {
+  cards = cards.map(c => ({ ...c, packs: Array.isArray(c.packs) ? [...c.packs] : c.packs }))
+  pullRates = structuredClone(pullRates)
 
 // The tracker renders cards in output order, so sort each set by card number
 // (upstream shipped B4b shuffled). Sets keep their upstream order, which the
@@ -23,8 +27,6 @@ const cards = loadJson('cards.min.json')
 const setOrder = new Map()
 for (const c of cards) if (!setOrder.has(c.set)) setOrder.set(c.set, setOrder.size)
 cards.sort((a, b) => setOrder.get(a.set) - setOrder.get(b.set) || a.number - b.number)
-const pullRates = loadJson('pullRates.json')
-const setsData = loadJson('sets.json')
 
 // Upstream ships a new set's card list before its pull rates. Fill the gap from
 // scripts/estimatedPullRates.js so the set still appears; upstream always wins.
@@ -107,23 +109,36 @@ function cardPoolKey(card) {
 // Rarities eligible for Rare Pack
 const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 
+// Mission rewards that ship with no packs array. This list is not tied to
+// estimatedSets: once upstream publishes C1 pull rates, these cards must still
+// stay out of both Dual Fusion packs. A1 #283 Mew also omits packs and is
+// intentionally NOT here — it keeps falling back to the A1 packs.
+const MISSION_SOURCE_IDS = new Set(['C1-152', 'C1-183', 'C1-185'])
+
+function sourceCardId(card) {
+  return `${card.set}-${String(card.number).padStart(3, '0')}`
+}
+
+function isMissionSourceCard(card) {
+  return MISSION_SOURCE_IDS.has(sourceCardId(card))
+}
+
 // Packs a card can actually be pulled from. Most cards name their packs. A
 // card that omits the field falls back to every pack of its set — that is how
-// promo sets, which never name a pack per card, still resolve. An estimated
-// set is different: its other cards DO name packs, and a missing array means
-// the card is not in the booster (C1's Sweet Honey AR, Pikachu ex IM, and
-// Mega Mewtwo X ex IM). Falling back would drop them into both Dual Fusion
-// packs and dilute pools the offering rates pin (Mewtwo's IM tier is Umbreon
-// alone; its AR tier is 10 cards).
+// promo sets, which never name a pack per card, still resolve, and how A1 Mew
+// stays in the Genetic Apex packs. The mission ids above are the exception:
+// they are not in a booster, so they get no pack and no pool weight.
 function packsFor(card) {
+  if (isMissionSourceCard(card)) return []
   if (Array.isArray(card.packs)) return card.packs
-  if (estimatedSets.has(card.set)) return []
   return setPacksMap[card.set] ?? []
 }
 
-// Build per-(set, pack, poolKey) pool size
+// Build per-(set, pack, poolKey) pool size. Mission rewards are not in any
+// pack pool, whether or not this set's rates are still estimated.
 const packPoolMap = {}
 for (const card of cards) {
+  if (isMissionSourceCard(card)) continue
   const cardPacks = packsFor(card)
   const pk = cardPoolKey(card)
   for (const pack of cardPacks) {
@@ -132,11 +147,11 @@ for (const card of cards) {
   }
 }
 
-// Build whole-set pool for Rare Pack (not variant-specific). Skip estimated
-// cards with no booster pack so they don't inflate the rare-pool divisor.
+// Build whole-set pool for Rare Pack (not variant-specific). Mission rewards
+// stay out of this divisor too, including after upstream ships the set's rates.
 const setPoolMap = {}
 for (const card of cards) {
-  if (!packsFor(card).length && estimatedSets.has(card.set)) continue
+  if (isMissionSourceCard(card)) continue
   const pk = cardPoolKey(card)
   const k = `${card.set}::${pk}`
   setPoolMap[k] = (setPoolMap[k] || 0) + 1
@@ -179,14 +194,34 @@ const output = []
 for (const card of cards) {
   const { set, number, name, rarity, image } = card
   const packs = packsFor(card)
-
-  // Skip cards with no known pack (promos not in pull rate DB, and estimated
-  // cards that ship without a packs array — see packsFor).
-  if (!packs.length) continue
-
   const setName = setNames[set] ?? set
   const rates = pullRates[set]
+  // Unrated sets (promos, and anything else with no pull table) stay skipped,
+  // whether or not a card names a pack.
   if (!rates) continue
+
+  // No booster pack: mission rewards and other cards that ship without a
+  // packs array. Emit one row so the tracker has a slot at this number, but
+  // do not touch the pool maps — those cards were already excluded above, and
+  // a pull rate of 0 keeps them out of pack math.
+  if (!packs.length) {
+    output.push({
+      id: `${set}-${String(number).padStart(3, '0')}`,
+      name,
+      set,
+      setName,
+      pack: '',
+      rarity,
+      image,
+      poolSize: 0,
+      slot4Rate: 0,
+      slot5Rate: 0,
+      perPackRate: 0,
+      rarePackContrib: 0,
+      obtainable: 'mission',
+    })
+    continue
+  }
 
   const regularPack = rates['Regular Pack']
   const rarePack = rates['Rare Pack'] ?? null
@@ -292,14 +327,23 @@ for (const card of output) {
   if (override) Object.assign(card, override)
 }
 
-mkdirSync(resolve(root, 'public'), { recursive: true })
-writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
-console.log(`✓ Built ${output.length} card entries → public/cards.json`)
-
 for (const set of estimatedSets) {
-  const n = output.filter(c => c.set === set).length
+  const n = output.filter(c => c.set === set && c.obtainable !== 'mission').length
   warn(`${set}: ${n} entries use ESTIMATED pull rates (upstream has none yet)`)
 }
+
+return output
+}
+
+function main() {
+  const cards = loadJson('cards.min.json')
+  const pullRates = loadJson('pullRates.json')
+  const setsData = loadJson('sets.json')
+  const output = buildCardEntries(cards, pullRates, setsData)
+
+  mkdirSync(resolve(root, 'public'), { recursive: true })
+  writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
+  console.log(`✓ Built ${output.length} card entries → public/cards.json`)
 
 // Sitemap — deduplicate by card ID (same card can appear in multiple packs)
 function cardToSlug(card) {
@@ -325,3 +369,7 @@ const urlEntries = [
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/0.9">\n${urlEntries}\n</urlset>\n`
 writeFileSync(resolve(root, 'public/sitemap.xml'), sitemap)
 console.log(`✓ Built ${uniqueCards.length} card URLs → public/sitemap.xml`)
+}
+
+const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+if (isDirectRun) main()
