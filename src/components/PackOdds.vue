@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Card } from '../types/card'
+import { isMissionReward, type Card } from '../types/card'
 import { formatPct } from '../utils/odds'
 
 const props = defineProps<{ card: Card }>()
@@ -15,7 +15,14 @@ const isShinySlot6 = computed(() => props.card.slot4Rate === 0 && props.card.slo
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div v-if="isMissionReward(card)" class="space-y-2">
+    <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Per-Pack Probability</h3>
+    <p class="text-sm text-gray-600">
+      Mission reward. This card isn't in a booster pack, so it has no pull rate.
+      You can still mark it owned in the tracker.
+    </p>
+  </div>
+  <div v-else class="space-y-4">
     <h3 class="text-sm font-semibold text-gray-700 uppercase tracking-wide">Per-Pack Probability</h3>
 
     <!-- Big number -->

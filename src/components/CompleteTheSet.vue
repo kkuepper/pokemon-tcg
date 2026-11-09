@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useCardDb } from '../composables/useCardDb'
 import { formatPacks, packsToComplete } from '../utils/odds'
-import type { Card } from '../types/card'
+import { isMissionReward, type Card } from '../types/card'
 
 const DIAMOND_RARITIES = new Set(['C', 'U', 'R', 'RR'])
 
@@ -16,7 +16,7 @@ const { cards } = useCardDb()
 const setCards = computed(() => {
   const best = new Map<string, Card>()
   for (const c of cards.value) {
-    if (c.set !== props.set) continue
+    if (c.set !== props.set || isMissionReward(c)) continue
     const prev = best.get(c.id)
     if (!prev || c.perPackRate > prev.perPackRate) best.set(c.id, c)
   }

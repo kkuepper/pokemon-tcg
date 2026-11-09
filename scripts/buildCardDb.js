@@ -114,7 +114,8 @@ const RARE_PACK_RARITIES = new Set(['AR', 'SR', 'SAR', 'IM', 'UR', 'SSR'])
 // the card is not in the booster (C1's Sweet Honey AR, Pikachu ex IM, and
 // Mega Mewtwo X ex IM). Falling back would drop them into both Dual Fusion
 // packs and dilute pools the offering rates pin (Mewtwo's IM tier is Umbreon
-// alone; its AR tier is 10 cards).
+// alone; its AR tier is 10 cards). They are emitted later as mission rewards
+// with no pull rate, still outside these pools.
 function packsFor(card) {
   if (Array.isArray(card.packs)) return card.packs
   if (estimatedSets.has(card.set)) return []
@@ -179,14 +180,34 @@ const output = []
 for (const card of cards) {
   const { set, number, name, rarity, image } = card
   const packs = packsFor(card)
-
-  // Skip cards with no known pack (promos not in pull rate DB, and estimated
-  // cards that ship without a packs array — see packsFor).
-  if (!packs.length) continue
-
   const setName = setNames[set] ?? set
   const rates = pullRates[set]
+  // Unrated sets (promos, and anything else with no pull table) stay skipped,
+  // whether or not a card names a pack.
   if (!rates) continue
+
+  // No booster pack: mission rewards and other cards that ship without a
+  // packs array. Emit one row so the tracker has a slot at this number, but
+  // do not touch the pool maps — those cards were already excluded above, and
+  // a pull rate of 0 keeps them out of pack math.
+  if (!packs.length) {
+    output.push({
+      id: `${set}-${String(number).padStart(3, '0')}`,
+      name,
+      set,
+      setName,
+      pack: '',
+      rarity,
+      image,
+      poolSize: 0,
+      slot4Rate: 0,
+      slot5Rate: 0,
+      perPackRate: 0,
+      rarePackContrib: 0,
+      obtainable: 'mission',
+    })
+    continue
+  }
 
   const regularPack = rates['Regular Pack']
   const rarePack = rates['Rare Pack'] ?? null
@@ -297,7 +318,7 @@ writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
 console.log(`✓ Built ${output.length} card entries → public/cards.json`)
 
 for (const set of estimatedSets) {
-  const n = output.filter(c => c.set === set).length
+  const n = output.filter(c => c.set === set && c.obtainable !== 'mission').length
   warn(`${set}: ${n} entries use ESTIMATED pull rates (upstream has none yet)`)
 }
 

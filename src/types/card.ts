@@ -19,6 +19,17 @@ export interface Card {
   rarePackContrib: number
   /** True when pull rates are estimated from in-game Offering Rates because upstream has none for this set yet */
   ratesEstimated?: boolean
+  /**
+   * Set when the card is not in any booster (a mission reward or similar).
+   * Those cards stay in the tracker but have no pull rate and are left out of
+   * pack-pool math and completion-odds.
+   */
+  obtainable?: 'mission'
+}
+
+/** A card that cannot be pulled from a pack. */
+export function isMissionReward(card: { obtainable?: string }): boolean {
+  return card.obtainable === 'mission'
 }
 
 export const RARITY_LABELS: Record<CardRarity, string> = {

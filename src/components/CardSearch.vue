@@ -2,7 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useCardDb } from '../composables/useCardDb'
 import type { Card, CardRarity } from '../types/card'
-import { RARITY_LABELS } from '../types/card'
+import { RARITY_LABELS, isMissionReward } from '../types/card'
 import RarityBadge from './RarityBadge.vue'
 import { packsToComplete, formatPacks } from '../utils/odds'
 import posthog from 'posthog-js'
@@ -55,6 +55,7 @@ const hardestToComplete = computed<SetCompletion[]>(() => {
   // Group by set; for each card ID keep the best (highest) perPackRate across packs
   const setGroups = new Map<string, { setName: string; packs: Set<string>; bestRates: Map<string, number>; bestDiamondRates: Map<string, number> }>()
   for (const card of cards.value) {
+    if (isMissionReward(card)) continue
     if (!setGroups.has(card.set)) setGroups.set(card.set, { setName: card.setName, packs: new Set(), bestRates: new Map(), bestDiamondRates: new Map() })
     const group = setGroups.get(card.set)!
     group.packs.add(card.pack)
@@ -82,7 +83,7 @@ const hardestToComplete = computed<SetCompletion[]>(() => {
 const rarestCards = computed(() => {
   const seen = new Set<string>()
   const deduped = cards.value.filter(c => {
-    if (seen.has(c.id)) return false
+    if (isMissionReward(c) || seen.has(c.id)) return false
     seen.add(c.id)
     return true
   })
@@ -257,7 +258,7 @@ function onCardSelect(card: Card) {
           >
             <RarityBadge :rarity="card.rarity" class="shrink-0" />
             <span class="font-medium truncate">{{ card.name }}</span>
-            <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ card.pack }}</span>
+            <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ isMissionReward(card) ? 'Mission' : card.pack }}</span>
           </li>
         </ul>
 
@@ -306,7 +307,7 @@ function onCardSelect(card: Card) {
           >
             <RarityBadge :rarity="card.rarity" class="shrink-0" />
             <span class="font-medium truncate">{{ card.name }}</span>
-            <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ card.pack }}</span>
+            <span class="ml-auto shrink-0 text-xs text-gray-400">{{ card.set }} · {{ isMissionReward(card) ? 'Mission' : card.pack }}</span>
           </li>
         </ul>
       </template>
