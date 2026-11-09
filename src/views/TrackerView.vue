@@ -15,7 +15,7 @@ import CrownIcon from '../components/icons/CrownIcon.vue'
 import { formatPacks } from '../utils/odds'
 import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
-import { trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
+import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
 import { isMissionReward, type Card } from '../types/card'
 
 // ── Lazy-src directive: sets src only when the image nears the viewport ───────
@@ -743,7 +743,13 @@ onUnmounted(() => {
               <div
                 v-for="slot in slotsForSet(set.code)"
                 :key="set.code + '-' + slot.number"
-                v-memo="[slot.card ? isOwned(slot.card.id) : false, slot.card ? loadedCards.has(slot.card.id) : false, slot.card ? dragRangeIds.has(slot.card.id) : false, slot.card ? pendingCardId === slot.card.id : false, slot.card ? selectedCard?.id === slot.card.id : false]"
+                v-memo="slotMemoKey(slot, {
+                  owned: !!(slot.card && isOwned(slot.card.id)),
+                  loaded: !!(slot.card && loadedCards.has(slot.card.id)),
+                  inDrag: !!(slot.card && dragRangeIds.has(slot.card.id)),
+                  pending: !!(slot.card && pendingCardId === slot.card.id),
+                  selected: !!(slot.card && selectedCard?.id === slot.card.id),
+                })"
                 :data-card-id="slot.card?.id"
                 :title="slot.card ? `${slot.card.name} — tap to mark owned, hold to mark more` : undefined"
                 class="relative aspect-[2/3] rounded overflow-hidden"

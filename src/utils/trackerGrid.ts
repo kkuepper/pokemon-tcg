@@ -38,3 +38,23 @@ export function trackerSlots(
   }
   return slots
 }
+
+/**
+ * Dependencies for the tracker cell's v-memo. The card id has to be in the
+ * list: with "Missing only" on, owning a card sets slot.card to null while
+ * every boolean flag stays false, and the cell would otherwise keep its old
+ * number and click handler.
+ */
+export function slotMemoKey(
+  slot: TrackerSlot,
+  flags: { owned: boolean; loaded: boolean; inDrag: boolean; pending: boolean; selected: boolean },
+): unknown[] {
+  return [
+    slot.card?.id ?? null,
+    flags.owned,
+    flags.loaded,
+    flags.inDrag,
+    flags.pending,
+    flags.selected,
+  ]
+}

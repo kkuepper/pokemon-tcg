@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Card } from '../types/card'
-import { trackerSlots } from './trackerGrid'
+import { slotMemoKey, trackerSlots } from './trackerGrid'
 
 function card(id: string, name = id): Card {
   const set = id.slice(0, id.lastIndexOf('-'))
@@ -50,5 +50,19 @@ describe('trackerSlots', () => {
       { missingOnly: true, isOwned: id => id === 'C1-002' },
     )
     expect(slots.map(s => s.card?.id ?? null)).toEqual(['C1-001', null, 'C1-003'])
+  })
+})
+
+describe('slotMemoKey', () => {
+  const flags = { owned: false, loaded: false, inDrag: false, pending: false, selected: false }
+
+  it('changes when missing-only hides the card even though every flag stays false', () => {
+    const shown = slotMemoKey({ number: 2, card: card('C1-002', 'Two') }, flags)
+    const hidden = slotMemoKey({ number: 2, card: null }, flags)
+    // The flags are identical; only the card id distinguishes the two cells.
+    expect(shown.slice(1)).toEqual(hidden.slice(1))
+    expect(shown[0]).toBe('C1-002')
+    expect(hidden[0]).toBeNull()
+    expect(shown).not.toEqual(hidden)
   })
 })

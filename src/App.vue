@@ -2,7 +2,7 @@
 import { ref, watch, watchEffect } from 'vue'
 import posthog from 'posthog-js'
 import { useRoute, useRouter } from 'vue-router'
-import type { Card } from './types/card'
+import { isMissionReward, type Card } from './types/card'
 import { useCardDb } from './composables/useCardDb'
 import { useTracker } from './composables/useTracker'
 import { cardToSlug } from './utils/slug'
@@ -84,9 +84,14 @@ function formatPct(rate: number): string {
 watchEffect(() => {
   if (selectedCard.value) {
     const card = selectedCard.value
+    const mission = isMissionReward(card)
     const pct = formatPct(card.perPackRate)
-    const title = `${card.name} (${card.id}) — Pack Odds | Pokémon TCG Pocket`
-    const desc = `Pull rate for ${card.name} from ${card.setName}: ${pct} per pack. Find pack odds for every card in Pokémon TCG Pocket.`
+    const title = mission
+      ? `${card.name} (${card.id}) — Mission reward | Pokémon TCG Pocket`
+      : `${card.name} (${card.id}) — Pack Odds | Pokémon TCG Pocket`
+    const desc = mission
+      ? `${card.name} is a mission reward in ${card.setName}, not pulled from a booster pack.`
+      : `Pull rate for ${card.name} from ${card.setName}: ${pct} per pack. Find pack odds for every card in Pokémon TCG Pocket.`
     document.title = title
     setMeta('name', 'description', desc)
     setMeta('property', 'og:title', title)
@@ -167,6 +172,7 @@ watchEffect(() => {
             <MultiPackSimulator
               :per-pack-rate="selectedCard.perPackRate"
               :rarity="selectedCard.rarity"
+              :mission="isMissionReward(selectedCard)"
               v-model:target-pct="targetPct"
             />
           </div>
