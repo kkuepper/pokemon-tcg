@@ -206,15 +206,16 @@ describe('palmeta visitor consent', () => {
     expect(form).toMatch(/required: false/)
   })
 
-  it('card page uses panel, tracker taps use tracker, and multi-card drags use bulk', () => {
+  it('card detail panels use panel, grid taps use tracker, and multi-card drags use bulk', () => {
     const app = readFileSync(resolve('src/App.vue'), 'utf8')
     const tracker = readFileSync(resolve('src/views/TrackerView.vue'), 'utf8')
     expect(app).toContain("toggle(card.id, 'panel')")
     expect(app).toContain("source: 'panel'")
-    expect(tracker).toContain("setOwned(card.id, dragTargetState, 'tracker')")
-    expect(tracker).toContain("toggle(card.id, 'tracker')")
-    expect(tracker).toContain("setOwned(card.id, touchOptimisticState, 'tracker')")
+    expect(tracker).toContain("toggle(card.id, 'panel')")
+    expect(tracker).not.toContain("toggle(card.id, 'tracker')")
     expect(tracker).toContain("source: 'panel'")
+    expect(tracker).toContain("setOwned(card.id, dragTargetState, 'tracker')")
+    expect(tracker).toContain("setOwned(card.id, touchOptimisticState, 'tracker')")
     expect(tracker.match(/setTrackedSource\(dragRangeIds\.value, 'bulk'\)/g)).toHaveLength(3)
   })
 

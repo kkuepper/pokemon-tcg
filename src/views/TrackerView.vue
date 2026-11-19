@@ -410,8 +410,7 @@ function selectCard(card: Card) {
 
 function toggleFromPanel(card: Card) {
   const newOwned = !isOwned(card.id)
-  // Palmeta counts this tap on the tracker. PostHog still records source 'panel'.
-  toggle(card.id, 'tracker')
+  toggle(card.id, 'panel')
   posthog.capture('card_collected_toggled', { card_id: card.id, owned: newOwned, source: 'panel' })
 }
 
