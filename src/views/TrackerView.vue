@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, shallowRef, triggerRef, watch, type Directive } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCardDb } from '../composables/useCardDb'
-import { holdCardTrackedFlush, releaseCardTrackedFlush, useTracker } from '../composables/useTracker'
+import { holdCardTrackedFlush, releaseCardTrackedFlush, setTrackedSource, useTracker } from '../composables/useTracker'
 import CardDetail from '../components/CardDetail.vue'
 import AuthButton from '../components/AuthButton.vue'
 import SiteFooter from '../components/SiteFooter.vue'
@@ -306,6 +306,7 @@ let touchOptimisticState: boolean | null = null
 
 const dragRangeIds = shallowRef(new Set<string>())
 const pendingCardId = ref<string | null>(null)
+let mouseGestureHeld = false
 
 function cardIndexInSet(slots: TrackerSlot[], cardId: string): number {
   return slots.findIndex(s => s.card?.id === cardId)
@@ -319,7 +320,7 @@ function applyRange(slots: TrackerSlot[], fromIdx: number, toIdx: number) {
     const id = slots[i]?.card?.id
     if (!id) continue
     newRange.add(id)
-    setOwned(id, dragTargetState)
+    setOwned(id, dragTargetState, 'tracker')
   }
   for (const id of dragRangeIds.value) {
     if (!newRange.has(id)) setOwned(id, preDragSnapshot.get(id) ?? false)
@@ -387,7 +388,11 @@ function onCardMouseDown(card: Card, slots: TrackerSlot[]) {
   dragCurrentIdx = dragStartIdx
   preDragSnapshot = ownedSnapshot(slots)
   dragRangeIds.value = new Set([card.id])
-  setOwned(card.id, dragTargetState)
+  // Hold until mouseup so a drag that grows past one card can be marked bulk
+  // before any of it is sent. A one-card click still waits for the save debounce.
+  holdCardTrackedFlush()
+  mouseGestureHeld = true
+  setOwned(card.id, dragTargetState, 'tracker')
   logCollectTiming(startedAt, card, dragTargetState)
 }
 
@@ -405,18 +410,26 @@ function selectCard(card: Card) {
 
 function toggleFromPanel(card: Card) {
   const newOwned = !isOwned(card.id)
-  toggle(card.id)
+  toggle(card.id, 'panel')
   posthog.capture('card_collected_toggled', { card_id: card.id, owned: newOwned, source: 'panel' })
 }
 
 function onWindowMouseUp() {
   const count = dragRangeIds.value.size
-  if (count === 1) {
-    posthog.capture('card_collected_toggled', { card_id: [...dragRangeIds.value][0], owned: dragTargetState })
-  } else if (count > 1) {
-    posthog.capture('cards_bulk_collected_toggled', { count, owned: dragTargetState })
+  try {
+    if (count === 1) {
+      posthog.capture('card_collected_toggled', { card_id: [...dragRangeIds.value][0], owned: dragTargetState })
+    } else if (count > 1) {
+      setTrackedSource(dragRangeIds.value, 'bulk')
+      posthog.capture('cards_bulk_collected_toggled', { count, owned: dragTargetState })
+    }
+  } finally {
+    endGesture()
+    if (mouseGestureHeld) {
+      mouseGestureHeld = false
+      releaseCardTrackedFlush(count > 1)
+    }
   }
-  endGesture()
 }
 
 // ── Touch handlers ────────────────────────────────────────────────────────────
@@ -429,7 +442,7 @@ function onCardTouchStart(event: TouchEvent, card: Card, slots: TrackerSlot[]) {
   gestureState.value = 'pending'
   touchOptimisticState = !isOwned(card.id)
   holdCardTrackedFlush()
-  setOwned(card.id, touchOptimisticState)
+  setOwned(card.id, touchOptimisticState, 'tracker')
   logCollectTiming(startedAt, card, touchOptimisticState)
   startLongPress(card, slots)
 }
@@ -460,22 +473,28 @@ function onGridTouchMove(event: TouchEvent) {
 }
 
 function onWindowTouchEnd() {
-  if (gestureState.value === 'pending') {
-    cancelLongPress()
-    if (pendingCard && touchOptimisticState !== null) {
-      posthog.capture('card_collected_toggled', { card_id: pendingCard.id, owned: touchOptimisticState })
+  try {
+    if (gestureState.value === 'pending') {
+      cancelLongPress()
+      const card = pendingCard
+      const owned = touchOptimisticState
+      touchOptimisticState = null
+      if (card && owned !== null) {
+        posthog.capture('card_collected_toggled', { card_id: card.id, owned })
+      }
+    } else if (gestureState.value === 'dragging') {
+      const count = dragRangeIds.value.size
+      if (count === 1) {
+        posthog.capture('card_collected_toggled', { card_id: [...dragRangeIds.value][0], owned: dragTargetState })
+      } else if (count > 1) {
+        setTrackedSource(dragRangeIds.value, 'bulk')
+        posthog.capture('cards_bulk_collected_toggled', { count, owned: dragTargetState })
+      }
     }
-    touchOptimisticState = null
-  } else if (gestureState.value === 'dragging') {
-    const count = dragRangeIds.value.size
-    if (count === 1) {
-      posthog.capture('card_collected_toggled', { card_id: [...dragRangeIds.value][0], owned: dragTargetState })
-    } else if (count > 1) {
-      posthog.capture('cards_bulk_collected_toggled', { count, owned: dragTargetState })
-    }
+  } finally {
+    endGesture()
+    releaseCardTrackedFlush()
   }
-  endGesture()
-  releaseCardTrackedFlush()
 }
 
 // ── Global listeners ──────────────────────────────────────────────────────────
@@ -488,6 +507,11 @@ onUnmounted(() => {
   window.removeEventListener('mouseup', onWindowMouseUp)
   window.removeEventListener('touchend', onWindowTouchEnd)
   cancelLongPress()
+  if (dragRangeIds.value.size > 1) setTrackedSource(dragRangeIds.value, 'bulk')
+  if (mouseGestureHeld) {
+    mouseGestureHeld = false
+    releaseCardTrackedFlush(dragRangeIds.value.size > 1)
+  }
   releaseCardTrackedFlush()
 })
 </script>
