@@ -49,7 +49,12 @@ async function freshTracker(preOwned: string[] = []) {
   return Object.assign(mod.useTracker(), {
     holdCardTrackedFlush: mod.holdCardTrackedFlush,
     releaseCardTrackedFlush: mod.releaseCardTrackedFlush,
+    setTrackedSource: mod.setTrackedSource,
   })
+}
+
+function sentEvents(palmeta: { mock: { calls: ReadonlyArray<ReadonlyArray<unknown>> } }) {
+  return palmeta.mock.calls.map((call) => call[1])
 }
 
 // ── Correctness ───────────────────────────────────────────────────────────────
@@ -246,8 +251,10 @@ describe('useTracker — card_tracked', () => {
 
     await vi.advanceTimersByTimeAsync(1)
     expect(isOwned('a1-001')).toBe(true)
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-001'])
   })
 
@@ -285,8 +292,10 @@ describe('useTracker — card_tracked', () => {
     expect(isOwned('a1-001')).toBe(false)
     expect(isOwned('a1-002')).toBe(false)
     expect(isOwned('a1-003')).toBe(true)
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-003'])
   })
 
@@ -297,8 +306,10 @@ describe('useTracker — card_tracked', () => {
     first.toggle('a1-001')
     first.setOwned('a1-002', true)
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 2 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 2 },
+      { name: 'card_tracked_tracker', count: 2 },
+    ])
 
     palmeta.mockClear()
     vi.clearAllTimers()
@@ -307,8 +318,10 @@ describe('useTracker — card_tracked', () => {
     second.setOwned('a1-003', true)
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
 
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(expect.arrayContaining(['a1-001', 'a1-002', 'a1-003']))
   })
 
@@ -352,9 +365,12 @@ describe('useTracker — card_tracked', () => {
 
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
 
-    expect(palmeta).toHaveBeenCalledTimes(2)
-    expect(palmeta).toHaveBeenNthCalledWith(1, 'event', { name: 'card_tracked', count: 50 })
-    expect(palmeta).toHaveBeenNthCalledWith(2, 'event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 50 },
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 50 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(JSON.parse(lsStore[REPORTED_KEY])).toHaveLength(51)
   })
 
@@ -368,8 +384,10 @@ describe('useTracker — card_tracked', () => {
     toggle('a1-001')
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
 
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-001'])
     expect(palmeta.mock.calls.every((call) => !('visitorId' in (call[1] as object)))).toBe(true)
   })
@@ -420,8 +438,10 @@ describe('useTracker — card_tracked', () => {
     toggle('a1-004')
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
 
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(gtag).not.toHaveBeenCalled()
     expect(setVisitors).not.toHaveBeenCalledWith('persistent')
   })
@@ -458,8 +478,10 @@ describe('useTracker — card_tracked', () => {
     expect(palmeta).not.toHaveBeenCalled()
 
     releaseCardTrackedFlush()
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
   })
 
   it('flushes on pagehide and when the page is hidden, and does not send twice', async () => {
@@ -474,12 +496,14 @@ describe('useTracker — card_tracked', () => {
 
     doc.visibilityState = 'hidden'
     fire(listeners, 'visibilitychange')
-    expect(palmeta).toHaveBeenCalledTimes(1)
-    expect(palmeta).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
 
     fire(listeners, 'pagehide')
     await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-    expect(palmeta).toHaveBeenCalledTimes(1)
+    expect(palmeta).toHaveBeenCalledTimes(2)
   })
 
   it('keeps ids pending while the queue stub is installed, then sends them once a.js has replaced it', async () => {
@@ -495,7 +519,7 @@ describe('useTracker — card_tracked', () => {
 
     expect(queued).toEqual([])
     expect(lsStore[REPORTED_KEY]).toBeUndefined()
-    expect(JSON.parse(lsStore[PENDING_KEY])).toEqual(['a1-009'])
+    expect(JSON.parse(lsStore[PENDING_KEY])).toEqual({ 'a1-009': 'tracker' })
 
     const loaded = vi.fn()
     const secondWindow = stubWindow(loaded)
@@ -503,13 +527,15 @@ describe('useTracker — card_tracked', () => {
     await freshTracker(['a1-009'])
     fire(secondWindow.listeners, 'pagehide')
 
-    expect(loaded).toHaveBeenCalledTimes(1)
-    expect(loaded).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(loaded)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
     expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-009'])
     expect(lsStore[PENDING_KEY]).toBeUndefined()
 
     fire(secondWindow.listeners, 'pagehide')
-    expect(loaded).toHaveBeenCalledTimes(1)
+    expect(loaded).toHaveBeenCalledTimes(2)
   })
 
   it('keeps a declined count pending until a.js is ready, then sends it with no visitor id', async () => {
@@ -527,7 +553,7 @@ describe('useTracker — card_tracked', () => {
 
     expect(queued).toEqual([])
     expect(lsStore[REPORTED_KEY]).toBeUndefined()
-    expect(JSON.parse(lsStore[PENDING_KEY])).toEqual(['a1-009'])
+    expect(JSON.parse(lsStore[PENDING_KEY])).toEqual({ 'a1-009': 'tracker' })
 
     const loaded = vi.fn()
     const secondWindow = stubWindow(loaded)
@@ -535,10 +561,139 @@ describe('useTracker — card_tracked', () => {
     await freshTracker(['a1-009'])
     fire(secondWindow.listeners, 'pagehide')
 
-    expect(loaded).toHaveBeenCalledTimes(1)
-    expect(loaded).toHaveBeenCalledWith('event', { name: 'card_tracked', count: 1 })
+    expect(sentEvents(loaded)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
+    expect(loaded.mock.calls.every((call) => !('visitorId' in (call[1] as object)))).toBe(true)
     expect(JSON.parse(lsStore[REPORTED_KEY])).toEqual(['a1-009'])
     expect(lsStore[PENDING_KEY]).toBeUndefined()
     expect(lsStore[DECLINED_PREFERENCE_KEY]).toBe(DECLINED_PREFERENCE_VALUE)
+  })
+
+  it('reads a legacy pending id list as tracker and ignores junk without throwing', async () => {
+    const palmeta = vi.fn()
+    lsStore[PENDING_KEY] = JSON.stringify(['a1-007', 'a1-008', 12, null])
+    const { listeners } = grantConsent(palmeta)
+    await freshTracker(['a1-007', 'a1-008'])
+
+    expect(() => fire(listeners, 'pagehide')).not.toThrow()
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 2 },
+      { name: 'card_tracked_tracker', count: 2 },
+    ])
+  })
+
+  it('reads unreadable pending storage without throwing', async () => {
+    const palmeta = vi.fn()
+    lsStore[PENDING_KEY] = '{not json'
+    grantConsent(palmeta)
+    const { toggle } = await freshTracker()
+
+    expect(() => toggle('a1-001', 'panel')).not.toThrow()
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_panel', count: 1 },
+    ])
+  })
+
+  it('sends per-source counts and the same total, omitting zeroes', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { toggle, setOwned } = await freshTracker()
+
+    toggle('panel-1', 'panel')
+    toggle('panel-2', 'panel')
+    setOwned('tracker-1', true, 'tracker')
+    setOwned('bulk-1', true, 'bulk')
+    setOwned('bulk-2', true, 'bulk')
+    setOwned('bulk-3', true, 'bulk')
+    setOwned('dropped', true, 'panel')
+    setOwned('dropped', false)
+
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 6 },
+      { name: 'card_tracked_panel', count: 2 },
+      { name: 'card_tracked_tracker', count: 1 },
+      { name: 'card_tracked_bulk', count: 3 },
+    ])
+  })
+
+  it('counts a multi-card drag as bulk and leaves the total unchanged', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { setOwned, setTrackedSource, holdCardTrackedFlush, releaseCardTrackedFlush } = await freshTracker(['already'])
+
+    holdCardTrackedFlush()
+    setOwned('a1-001', true, 'tracker')
+    setOwned('a1-002', true, 'tracker')
+    setOwned('a1-003', true, 'tracker')
+    setOwned('already', true, 'tracker')
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS + 50)
+    expect(palmeta).not.toHaveBeenCalled()
+
+    setTrackedSource(['a1-001', 'a1-002', 'a1-003', 'already', 'missing'], 'bulk')
+    releaseCardTrackedFlush()
+
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 3 },
+      { name: 'card_tracked_bulk', count: 3 },
+    ])
+  })
+
+  it('leaves a one-card hold on the save debounce when release does not flush', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { setOwned, holdCardTrackedFlush, releaseCardTrackedFlush } = await freshTracker()
+
+    holdCardTrackedFlush()
+    setOwned('a1-001', true, 'tracker')
+    releaseCardTrackedFlush(false)
+    expect(palmeta).not.toHaveBeenCalled()
+
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
+  })
+
+  it('sends a held count when the debounce already elapsed and release does not ask to flush', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { setOwned, holdCardTrackedFlush, releaseCardTrackedFlush } = await freshTracker()
+
+    holdCardTrackedFlush()
+    setOwned('a1-001', true, 'tracker')
+    await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS + 50)
+    expect(palmeta).not.toHaveBeenCalled()
+
+    releaseCardTrackedFlush(false)
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 1 },
+      { name: 'card_tracked_tracker', count: 1 },
+    ])
+  })
+
+  it('keeps a panel card when a multi-card drag retags the taps around it', async () => {
+    const palmeta = vi.fn()
+    grantConsent(palmeta)
+    const { toggle, setOwned, setTrackedSource, holdCardTrackedFlush, releaseCardTrackedFlush } = await freshTracker()
+
+    holdCardTrackedFlush()
+    toggle('panel-1', 'panel')
+    setOwned('a1-001', true, 'tracker')
+    setOwned('a1-002', true, 'tracker')
+    setTrackedSource(['panel-1', 'a1-001', 'a1-002'], 'bulk')
+    releaseCardTrackedFlush()
+
+    expect(sentEvents(palmeta)).toEqual([
+      { name: 'card_tracked', count: 3 },
+      { name: 'card_tracked_panel', count: 1 },
+      { name: 'card_tracked_bulk', count: 2 },
+    ])
   })
 })

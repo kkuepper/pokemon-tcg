@@ -9,12 +9,14 @@
  * A decline is remembered as the fixed localStorage word "declined". That value
  * is not an identifier and is not sent with requests.
  *
- * card_tracked is one anonymous count. This count sends no card names or ids and
- * no visitor id. a.js keeps at most 50 of that count per write, and that write
- * does not read a visitor id. The count is sent whenever a.js is ready,
- * including after a decline and after analytics is turned off. It is skipped
- * when palmetaAnalytics is missing, and while the index.html queue stub is
- * still the function that receives calls. Google Analytics and the persistent
+ * card_tracked is one anonymous total. This count sends no card names or ids and
+ * no visitor id. When that total is sent, non-zero card_tracked_panel,
+ * card_tracked_tracker, and card_tracked_bulk counts are sent the same way.
+ * a.js keeps at most 50 of one count per write, and that write does not read a
+ * visitor id. These counts are sent whenever a.js is ready, including after a
+ * decline and after analytics is turned off. They are skipped when
+ * palmetaAnalytics is missing, and while the index.html queue stub is still
+ * the function that receives calls. Google Analytics and the persistent
  * visitor id stay behind consent.
  */
 
@@ -200,7 +202,7 @@ export function cardTrackedAwaitingScript(): boolean {
 }
 
 /**
- * Hand one card_tracked count to Palmeta. False, and no throw, when
+ * Hand one anonymous count to Palmeta. False, and no throw, when
  * palmetaAnalytics is missing or the queue stub still has the call.
  * A decline and Off do not skip this count.
  * This count sends no card names or ids and no visitor id. A count above 50 is

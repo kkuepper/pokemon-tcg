@@ -189,6 +189,35 @@ describe('palmeta visitor consent', () => {
     expect(footer).toContain('to="/privacy"')
   })
 
+  it('footer links to the feature form and records the click without blocking it', () => {
+    const footer = readFileSync(resolve('src/components/SiteFooter.vue'), 'utf8')
+    expect(footer).toContain('Suggest a feature')
+    expect(footer).toContain('https://github.com/kkuepper/pokemon-tcg/issues/new?template=feedback.yml')
+    expect(footer).toContain('target="_blank"')
+    expect(footer).toContain('rel="noopener noreferrer"')
+    expect(footer).toContain("name: 'feedback_click'")
+    expect(footer).toContain('count: 1')
+    expect(footer).toContain('catch')
+    const form = readFileSync(resolve('.github/ISSUE_TEMPLATE/feedback.yml'), 'utf8')
+    expect(form).toContain('labels: ["feedback"]')
+    expect(form).toContain('title: "Feature: "')
+    expect(form).toContain('behaviour')
+    expect(form).toMatch(/required: true/)
+    expect(form).toMatch(/required: false/)
+  })
+
+  it('card page uses panel, tracker taps use tracker, and multi-card drags use bulk', () => {
+    const app = readFileSync(resolve('src/App.vue'), 'utf8')
+    const tracker = readFileSync(resolve('src/views/TrackerView.vue'), 'utf8')
+    expect(app).toContain("toggle(card.id, 'panel')")
+    expect(app).toContain("source: 'panel'")
+    expect(tracker).toContain("setOwned(card.id, dragTargetState, 'tracker')")
+    expect(tracker).toContain("toggle(card.id, 'tracker')")
+    expect(tracker).toContain("setOwned(card.id, touchOptimisticState, 'tracker')")
+    expect(tracker).toContain("source: 'panel'")
+    expect(tracker.match(/setTrackedSource\(dragRangeIds\.value, 'bulk'\)/g)).toHaveLength(3)
+  })
+
   it('privacy page covers Palmeta, Google Analytics, and PostHog', () => {
     const page = readFileSync(resolve('src/views/PrivacyView.vue'), 'utf8')
     expect(page).toContain('without the query string')

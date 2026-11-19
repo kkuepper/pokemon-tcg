@@ -57,7 +57,7 @@ watch(
 
 function toggleFromPanel(card: Card) {
   const newOwned = !isOwned(card.id)
-  toggle(card.id)
+  toggle(card.id, 'panel')
   posthog.capture('card_collected_toggled', { card_id: card.id, owned: newOwned, source: 'panel' })
 }
 
