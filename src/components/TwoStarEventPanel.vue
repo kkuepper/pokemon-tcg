@@ -10,7 +10,6 @@ defineProps<{
   <BestPackPanel
     :entries="entries"
     title="Best pack for a new ★★ card (event)"
-    subtitle="Every pack guarantees one ★★ card. Each ★★ card in a pack is treated as equally likely."
-    subtitle-detail="Super Rare and Special Art Rare both count as ★★. Card data has no per-card odds for this guaranteed slot, so each ★★ card a pack can contain counts equally."
+    subtitle="Every pack guarantees one ★★ card. Super Rare and Special Art Rare both count as ★★, each treated as equally likely because the card list has no separate odds for that slot."
   />
 </template>

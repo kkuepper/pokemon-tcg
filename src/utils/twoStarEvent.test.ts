@@ -5,9 +5,11 @@ import type { Card } from '../types/card'
 import { formatPct } from './odds'
 import {
   GUARANTEED_TWO_STAR_EVENT_ENDS_AT,
+  TWO_STAR_EVENT_RECHECK_MAX_MS,
   TWO_STAR_RARITIES,
   isGuaranteedTwoStarEventActive,
   rankPacksForNewTwoStar,
+  twoStarEventRecheckDelay,
   type TwoStarPackCard,
 } from './twoStarEvent'
 
@@ -45,6 +47,17 @@ describe('GUARANTEED_TWO_STAR_EVENT_ENDS_AT', () => {
   it('is inactive at the first instant of 22 December Ontario time', () => {
     expect(isGuaranteedTwoStarEventActive(AFTER_EVENT)).toBe(false)
     expect(isGuaranteedTwoStarEventActive(Date.parse('2026-12-22T00:00:01-05:00'))).toBe(false)
+  })
+
+  it('caps the recheck delay so a long-lived tab still hides the card', () => {
+    const hour = 60 * 60 * 1000
+    expect(TWO_STAR_EVENT_RECHECK_MAX_MS).toBe(hour)
+    expect(TWO_STAR_EVENT_RECHECK_MAX_MS).toBeLessThan(2 ** 31 - 1)
+    expect(twoStarEventRecheckDelay(DURING_EVENT)).toBe(hour)
+    expect(twoStarEventRecheckDelay(END_OF_DEC_21)).toBe(1)
+    expect(twoStarEventRecheckDelay(AFTER_EVENT)).toBeNull()
+    const tenMinutesBefore = GUARANTEED_TWO_STAR_EVENT_ENDS_AT - 10 * 60 * 1000
+    expect(twoStarEventRecheckDelay(tenMinutesBefore)).toBe(10 * 60 * 1000)
   })
 })
 
@@ -241,6 +254,11 @@ describe('sample collection against cards.json', () => {
     const panel = readFileSync(resolve('src/components/TwoStarEventPanel.vue'), 'utf8')
     expect(panel).toContain('Best pack for a new ★★ card (event)')
     expect(panel).toContain('Every pack guarantees one ★★ card')
+    expect(panel).toContain('Super Rare and Special Art Rare')
     expect(panel).toContain('equally likely')
+    expect(panel).not.toContain('subtitle-detail')
+    expect(view).toContain('lg:overflow-y-auto')
+    expect(view).toContain('twoStarEventRecheckDelay')
+    expect(view).toContain('visibilitychange')
   })
 })

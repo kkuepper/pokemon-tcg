@@ -5,23 +5,16 @@ withDefaults(defineProps<{
   entries: { label: string; prob: number }[]
   title?: string
   subtitle?: string
-  /** Hover text. The event card uses this to spell out the equal-odds assumption. */
-  subtitleDetail?: string
 }>(), {
   title: 'Best Pack to Open',
   subtitle: "Highest chance of drawing a card you don't have yet",
-  subtitleDetail: '',
 })
 </script>
 
 <template>
   <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
     <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wide leading-snug mb-3">{{ title }}</h2>
-    <p
-      class="text-xs text-gray-400 leading-snug mb-3"
-      :class="subtitleDetail ? 'cursor-help' : ''"
-      :title="subtitleDetail || undefined"
-    >{{ subtitle }}</p>
+    <p class="text-xs text-gray-600 leading-snug mb-3">{{ subtitle }}</p>
     <ol class="space-y-2">
       <li
         v-for="(entry, i) in entries"

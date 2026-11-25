@@ -23,6 +23,26 @@ export function isGuaranteedTwoStarEventActive(now: number = Date.now()): boolea
   return now < GUARANTEED_TWO_STAR_EVENT_ENDS_AT
 }
 
+/**
+ * Upper bound for one setTimeout. Browsers clamp delays above 2^31−1 ms,
+ * which a wait until 21 December 2026 can exceed.
+ */
+export const TWO_STAR_EVENT_RECHECK_MAX_MS = 60 * 60 * 1000
+
+/**
+ * Milliseconds until the next visibility check, or null once the event is over.
+ * The wait is capped so a tab left open across the cutoff still hides the card
+ * without overflowing setTimeout.
+ */
+export function twoStarEventRecheckDelay(
+  now: number = Date.now(),
+  maxDelay: number = TWO_STAR_EVENT_RECHECK_MAX_MS,
+): number | null {
+  const remaining = GUARANTEED_TWO_STAR_EVENT_ENDS_AT - now
+  if (remaining <= 0) return null
+  return Math.min(remaining, maxDelay)
+}
+
 /** Card fields the ranking reads. A full `Card` satisfies this. */
 export interface TwoStarPackCard {
   id: string
