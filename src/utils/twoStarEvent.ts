@@ -7,16 +7,12 @@ import type { CardRarity } from '../types/card'
 export const TWO_STAR_RARITIES: ReadonlySet<CardRarity> = new Set(['SR', 'SAR'])
 
 /**
- * The guaranteed-★★ event ends at the end of 21 December 2026.
- *
- * 25 November 2026 plus 26 days is 21 December 2026. The card stays up through
- * the end of that day and hides at the first instant of 22 December, Ontario
- * time (EST, UTC−5) — the same zone the deluxe-pack cutoffs use.
- *
- * Compared with Date.now() in the tracker. After this instant the event card
- * does not render, and no redeploy is required.
+ * Redeeming a guaranteed-★★ pack token stays open until 00:59 on
+ * 22 December 2026 in America/Toronto (EST, UTC−5), which is 05:59 UTC.
+ * The in-game distribution period ends a week earlier; earned tokens last
+ * that extra week. The card hides at this instant. No redeploy required.
  */
-export const GUARANTEED_TWO_STAR_EVENT_ENDS_AT = Date.parse('2026-12-22T00:00:00-05:00')
+export const GUARANTEED_TWO_STAR_EVENT_ENDS_AT = Date.parse('2026-12-22T00:59:00-05:00')
 
 /** True while `now` is still before {@link GUARANTEED_TWO_STAR_EVENT_ENDS_AT}. */
 export function isGuaranteedTwoStarEventActive(now: number = Date.now()): boolean {
@@ -25,7 +21,7 @@ export function isGuaranteedTwoStarEventActive(now: number = Date.now()): boolea
 
 /**
  * Upper bound for one setTimeout. Browsers clamp delays above 2^31−1 ms,
- * which a wait until 21 December 2026 can exceed.
+ * which a wait until 22 December 2026 can exceed.
  */
 export const TWO_STAR_EVENT_RECHECK_MAX_MS = 60 * 60 * 1000
 
@@ -41,6 +37,43 @@ export function twoStarEventRecheckDelay(
   const remaining = GUARANTEED_TWO_STAR_EVENT_ENDS_AT - now
   if (remaining <= 0) return null
   return Math.min(remaining, maxDelay)
+}
+
+/**
+ * Packs the in-game news lists as "1 ★★ card guaranteed" exchanges.
+ * Order matches that list so the cut-off middle can be inserted in one place.
+ * The screenshots skip from Celestial Guardians: Solgaleo to Pulsing Aura;
+ * nothing is filled in for that gap.
+ */
+export const GUARANTEED_TWO_STAR_PACK_ALLOWLIST: readonly { setName: string; pack: string }[] = [
+  { setName: 'Genetic Apex', pack: 'Mewtwo' },
+  { setName: 'Genetic Apex', pack: 'Charizard' },
+  { setName: 'Genetic Apex', pack: 'Pikachu' },
+  { setName: 'Mythical Island', pack: 'Mew' },
+  { setName: 'Space-Time Smackdown', pack: 'Dialga' },
+  { setName: 'Space-Time Smackdown', pack: 'Palkia' },
+  { setName: 'Triumphant Light', pack: 'Arceus' },
+  { setName: 'Shining Revelry', pack: 'Shining' },
+  { setName: 'Celestial Guardians', pack: 'Solgaleo' },
+  // In-game list is cut off between Solgaleo and Pulsing Aura.
+  { setName: 'Pulsing Aura', pack: 'Pulsing Aura' },
+  { setName: 'Paradox Drive', pack: 'Paradox Drive' },
+  { setName: 'Everyday Wonders', pack: 'Everyday Wonders' },
+  { setName: 'Ruler of the Skies', pack: 'Ruler of the Skies' },
+  { setName: 'Team Rocket\u2019s Ambition', pack: 'Team Rocket' },
+]
+
+/**
+ * Owned card ids as stored on the user: a JSON array of id strings in
+ * localStorage (`ptcgp-tracker-owned`) and Firestore (`cardIds`).
+ * Non-strings are ignored, matching a tolerant read of that array.
+ */
+export function ownedIdsFromCardIdList(cardIds: Iterable<unknown>): Set<string> {
+  const ids = new Set<string>()
+  for (const id of cardIds) {
+    if (typeof id === 'string') ids.add(id)
+  }
+  return ids
 }
 
 /** Card fields the ranking reads. A full `Card` satisfies this. */
@@ -70,6 +103,11 @@ export interface RankPacksOptions {
   skipUntouchedSets?: boolean
   /** How many packs to return, highest chance first. Defaults to 10. */
   limit?: number
+  /**
+   * Only these set-and-pack pairs are ranked. Defaults to
+   * {@link GUARANTEED_TWO_STAR_PACK_ALLOWLIST}. Pass null to rank every pack.
+   */
+  packAllowlist?: readonly { setName: string; pack: string }[] | null
 }
 
 /**
@@ -95,6 +133,12 @@ export function rankPacksForNewTwoStar(
   const excluded = options?.excludedSetNames ?? new Set<string>()
   const skipUntouched = options?.skipUntouchedSets ?? true
   const limit = options?.limit ?? 10
+  const allowlist = options?.packAllowlist === undefined
+    ? GUARANTEED_TWO_STAR_PACK_ALLOWLIST
+    : options.packAllowlist
+  const allowedPacks = allowlist === null
+    ? null
+    : new Set(allowlist.map(entry => `${entry.setName}||${entry.pack}`))
 
   const startedSets = new Set<string>()
   const packsPerSet = new Map<string, Set<string>>()
@@ -125,6 +169,7 @@ export function rankPacksForNewTwoStar(
     if (card.perPackRate <= 0) continue
     if (!TWO_STAR_RARITIES.has(card.rarity)) continue
     if (excluded.has(card.setName)) continue
+    if (allowedPacks && !allowedPacks.has(`${card.setName}||${card.pack}`)) continue
     if (skipUntouched && !startedSets.has(card.set)) continue
 
     const key = `${card.set}||${card.pack}`
