@@ -8,11 +8,13 @@ import AuthButton from '../components/AuthButton.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import PackOdds from '../components/PackOdds.vue'
 import BestPackPanel from '../components/BestPackPanel.vue'
+import TwoStarEventPanel from '../components/TwoStarEventPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
 import CrownIcon from '../components/icons/CrownIcon.vue'
 import { formatPacks } from '../utils/odds'
+import { isGuaranteedTwoStarEventActive, rankPacksForNewTwoStar } from '../utils/twoStarEvent'
 import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
 import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
@@ -58,7 +60,7 @@ function onCardImageLoaded(cardId: string) {
   triggerRef(loadedCards)
 }
 
-// Debounced snapshot so bestPacks / easiestSets don't recompute on every click
+// Debounced snapshot so bestPacks / twoStarPacks / easiestSets don't recompute on every click
 const ownedIdsForAnalysis = shallowRef(ownedIds.value)
 let _analysisTimer: ReturnType<typeof setTimeout> | null = null
 watch(ownedIds, () => {
@@ -172,6 +174,20 @@ const bestPacks = computed(() => {
     })
     .sort((a, b) => b.prob - a.prob)
     .slice(0, 10)
+})
+
+// Guaranteed-★★ event. Read once when the view is set up: Date.now() is not a
+// reactive dependency (same as the deluxe-pack cutoffs above). A tab left open
+// past GUARANTEED_TWO_STAR_EVENT_ENDS_AT keeps the card until reload. A visit
+// after that instant does not render it, with no redeploy.
+const guaranteedTwoStarEventActive = isGuaranteedTwoStarEventActive()
+
+const twoStarPacks = computed(() => {
+  if (!guaranteedTwoStarEventActive) return []
+  const snapshot = ownedIdsForAnalysis.value
+  return rankPacksForNewTwoStar(cards.value, id => snapshot.has(id), {
+    excludedSetNames: EXCLUDED_SET_NAMES,
+  })
 })
 
 function statsForSet(setCode: string, ownedFn: (id: string) => boolean = isOwned): SetStats {
@@ -704,6 +720,11 @@ onUnmounted(() => {
 
           <!-- Best pack: mobile only (shown here between easiest set and card grids) -->
           <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="lg:hidden" />
+          <TwoStarEventPanel
+            v-if="guaranteedTwoStarEventActive && twoStarPacks.length"
+            :entries="twoStarPacks"
+            class="lg:hidden"
+          />
 
           <div
             v-for="set in sets"
@@ -846,6 +867,11 @@ onUnmounted(() => {
 
           <!-- Best pack: desktop only -->
           <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="hidden lg:block" />
+          <TwoStarEventPanel
+            v-if="guaranteedTwoStarEventActive && twoStarPacks.length"
+            :entries="twoStarPacks"
+            class="hidden lg:block"
+          />
 
           <!-- fixed overlay on mobile, normal flow on desktop -->
           <div
