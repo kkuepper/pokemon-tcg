@@ -8,11 +8,13 @@ import AuthButton from '../components/AuthButton.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import PackOdds from '../components/PackOdds.vue'
 import BestPackPanel from '../components/BestPackPanel.vue'
+import TwoStarEventPanel from '../components/TwoStarEventPanel.vue'
 import DiamondIcon from '../components/icons/DiamondIcon.vue'
 import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
 import CrownIcon from '../components/icons/CrownIcon.vue'
 import { formatPacks } from '../utils/odds'
+import { isGuaranteedTwoStarEventActive, rankPacksForNewTwoStar, twoStarEventRecheckDelay } from '../utils/twoStarEvent'
 import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
 import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
@@ -58,7 +60,7 @@ function onCardImageLoaded(cardId: string) {
   triggerRef(loadedCards)
 }
 
-// Debounced snapshot so bestPacks / easiestSets don't recompute on every click
+// Debounced snapshot so bestPacks / twoStarPacks / easiestSets don't recompute on every click
 const ownedIdsForAnalysis = shallowRef(ownedIds.value)
 let _analysisTimer: ReturnType<typeof setTimeout> | null = null
 watch(ownedIds, () => {
@@ -172,6 +174,64 @@ const bestPacks = computed(() => {
     })
     .sort((a, b) => b.prob - a.prob)
     .slice(0, 10)
+})
+
+// Guaranteed-★★ event. Date.now() is not reactive, so the flag is refreshed
+// when the tab becomes visible again and on a timer capped by
+// twoStarEventRecheckDelay (a single wait until 21 Dec 2026 would overflow
+// setTimeout). After GUARANTEED_TWO_STAR_EVENT_ENDS_AT the card does not
+// render, with no redeploy.
+const guaranteedTwoStarEventActive = ref(isGuaranteedTwoStarEventActive())
+let twoStarEventTimer: ReturnType<typeof setTimeout> | null = null
+
+function refreshTwoStarEventVisibility() {
+  guaranteedTwoStarEventActive.value = isGuaranteedTwoStarEventActive()
+  if (twoStarEventTimer) clearTimeout(twoStarEventTimer)
+  twoStarEventTimer = null
+  const delay = twoStarEventRecheckDelay()
+  if (delay === null) return
+  twoStarEventTimer = setTimeout(refreshTwoStarEventVisibility, delay)
+}
+
+function onTwoStarEventTabVisible() {
+  if (document.visibilityState === 'visible') refreshTwoStarEventVisibility()
+}
+
+const twoStarPacks = computed(() => {
+  if (!guaranteedTwoStarEventActive.value) return []
+  const snapshot = ownedIdsForAnalysis.value
+  return rankPacksForNewTwoStar(cards.value, id => snapshot.has(id), {
+    excludedSetNames: EXCLUDED_SET_NAMES,
+  })
+})
+
+// The right column sticks. Both recommendation cards plus a selected card are
+// taller than a short desktop viewport, so the column scrolls internally
+// (same idea as the set list) instead of trapping the card detail below the fold.
+const detailColumnEl = ref<HTMLElement | null>(null)
+const selectedPanelEl = ref<HTMLElement | null>(null)
+
+function scrollSelectedCardIntoColumn() {
+  const column = detailColumnEl.value
+  const panel = selectedPanelEl.value
+  if (!column || !panel) return
+  if (!window.matchMedia('(min-width: 1024px)').matches) return
+  const columnRect = column.getBoundingClientRect()
+  const panelRect = panel.getBoundingClientRect()
+  const fits = panelRect.height <= columnRect.height
+  const fullyVisible = panelRect.top >= columnRect.top - 1 && panelRect.bottom <= columnRect.bottom + 1
+  if (fits && fullyVisible) return
+  if (!fits || panelRect.top < columnRect.top) {
+    column.scrollTop += panelRect.top - columnRect.top
+    return
+  }
+  column.scrollTop += panelRect.bottom - columnRect.bottom
+}
+
+watch(selectedCard, async (card) => {
+  if (!card) return
+  await nextTick()
+  scrollSelectedCardIntoColumn()
 })
 
 function statsForSet(setCode: string, ownedFn: (id: string) => boolean = isOwned): SetStats {
@@ -502,10 +562,16 @@ function onWindowTouchEnd() {
 onMounted(() => {
   window.addEventListener('mouseup', onWindowMouseUp)
   window.addEventListener('touchend', onWindowTouchEnd)
+  document.addEventListener('visibilitychange', onTwoStarEventTabVisible)
+  window.addEventListener('focus', refreshTwoStarEventVisibility)
+  refreshTwoStarEventVisibility()
 })
 onUnmounted(() => {
   window.removeEventListener('mouseup', onWindowMouseUp)
   window.removeEventListener('touchend', onWindowTouchEnd)
+  document.removeEventListener('visibilitychange', onTwoStarEventTabVisible)
+  window.removeEventListener('focus', refreshTwoStarEventVisibility)
+  if (twoStarEventTimer) clearTimeout(twoStarEventTimer)
   cancelLongPress()
   if (dragRangeIds.value.size > 1) setTrackedSource(dragRangeIds.value, 'bulk')
   if (mouseGestureHeld) {
@@ -704,6 +770,11 @@ onUnmounted(() => {
 
           <!-- Best pack: mobile only (shown here between easiest set and card grids) -->
           <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="lg:hidden" />
+          <TwoStarEventPanel
+            v-if="guaranteedTwoStarEventActive && twoStarPacks.length"
+            :entries="twoStarPacks"
+            class="lg:hidden"
+          />
 
           <div
             v-for="set in sets"
@@ -841,15 +912,21 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- ── Col 3: Best pack + selected card (sticky) ── -->
-        <div class="space-y-4 lg:sticky lg:top-6">
+        <!-- ── Col 3: Best pack + selected card (sticky, scrolls when taller than the viewport) ── -->
+        <div ref="detailColumnEl" class="space-y-4 lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:overscroll-contain">
 
           <!-- Best pack: desktop only -->
           <BestPackPanel v-if="bestPacks.length" :entries="bestPacks" class="hidden lg:block" />
+          <TwoStarEventPanel
+            v-if="guaranteedTwoStarEventActive && twoStarPacks.length"
+            :entries="twoStarPacks"
+            class="hidden lg:block"
+          />
 
           <!-- fixed overlay on mobile, normal flow on desktop -->
           <div
             v-if="selectedCard"
+            ref="selectedPanelEl"
             class="fixed inset-0 z-50 bg-white/80 backdrop-blur-xs overflow-y-auto lg:static lg:inset-auto lg:z-auto lg:bg-transparent lg:backdrop-blur-none lg:overflow-visible"
             @click.self="selectedCard = null"
           >
