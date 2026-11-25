@@ -3,19 +3,32 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { Card } from '../types/card'
 import { formatPct } from './odds'
+import { rankBestPacks } from './bestPacks'
 import {
   GUARANTEED_TWO_STAR_EVENT_ENDS_AT,
+  GUARANTEED_TWO_STAR_PACK_ALLOWLIST,
   TWO_STAR_EVENT_RECHECK_MAX_MS,
   TWO_STAR_RARITIES,
   isGuaranteedTwoStarEventActive,
+  ownedIdsFromCardIdList,
   rankPacksForNewTwoStar,
   twoStarEventRecheckDelay,
+  type RankPacksOptions,
   type TwoStarPackCard,
 } from './twoStarEvent'
 
 const DURING_EVENT = Date.parse('2026-11-25T12:00:00-05:00')
-const END_OF_DEC_21 = Date.parse('2026-12-21T23:59:59.999-05:00')
-const AFTER_EVENT = Date.parse('2026-12-22T00:00:00-05:00')
+const JUST_BEFORE_END = Date.parse('2026-12-22T00:58:59-05:00')
+const AFTER_EVENT = Date.parse('2026-12-22T00:59:00-05:00')
+
+/** Unit fixtures are not on the in-game exchange list. */
+function rank(
+  cards: readonly TwoStarPackCard[],
+  isOwned: (id: string) => boolean,
+  options: RankPacksOptions = {},
+) {
+  return rankPacksForNewTwoStar(cards, isOwned, { packAllowlist: null, ...options })
+}
 
 function card(partial: Partial<TwoStarPackCard> & Pick<TwoStarPackCard, 'id'>): TwoStarPackCard {
   return {
@@ -29,24 +42,19 @@ function card(partial: Partial<TwoStarPackCard> & Pick<TwoStarPackCard, 'id'>): 
 }
 
 describe('GUARANTEED_TWO_STAR_EVENT_ENDS_AT', () => {
-  it('is the end of 21 December 2026, 26 days after 25 November, Ontario time', () => {
-    const nov25 = Date.parse('2026-11-25T00:00:00-05:00')
-    const dec21 = Date.parse('2026-12-21T00:00:00-05:00')
-    const day = 24 * 60 * 60 * 1000
-    expect(dec21 - nov25).toBe(26 * day)
-    // Visible through the end of that day; hidden from the next midnight.
-    expect(GUARANTEED_TWO_STAR_EVENT_ENDS_AT).toBe(dec21 + day)
-    expect(GUARANTEED_TWO_STAR_EVENT_ENDS_AT).toBe(Date.parse('2026-12-22T00:00:00-05:00'))
+  it('is 00:59 on 22 December 2026 in America/Toronto, which is 05:59 UTC', () => {
+    expect(GUARANTEED_TWO_STAR_EVENT_ENDS_AT).toBe(Date.parse('2026-12-22T00:59:00-05:00'))
+    expect(GUARANTEED_TWO_STAR_EVENT_ENDS_AT).toBe(Date.parse('2026-12-22T05:59:00Z'))
   })
 
-  it('stays active on 25 November and through the end of 21 December', () => {
+  it('stays active on 25 November and through 00:58 on 22 December', () => {
     expect(isGuaranteedTwoStarEventActive(DURING_EVENT)).toBe(true)
-    expect(isGuaranteedTwoStarEventActive(END_OF_DEC_21)).toBe(true)
+    expect(isGuaranteedTwoStarEventActive(JUST_BEFORE_END)).toBe(true)
   })
 
-  it('is inactive at the first instant of 22 December Ontario time', () => {
+  it('is inactive at 00:59 on 22 December Toronto time', () => {
     expect(isGuaranteedTwoStarEventActive(AFTER_EVENT)).toBe(false)
-    expect(isGuaranteedTwoStarEventActive(Date.parse('2026-12-22T00:00:01-05:00'))).toBe(false)
+    expect(isGuaranteedTwoStarEventActive(Date.parse('2026-12-22T01:00:00-05:00'))).toBe(false)
   })
 
   it('caps the recheck delay so a long-lived tab still hides the card', () => {
@@ -54,7 +62,7 @@ describe('GUARANTEED_TWO_STAR_EVENT_ENDS_AT', () => {
     expect(TWO_STAR_EVENT_RECHECK_MAX_MS).toBe(hour)
     expect(TWO_STAR_EVENT_RECHECK_MAX_MS).toBeLessThan(2 ** 31 - 1)
     expect(twoStarEventRecheckDelay(DURING_EVENT)).toBe(hour)
-    expect(twoStarEventRecheckDelay(END_OF_DEC_21)).toBe(1)
+    expect(twoStarEventRecheckDelay(GUARANTEED_TWO_STAR_EVENT_ENDS_AT - 1)).toBe(1)
     expect(twoStarEventRecheckDelay(AFTER_EVENT)).toBeNull()
     const tenMinutesBefore = GUARANTEED_TWO_STAR_EVENT_ENDS_AT - 10 * 60 * 1000
     expect(twoStarEventRecheckDelay(tenMinutesBefore)).toBe(10 * 60 * 1000)
@@ -71,7 +79,7 @@ describe('rankPacksForNewTwoStar', () => {
       card({ id: 'bulk', rarity: 'C', perPackRate: 0.2 }),
     ]
     const owned = new Set(['sr-common', 'bulk'])
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id))
+    const ranked = rank(cards, id => owned.has(id))
     expect(ranked).toEqual([{ label: 'Set', prob: 1 / 2 }])
   })
 
@@ -86,7 +94,7 @@ describe('rankPacksForNewTwoStar', () => {
       card({ id: 'owned-anchor', rarity: 'C' }),
     ]
     const owned = new Set(['owned-anchor', 'sr'])
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id))
+    const ranked = rank(cards, id => owned.has(id))
     expect(ranked).toEqual([{ label: 'Set', prob: 1 / 2 }])
     expect(TWO_STAR_RARITIES.has('SR')).toBe(true)
     expect(TWO_STAR_RARITIES.has('SAR')).toBe(true)
@@ -104,7 +112,7 @@ describe('rankPacksForNewTwoStar', () => {
       card({ id: 'open-2', rarity: 'SAR', pack: 'Open', set: 'A', setName: 'Alpha' }),
     ]
     const owned = new Set(['anchor-a', 'done', 'mission'])
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id))
+    const ranked = rank(cards, id => owned.has(id))
     expect(ranked).toEqual([{ label: 'Alpha — Open', prob: 1 }])
   })
 
@@ -117,7 +125,7 @@ describe('rankPacksForNewTwoStar', () => {
       card({ id: 'anchor', rarity: 'C', pack: 'Left', set: 'M', setName: 'Multi' }),
     ]
     const owned = new Set(['anchor', 'only-left'])
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id))
+    const ranked = rank(cards, id => owned.has(id))
     expect(ranked).toEqual([
       { label: 'Multi — Right', prob: 1 },
       { label: 'Multi — Left', prob: 1 / 2 },
@@ -134,12 +142,12 @@ describe('rankPacksForNewTwoStar', () => {
       card({ id: 'gone-anchor', rarity: 'C', set: 'D', setName: 'Deluxe Pack: ex', pack: 'Deluxe' }),
     ]
     const owned = new Set(['anchor', 'gone-anchor'])
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id), {
+    const ranked = rank(cards, id => owned.has(id), {
       excludedSetNames: new Set(['Deluxe Pack: ex']),
     })
     expect(ranked).toEqual([{ label: 'Old Set', prob: 1 }])
 
-    const includingFresh = rankPacksForNewTwoStar(cards, id => owned.has(id), {
+    const includingFresh = rank(cards, id => owned.has(id), {
       excludedSetNames: new Set(['Deluxe Pack: ex']),
       skipUntouchedSets: false,
     })
@@ -155,7 +163,7 @@ describe('rankPacksForNewTwoStar', () => {
       cards.push(card({ id: `s${i}`, rarity: 'SR', set: name, setName: name, pack: 'P' }))
     }
     const owned = new Set(cards.filter(c => c.rarity === 'C').map(c => c.id))
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id))
+    const ranked = rank(cards, id => owned.has(id))
     expect(ranked).toHaveLength(10)
     expect(ranked.every(entry => entry.prob === 1)).toBe(true)
     expect(ranked.map(entry => entry.label)).toEqual([
@@ -169,7 +177,7 @@ describe('rankPacksForNewTwoStar', () => {
       card({ id: 'b', rarity: 'SAR', set: 'B2', setName: 'Fantastical Parade', pack: 'Gardevoir' }),
       card({ id: 'c', rarity: 'C', set: 'B2', setName: 'Fantastical Parade', pack: 'Gardevoir' }),
     ]
-    const ranked = rankPacksForNewTwoStar(cards, id => id === 'c')
+    const ranked = rank(cards, id => id === 'c')
     expect(ranked).toEqual([{ label: 'Fantastical Parade', prob: 1 }])
   })
 })
@@ -221,7 +229,7 @@ describe('sample collection against cards.json', () => {
       if (TWO_STAR_RARITIES.has(c.rarity) && !unowned.has(c.id)) owned.add(c.id)
     }
 
-    const ranked = rankPacksForNewTwoStar(cards, id => owned.has(id), {
+    const ranked = rank(cards, id => owned.has(id), {
       excludedSetNames: new Set(['Deluxe Pack: ex', 'Deluxe Pack: Mega']),
     })
 
@@ -246,11 +254,81 @@ describe('sample collection against cards.json', () => {
     expect(ranked.find(entry => entry.label === 'Mega Rising — Mega Altaria')).toBeUndefined()
   })
 
+  it('a saved card-id list that owns some Celestial Guardians ★★ is under 100%', () => {
+    const cards = loadCards()
+    // Ids the tracker grid shows as owned art in Celestial Guardians.
+    // 181 Dhelmise ex SR, 182 Incineroar ex SR, 203 Alolan Raichu ex SAR,
+    // and 207 Solgaleo ex SAR are the Solgaleo pack. 188 Alolan Muk ex SR is Lunala.
+    const ownedTwoStar = ['A3-181', 'A3-182', 'A3-188', 'A3-203', 'A3-207']
+    const cardIds: string[] = []
+    const seen = new Set<string>()
+    for (const card of cards) {
+      if (seen.has(card.id)) continue
+      seen.add(card.id)
+      const inSet = card.set === 'A3' || card.set === 'B1' || card.set === 'A4'
+      const diamond = card.rarity === 'C' || card.rarity === 'U' || card.rarity === 'R' || card.rarity === 'RR'
+      if (inSet && diamond) cardIds.push(card.id)
+    }
+    cardIds.push(...ownedTwoStar)
+
+    // Same shape as localStorage `ptcgp-tracker-owned` and Firestore `cardIds`.
+    const saved = JSON.stringify(cardIds)
+    const live = ownedIdsFromCardIdList(JSON.parse(saved) as unknown[])
+    // Page load had captured the diamonds only. A cloud sync then added the ★★ ids.
+    const beforeSync = ownedIdsFromCardIdList(cardIds.filter(id => !ownedTwoStar.includes(id)))
+
+    const stale = rankPacksForNewTwoStar(cards, id => beforeSync.has(id))
+    const fresh = rankPacksForNewTwoStar(cards, id => live.has(id))
+
+    const staleSolgaleo = stale.find(entry => entry.label === 'Celestial Guardians — Solgaleo')
+    const solgaleo = fresh.find(entry => entry.label === 'Celestial Guardians — Solgaleo')
+    expect(staleSolgaleo?.prob).toBe(1)
+    expect(solgaleo).toBeDefined()
+    expect(solgaleo!.prob).toBeLessThan(1)
+    expect(solgaleo!.prob).toBe(10 / 14)
+    expect(formatPct(solgaleo!.prob)).toBe('71.43%')
+
+    // Lunala is not on the exchange list. Mega Rising and Wisdom are in the
+    // cut-off gap or absent, so a 100% there must not be recommended.
+    expect(fresh.find(entry => entry.label === 'Celestial Guardians — Lunala')).toBeUndefined()
+    expect(fresh.find(entry => entry.label.startsWith('Mega Rising'))).toBeUndefined()
+    expect(fresh.find(entry => entry.label.startsWith('Wisdom of Sea and Sky'))).toBeUndefined()
+
+    // Best Pack keeps 1 − ∏(1 − rate) over every unowned card, not the ★★ ratio.
+    const best = rankBestPacks(cards, id => live.has(id))
+    const bestSolgaleo = best.find(entry => entry.label === 'Celestial Guardians — Solgaleo')
+    let survive = 1
+    const owned = live
+    const seenRate = new Set<string>()
+    for (const card of cards) {
+      if (card.setName !== 'Celestial Guardians' || card.pack !== 'Solgaleo') continue
+      if (card.perPackRate <= 0 || owned.has(card.id) || seenRate.has(card.id)) continue
+      seenRate.add(card.id)
+      survive *= 1 - card.perPackRate
+    }
+    expect(bestSolgaleo).toBeDefined()
+    expect(bestSolgaleo!.prob).toBeCloseTo(1 - survive, 12)
+    expect(bestSolgaleo!.prob).not.toBe(solgaleo!.prob)
+  })
+
+  it('every allowlisted pack name exists on a card', () => {
+    const cards = loadCards()
+    const keys = new Set(cards.map(card => `${card.setName}||${card.pack}`))
+    for (const entry of GUARANTEED_TWO_STAR_PACK_ALLOWLIST) {
+      expect(keys.has(`${entry.setName}||${entry.pack}`), `${entry.setName} / ${entry.pack}`).toBe(true)
+    }
+  })
+
   it('the tracker gates the event card on the end date', () => {
     const view = readFileSync(resolve('src/views/TrackerView.vue'), 'utf8')
     expect(view).toContain('isGuaranteedTwoStarEventActive')
     expect(view).toContain('guaranteedTwoStarEventActive')
     expect(view).toContain('rankPacksForNewTwoStar')
+    expect(view).toContain('GUARANTEED_TWO_STAR_PACK_ALLOWLIST')
+    expect(view).toContain('ownedIdsFromCardIdList(ownedIds.value)')
+    expect(view).not.toContain('triggerRef(ownedIdsForAnalysis)')
+    expect(GUARANTEED_TWO_STAR_PACK_ALLOWLIST.some(entry => entry.pack === 'Lunala')).toBe(false)
+    expect(GUARANTEED_TWO_STAR_PACK_ALLOWLIST.some(entry => entry.setName === 'Mega Rising')).toBe(false)
     const panel = readFileSync(resolve('src/components/TwoStarEventPanel.vue'), 'utf8')
     expect(panel).toContain('Best pack for a new ★★ card (event)')
     expect(panel).toContain('Every pack guarantees one ★★ card')

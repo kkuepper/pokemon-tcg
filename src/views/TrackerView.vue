@@ -14,7 +14,8 @@ import StarIcon from '../components/icons/StarIcon.vue'
 import ShinyIcon from '../components/icons/ShinyIcon.vue'
 import CrownIcon from '../components/icons/CrownIcon.vue'
 import { formatPacks } from '../utils/odds'
-import { isGuaranteedTwoStarEventActive, rankPacksForNewTwoStar, twoStarEventRecheckDelay } from '../utils/twoStarEvent'
+import { rankBestPacks } from '../utils/bestPacks'
+import { GUARANTEED_TWO_STAR_PACK_ALLOWLIST, isGuaranteedTwoStarEventActive, ownedIdsFromCardIdList, rankPacksForNewTwoStar, twoStarEventRecheckDelay } from '../utils/twoStarEvent'
 import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
 import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
@@ -60,12 +61,17 @@ function onCardImageLoaded(cardId: string) {
   triggerRef(loadedCards)
 }
 
-// Debounced snapshot so bestPacks / twoStarPacks / easiestSets don't recompute on every click
-const ownedIdsForAnalysis = shallowRef(ownedIds.value)
+// Debounced snapshot so bestPacks / twoStarPacks / easiestSets don't recompute on every click.
+// Copy into a new Set. Toggles mutate the live set in place, and a cloud sync
+// replaces it. triggerRef would keep the Set captured at page load, so ★★ cards
+// that arrive with that sync still look missing and a pack shows 100%.
+const ownedIdsForAnalysis = shallowRef(ownedIdsFromCardIdList(ownedIds.value))
 let _analysisTimer: ReturnType<typeof setTimeout> | null = null
 watch(ownedIds, () => {
   if (_analysisTimer) clearTimeout(_analysisTimer)
-  _analysisTimer = setTimeout(() => { triggerRef(ownedIdsForAnalysis) }, 500)
+  _analysisTimer = setTimeout(() => {
+    ownedIdsForAnalysis.value = ownedIdsFromCardIdList(ownedIds.value)
+  }, 500)
 })
 
 const sets = computed(() => {
@@ -131,54 +137,14 @@ const EXCLUDED_SET_NAMES: Set<string> = new Set(
 
 const bestPacks = computed(() => {
   const snapshot = ownedIdsForAnalysis.value
-  const isOwnedFn = (id: string) => snapshot.has(id)
-
-  const packsPerSet = new Map<string, Set<string>>()
-  for (const card of cards.value) {
-    if (isMissionReward(card)) continue
-    if (!packsPerSet.has(card.set)) packsPerSet.set(card.set, new Set())
-    packsPerSet.get(card.set)!.add(card.pack)
-  }
-
-  interface Group { setCode: string; setName: string; pack: string; logNoNew: number; hasUnowned: boolean }
-  const groups = new Map<string, Group>()
-
-  const noneCollectedCache = new Map<string, boolean>()
-  const cachedNoneCollected = (setCode: string) => {
-    if (!noneCollectedCache.has(setCode)) noneCollectedCache.set(setCode, noneCollected(setCode, isOwnedFn))
-    return noneCollectedCache.get(setCode)!
-  }
-
-  for (const card of cards.value) {
-    if (EXCLUDED_SET_NAMES.has(card.setName)) continue
-    if (cachedNoneCollected(card.set)) continue
-    if (card.perPackRate <= 0) continue
-
-    const key = `${card.set}||${card.pack}`
-    if (!groups.has(key)) {
-      groups.set(key, { setCode: card.set, setName: card.setName, pack: card.pack, logNoNew: 0, hasUnowned: false })
-    }
-    if (!isOwnedFn(card.id)) {
-      const g = groups.get(key)!
-      g.logNoNew += Math.log(1 - card.perPackRate)
-      g.hasUnowned = true
-    }
-  }
-
-  return [...groups.values()]
-    .filter(g => g.hasUnowned)
-    .map(g => {
-      const isMultiPack = (packsPerSet.get(g.setCode)?.size ?? 0) > 1
-      const label = isMultiPack ? `${g.setName} — ${g.pack}` : g.setName
-      return { label, prob: 1 - Math.exp(g.logNoNew) }
-    })
-    .sort((a, b) => b.prob - a.prob)
-    .slice(0, 10)
+  return rankBestPacks(cards.value, id => snapshot.has(id), {
+    excludedSetNames: EXCLUDED_SET_NAMES,
+  })
 })
 
 // Guaranteed-★★ event. Date.now() is not reactive, so the flag is refreshed
 // when the tab becomes visible again and on a timer capped by
-// twoStarEventRecheckDelay (a single wait until 21 Dec 2026 would overflow
+// twoStarEventRecheckDelay (a single wait until 22 Dec 2026 would overflow
 // setTimeout). After GUARANTEED_TWO_STAR_EVENT_ENDS_AT the card does not
 // render, with no redeploy.
 const guaranteedTwoStarEventActive = ref(isGuaranteedTwoStarEventActive())
@@ -202,6 +168,7 @@ const twoStarPacks = computed(() => {
   const snapshot = ownedIdsForAnalysis.value
   return rankPacksForNewTwoStar(cards.value, id => snapshot.has(id), {
     excludedSetNames: EXCLUDED_SET_NAMES,
+    packAllowlist: GUARANTEED_TWO_STAR_PACK_ALLOWLIST,
   })
 })
 
