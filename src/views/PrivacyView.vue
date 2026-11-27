@@ -62,5 +62,9 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import SiteFooter from '../components/SiteFooter.vue'
+import { applyPageMeta, PRIVACY_META } from '../utils/pageMeta'
+
+onMounted(() => applyPageMeta(PRIVACY_META))
 </script>

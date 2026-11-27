@@ -6,6 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath, pathToFileURL } from 'url'
 import { ESTIMATED_PULL_RATES, ESTIMATED_POOL_SPLITS } from './estimatedPullRates.js'
+import { cardToSlug, HOME_META, pageUrl, STATIC_PAGES, uniqueCards } from './seoMeta.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const root = resolve(__dirname, '..')
@@ -345,30 +346,19 @@ function main() {
   writeFileSync(resolve(root, 'public/cards.json'), JSON.stringify(output))
   console.log(`✓ Built ${output.length} card entries → public/cards.json`)
 
-// Sitemap — deduplicate by card ID (same card can appear in multiple packs)
-function cardToSlug(card) {
-  const name = card.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  return `${name}-${card.id.toLowerCase()}`
-}
-
-const BASE_URL = 'https://kkuepper.github.io/pokemon-tcg'
-const seen = new Set()
-const uniqueCards = output.filter(card => {
-  if (seen.has(card.id)) return false
-  seen.add(card.id)
-  return true
-})
-
+// Sitemap — homepage, the static views, then one URL per unique card id
+const cardUrls = uniqueCards(output).map(card => pageUrl(`/${cardToSlug(card)}`))
 const urlEntries = [
-  `  <url>\n    <loc>${BASE_URL}/</loc>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>`,
-  ...uniqueCards.map(card =>
-    `  <url>\n    <loc>${BASE_URL}/${cardToSlug(card)}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.8</priority>\n  </url>`
-  ),
-].join('\n')
+  { loc: pageUrl(HOME_META.path), changefreq: 'weekly', priority: '1.0' },
+  ...STATIC_PAGES.map(page => ({ loc: pageUrl(page.path), changefreq: 'weekly', priority: '0.6' })),
+  ...cardUrls.map(loc => ({ loc, changefreq: 'monthly', priority: '0.8' })),
+].map(({ loc, changefreq, priority }) =>
+  `  <url>\n    <loc>${loc}</loc>\n    <changefreq>${changefreq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`
+).join('\n')
 
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/0.9">\n${urlEntries}\n</urlset>\n`
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>\n`
 writeFileSync(resolve(root, 'public/sitemap.xml'), sitemap)
-console.log(`✓ Built ${uniqueCards.length} card URLs → public/sitemap.xml`)
+console.log(`✓ Built ${cardUrls.length} card URLs + ${STATIC_PAGES.length + 1} pages → public/sitemap.xml`)
 }
 
 const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href

@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import AuthButton from '../components/AuthButton.vue'
 import SiteFooter from '../components/SiteFooter.vue'
 import { useMetaDecks } from '../composables/useMetaDecks'
+import { applyPageMeta, META_DECKS_META } from '../utils/pageMeta'
 import type { MetaCardRef, MetaDeck, MetaDeckOtherCard } from '../types/metaDeck'
 
 const { payload, loading, loadError } = useMetaDecks()
@@ -52,7 +53,7 @@ function formatMatchupLine(rows: MetaDeck['matchups']['favorable']) {
 }
 
 watchEffect(() => {
-  document.title = 'Meta Decks — Pokémon TCG Pocket'
+  applyPageMeta(META_DECKS_META)
 })
 </script>
 
@@ -63,7 +64,7 @@ watchEffect(() => {
         <div>
           <h1 class="text-xl font-bold text-gray-900">
             <RouterLink to="/" class="hover:text-blue-600 transition-colors">
-              Pokémon TCG Pocket — Tracker & Odds Calculator
+              Pokémon TCG Pocket Odds — Pack Odds Calculator
             </RouterLink>
           </h1>
           <p class="text-sm text-gray-500 mt-0.5">

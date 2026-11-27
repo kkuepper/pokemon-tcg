@@ -20,6 +20,7 @@ import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
 import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
 import { isMissionReward, type Card } from '../types/card'
+import { applyPageMeta, TRACKER_META } from '../utils/pageMeta'
 
 // ── Lazy-src directive: sets src only when the image nears the viewport ───────
 
@@ -527,6 +528,7 @@ function onWindowTouchEnd() {
 // ── Global listeners ──────────────────────────────────────────────────────────
 
 onMounted(() => {
+  applyPageMeta(TRACKER_META)
   window.addEventListener('mouseup', onWindowMouseUp)
   window.addEventListener('touchend', onWindowTouchEnd)
   document.addEventListener('visibilitychange', onTwoStarEventTabVisible)
@@ -557,7 +559,7 @@ onUnmounted(() => {
       <div class="max-w-6xl mx-auto px-4 py-4">
         <div class="flex items-start justify-between gap-4">
           <h1 class="text-xl font-bold text-gray-900">
-            Pokémon TCG Pocket<span class="hidden sm:inline"> — Tracker &amp; Odds Calculator</span>
+            Pokémon TCG Pocket Odds<span class="hidden sm:inline"> — Pack Odds Calculator</span>
           </h1>
           <nav class="flex items-center gap-1 text-sm font-medium shrink-0">
             <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
