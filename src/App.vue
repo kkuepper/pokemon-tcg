@@ -6,6 +6,7 @@ import { isMissionReward, type Card } from './types/card'
 import { useCardDb } from './composables/useCardDb'
 import { useTracker } from './composables/useTracker'
 import { cardToSlug } from './utils/slug'
+import { applyPageMeta, cardMeta, HOME_META } from './utils/pageMeta'
 import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
@@ -71,37 +72,8 @@ function onCardSelect(card: Card) {
   router.push({ params: { slug: cardToSlug(card) } })
 }
 
-function setMeta(attr: string, value: string, content: string) {
-  document.querySelector(`meta[${attr}="${value}"]`)?.setAttribute('content', content)
-}
-
-function formatPct(rate: number): string {
-  const pct = rate * 100
-  const str = pct >= 1 ? pct.toFixed(2) : pct.toFixed(4)
-  return str.replace(/\.?0+$/, '') + '%'
-}
-
 watchEffect(() => {
-  if (selectedCard.value) {
-    const card = selectedCard.value
-    const mission = isMissionReward(card)
-    const pct = formatPct(card.perPackRate)
-    const title = mission
-      ? `${card.name} (${card.id}) — Mission reward | Pokémon TCG Pocket`
-      : `${card.name} (${card.id}) — Pack Odds | Pokémon TCG Pocket`
-    const desc = mission
-      ? `${card.name} is a mission reward in ${card.setName}, not pulled from a booster pack.`
-      : `Pull rate for ${card.name} from ${card.setName}: ${pct} per pack. Find pack odds for every card in Pokémon TCG Pocket.`
-    document.title = title
-    setMeta('name', 'description', desc)
-    setMeta('property', 'og:title', title)
-    setMeta('property', 'og:description', desc)
-  } else {
-    document.title = 'Pokémon TCG Pocket — Tracker & Odds Calculator'
-    setMeta('name', 'description', 'Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket. See probabilities for all sets and rarities.')
-    setMeta('property', 'og:title', 'Pokémon TCG Pocket — Tracker & Odds Calculator')
-    setMeta('property', 'og:description', 'Calculate exact pull rates and pack odds for every card in Pokémon TCG Pocket.')
-  }
+  applyPageMeta(selectedCard.value ? cardMeta(selectedCard.value) : HOME_META)
 })
 </script>
 
@@ -113,11 +85,11 @@ watchEffect(() => {
         <div>
           <h1 class="text-xl font-bold text-gray-900">
             <RouterLink to="/" class="hover:text-blue-600 transition-colors">
-              Pokémon TCG Pocket — Tracker & Odds Calculator
+              Pokémon TCG Pocket Odds — Pack Odds Calculator
             </RouterLink>
           </h1>
           <p class="text-sm text-gray-500 mt-0.5">
-            Find out how likely you are to pull a specific card from a booster pack.
+            Pack odds and pull rates for every card: find out how likely you are to pull a specific card from a booster pack.
           </p>
         </div>
         <nav class="flex items-center gap-1 text-sm font-medium shrink-0 mt-1">

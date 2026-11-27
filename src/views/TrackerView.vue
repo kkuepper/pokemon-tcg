@@ -20,6 +20,7 @@ import posthog from 'posthog-js'
 import { computeSetCompletion, DIAMOND_RARITIES, STAR_RARITIES, SHINY_RARITIES } from '../utils/easiestSet'
 import { slotMemoKey, trackerSlots, type TrackerSlot } from '../utils/trackerGrid'
 import { isMissionReward, type Card } from '../types/card'
+import { applyPageMeta, TRACKER_META } from '../utils/pageMeta'
 
 // ── Lazy-src directive: sets src only when the image nears the viewport ───────
 
@@ -527,6 +528,7 @@ function onWindowTouchEnd() {
 // ── Global listeners ──────────────────────────────────────────────────────────
 
 onMounted(() => {
+  applyPageMeta(TRACKER_META)
   window.addEventListener('mouseup', onWindowMouseUp)
   window.addEventListener('touchend', onWindowTouchEnd)
   document.addEventListener('visibilitychange', onTwoStarEventTabVisible)
