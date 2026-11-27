@@ -3,7 +3,8 @@
 // the 404.html SPA redirect.
 //
 //   dist/index.html             home page tags rewritten in place
-//   dist/<route>/index.html     one per static view and per card
+//   dist/<route>/index.html     one per static view and per card (without the
+//                               homepage WebApplication JSON-LD)
 //   dist/<route>.html           same content; GitHub Pages serves this for the
 //                               extensionless URL (/meta-decks) with a 200,
 //                               where the directory alone would 301 to /meta-decks/
@@ -31,8 +32,15 @@ function replaceOnce(html, pattern, replacement, label) {
   return html.replace(pattern, () => replacement)
 }
 
-/** Rewrite title, description, canonical and Open Graph tags of the built index.html. */
-export function applyMeta(html, { path, title, description, type = 'website' }) {
+const IMAGE_TAG = /[ \t]*<meta\s+(?:property="og:image"|name="twitter:image")\s+content="[^"]*"\s*\/?>\r?\n?/g
+const STRUCTURED_DATA = /[ \t]*(?:<!--\s*Structured data\s*-->\s*)?<script\s+type="application\/ld\+json">[\s\S]*?<\/script>\r?\n?/g
+
+/**
+ * Rewrite title, description, canonical, Open Graph and Twitter tags of the
+ * built index.html. og:image / twitter:image are inserted after
+ * twitter:description when the page has an image and removed otherwise.
+ */
+export function applyMeta(html, { path, title, description, image, type = 'website' }) {
   const url = escapeHtml(pageUrl(path))
   const t = escapeHtml(title)
   const d = escapeHtml(description)
@@ -49,8 +57,26 @@ export function applyMeta(html, { path, title, description, type = 'website' }) 
     meta('property', 'og:description', d),
     meta('property', 'og:url', url),
     meta('property', 'og:type', type),
+    meta('name', 'twitter:card', 'summary'),
+    meta('name', 'twitter:title', t),
+    meta('name', 'twitter:description', d),
   ]
-  return rules.reduce((out, [pattern, replacement, label]) => replaceOnce(out, pattern, replacement, label), html)
+  let out = rules.reduce((acc, [pattern, replacement, label]) => replaceOnce(acc, pattern, replacement, label), html)
+  out = out.replace(IMAGE_TAG, '')
+  if (image) {
+    const img = escapeHtml(image)
+    out = out.replace(
+      /([ \t]*)(<meta name="twitter:description" content="[^"]*" \/>)/,
+      (_, indent, tag) =>
+        `${indent}${tag}\n${indent}<meta property="og:image" content="${img}" />\n${indent}<meta name="twitter:image" content="${img}" />`,
+    )
+  }
+  return out
+}
+
+/** Remove the homepage WebApplication JSON-LD (and its comment); it only describes the home page. */
+export function stripStructuredData(html) {
+  return html.replace(STRUCTURED_DATA, '')
 }
 
 /** Every route that gets a prerendered file, home first. */
@@ -70,9 +96,10 @@ export function prerender({ distDir, cards }) {
     }
     const name = route.path.slice(1)
     if (!/^[a-z0-9-]+$/.test(name)) throw new Error(`prerender: unexpected route path ${route.path}`)
+    const page = stripStructuredData(html)
     mkdirSync(join(distDir, name), { recursive: true })
-    writeFileSync(join(distDir, name, 'index.html'), html)
-    writeFileSync(join(distDir, `${name}.html`), html)
+    writeFileSync(join(distDir, name, 'index.html'), page)
+    writeFileSync(join(distDir, `${name}.html`), page)
     written.push(`${name}/index.html`)
   }
   return written

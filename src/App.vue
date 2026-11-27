@@ -6,7 +6,7 @@ import { isMissionReward, type Card } from './types/card'
 import { useCardDb } from './composables/useCardDb'
 import { useTracker } from './composables/useTracker'
 import { cardToSlug } from './utils/slug'
-import { applyPageMeta, cardMeta, HOME_META } from './utils/pageMeta'
+import { applyPageMeta, metaForAppRoute } from './utils/pageMeta'
 import CardSearch from './components/CardSearch.vue'
 import CardDetail from './components/CardDetail.vue'
 import PackOdds from './components/PackOdds.vue'
@@ -72,8 +72,12 @@ function onCardSelect(card: Card) {
   router.push({ params: { slug: cardToSlug(card) } })
 }
 
+// On a card URL the prerendered tags already describe that card. While
+// cards.json loads (or if it fails) selectedCard is null: leave them alone
+// instead of switching to the homepage tags. Only a slug-less route gets HOME_META.
 watchEffect(() => {
-  applyPageMeta(selectedCard.value ? cardMeta(selectedCard.value) : HOME_META)
+  const meta = metaForAppRoute({ slug: route.params.slug, selectedCard: selectedCard.value })
+  if (meta) applyPageMeta(meta)
 })
 </script>
 

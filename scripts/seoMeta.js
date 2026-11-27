@@ -50,16 +50,37 @@ function formatPct(rate) {
   return str.replace(/\.?0+$/, '') + '%'
 }
 
+/** Same labels as RARITY_LABELS in src/types/card.ts (checked by scripts/prerender.test.js). */
+export const RARITY_LABELS = {
+  C: 'Common',
+  U: 'Uncommon',
+  R: 'Rare',
+  RR: 'Double Rare',
+  AR: 'Art Rare',
+  SR: 'Super Rare',
+  SAR: 'Special Art Rare',
+  IM: 'Immersive',
+  UR: 'Crown Rare',
+  S: 'Shiny',
+  SSR: 'Shiny Super Rare',
+}
+
+/** Public URL of the card thumbnail: A1-036 → …/images/cards/A1/36.webp (same files as TrackerView). */
+export function cardImageUrl(card) {
+  const [set, paddedNum] = card.id.split('-')
+  return `${SITE_URL}/images/cards/${set}/${parseInt(paddedNum, 10)}.webp`
+}
+
 export function cardMeta(card) {
   const mission = card.obtainable === 'mission'
+  const label = `${card.id}, ${RARITY_LABELS[card.rarity] ?? card.rarity}`
   return {
     path: `/${cardToSlug(card)}`,
-    title: mission
-      ? `${card.name} (${card.id}) — Mission reward | Pokémon TCG Pocket`
-      : `${card.name} (${card.id}) — Pack Odds | Pokémon TCG Pocket`,
+    title: mission ? `${card.name} (${card.id}) — Mission reward` : `${card.name} (${card.id}) — Pack Odds`,
     description: mission
-      ? `${card.name} is a mission reward in ${card.setName}, not pulled from a booster pack.`
-      : `Pull rate for ${card.name} from ${card.setName}: ${formatPct(card.perPackRate)} per pack. Find pack odds for every card in Pokémon TCG Pocket.`,
+      ? `${card.name} (${label}) is a mission reward in ${card.setName}, not pulled from a booster pack.`
+      : `Pull rate for ${card.name} (${label}) from ${card.setName}: ${formatPct(card.perPackRate)} per pack. Find pack odds for every card in Pokémon TCG Pocket.`,
+    image: cardImageUrl(card),
   }
 }
 

@@ -64,7 +64,7 @@ watchEffect(() => {
         <div>
           <h1 class="text-xl font-bold text-gray-900">
             <RouterLink to="/" class="hover:text-blue-600 transition-colors">
-              Pokémon TCG Pocket — Tracker & Odds Calculator
+              Pokémon TCG Pocket Odds — Pack Odds Calculator
             </RouterLink>
           </h1>
           <p class="text-sm text-gray-500 mt-0.5">

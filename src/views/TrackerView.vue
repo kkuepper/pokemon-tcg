@@ -559,7 +559,7 @@ onUnmounted(() => {
       <div class="max-w-6xl mx-auto px-4 py-4">
         <div class="flex items-start justify-between gap-4">
           <h1 class="text-xl font-bold text-gray-900">
-            Pokémon TCG Pocket<span class="hidden sm:inline"> — Tracker &amp; Odds Calculator</span>
+            Pokémon TCG Pocket Odds<span class="hidden sm:inline"> — Pack Odds Calculator</span>
           </h1>
           <nav class="flex items-center gap-1 text-sm font-medium shrink-0">
             <RouterLink to="/tracker" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white">Tracker</RouterLink>
